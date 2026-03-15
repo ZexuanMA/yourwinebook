@@ -3,17 +3,17 @@ import { verifyCredentials } from "@/lib/mock-auth";
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
-  const merchant = verifyCredentials(email, password);
+  const account = verifyCredentials(email, password);
 
-  if (!merchant) {
+  if (!account) {
     return NextResponse.json({ error: "Email 或密碼錯誤" }, { status: 401 });
   }
 
-  const response = NextResponse.json({ ok: true, merchant });
-  response.cookies.set("wb_session", merchant.slug, {
+  const response = NextResponse.json({ ok: true, account });
+  response.cookies.set("wb_session", account.slug, {
     httpOnly: true,
     path: "/",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 7,
     sameSite: "lax",
   });
   return response;

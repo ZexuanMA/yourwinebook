@@ -145,8 +145,23 @@ export default function LoginPage() {
               <span className="text-xs text-text-sub">Demo 帳號</span>
               <div className="h-px flex-1 bg-wine-border" />
             </div>
+            {/* Admin account */}
+            {DEMO_ACCOUNTS.filter((a) => a.role === "admin").map((a) => (
+              <button
+                key={a.email}
+                onClick={() => { setEmail(a.email); setPassword("admin123"); setError(""); }}
+                className="w-full text-left px-3 py-2.5 bg-wine/5 border border-wine/20 rounded-xl hover:border-wine hover:shadow-sm transition-all cursor-pointer group mb-2"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-semibold text-wine truncate">{a.name}</p>
+                  <span className="text-[10px] bg-wine text-white px-1.5 py-0.5 rounded-full">管理員</span>
+                </div>
+                <p className="text-[11px] text-text-sub/60 mt-0.5 truncate">{a.email} · admin123</p>
+              </button>
+            ))}
+            {/* Merchant accounts */}
             <div className="grid grid-cols-2 gap-2">
-              {DEMO_ACCOUNTS.map((a) => (
+              {DEMO_ACCOUNTS.filter((a) => a.role === "merchant").map((a) => (
                 <button
                   key={a.email}
                   onClick={() => { setEmail(a.email); setPassword(a.password); setError(""); }}
@@ -157,7 +172,7 @@ export default function LoginPage() {
                 </button>
               ))}
             </div>
-            <p className="text-center text-xs text-text-sub/50 mt-3">所有帳號密碼：<span className="font-mono font-semibold text-text-sub">demo123</span></p>
+            <p className="text-center text-xs text-text-sub/50 mt-3">酒商密碼：<span className="font-mono font-semibold text-text-sub">demo123</span></p>
           </div>
         </div>
       </div>

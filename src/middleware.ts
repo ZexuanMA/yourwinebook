@@ -1,31 +1,38 @@
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
+import { getMockAccount } from "./lib/mock-auth";
 
 const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Protect /dashboard — redirect to /login if no session cookie
+  // Protect all /dashboard routes — must be logged in
   if (pathname.startsWith("/dashboard")) {
-    const session = request.cookies.get("wb_session");
-    if (!session?.value) {
+    const slug = request.cookies.get("wb_session")?.value;
+    if (!slug) {
       return NextResponse.redirect(new URL("/login", request.url));
+    }
+    // Protect /dashboard/admin — admin only
+    if (pathname.startsWith("/dashboard/admin")) {
+      const account = getMockAccount(slug);
+      if (!account || account.role !== "admin") {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
     }
     return NextResponse.next();
   }
 
-  // If already logged in, skip /login
+  // Already logged in → skip login page
   if (pathname === "/login") {
-    const session = request.cookies.get("wb_session");
-    if (session?.value) {
+    const slug = request.cookies.get("wb_session")?.value;
+    if (slug) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
     return NextResponse.next();
   }
 
-  // All other routes: delegate to next-intl for locale routing
   return intlMiddleware(request);
 }
 
