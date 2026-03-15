@@ -1,141 +1,38 @@
-"use client";
+import type { Metadata } from "next";
+import { DM_Sans, Noto_Sans_TC } from "next/font/google";
+import { DashboardSidebar, DashboardTopbar } from "@/components/dashboard/DashboardSidebar";
+import "../globals.css";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  LayoutDashboard,
-  List,
-  PlusCircle,
-  LogOut,
-  ExternalLink,
-  ChevronRight,
-} from "lucide-react";
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  weight: ["300", "400", "500", "600", "700"],
+});
 
-interface Merchant {
-  slug: string;
-  name: string;
-  email: string;
-}
+const notoSansTC = Noto_Sans_TC({
+  subsets: ["latin"],
+  variable: "--font-noto-sans-tc",
+  weight: ["300", "400", "500", "700"],
+});
 
-const navItems = [
-  { href: "/dashboard", label: "總覽", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/wines", label: "酒款管理", icon: List, exact: false },
-  { href: "/dashboard/wines/new", label: "新增酒款", icon: PlusCircle, exact: true },
-];
+export const metadata: Metadata = {
+  title: "後台管理 — Your Wine Book",
+};
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [merchant, setMerchant] = useState<Merchant | null>(null);
-
-  useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setMerchant)
-      .catch(() => null);
-  }, []);
-
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  };
-
-  const isActive = (href: string, exact: boolean) =>
-    exact ? pathname === href : pathname.startsWith(href) && pathname !== "/dashboard";
-
   return (
-    <div className="min-h-screen bg-bg flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-wine flex flex-col shrink-0 relative">
-        {/* Subtle texture overlay */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-          style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "24px 24px" }}
-        />
-
-        {/* Brand */}
-        <div className="relative px-6 pt-7 pb-5">
-          <div className="flex items-center gap-2.5 mb-6">
-            <span className="text-xl">🍷</span>
-            <span className="font-en text-sm font-bold text-white tracking-wide">Your Wine Book</span>
-          </div>
-          {/* Merchant badge */}
-          <div className="bg-white/10 rounded-xl px-4 py-3 border border-white/10">
-            <p className="text-white/50 text-[10px] uppercase tracking-wider mb-1">當前帳號</p>
-            <p className="text-white font-semibold text-sm truncate">
-              {merchant?.name ?? "Loading…"}
-            </p>
-            <p className="text-white/40 text-xs truncate mt-0.5">{merchant?.email}</p>
-          </div>
+    <html lang="zh-HK">
+      <body
+        className={`${dmSans.variable} ${notoSansTC.variable} font-zh bg-bg text-text antialiased`}
+      >
+        <div className="min-h-screen flex">
+          <DashboardSidebar />
+          <main className="flex-1 min-w-0 flex flex-col overflow-auto">
+            <DashboardTopbar />
+            <div className="flex-1 p-8">{children}</div>
+          </main>
         </div>
-
-        {/* Divider */}
-        <div className="mx-6 h-px bg-white/10" />
-
-        {/* Nav */}
-        <nav className="relative flex-1 px-3 py-5 space-y-1">
-          {navItems.map(({ href, label, icon: Icon, exact }) => {
-            const active = isActive(href, exact) || (exact && pathname === href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group ${
-                  active
-                    ? "bg-white/15 text-white shadow-sm"
-                    : "text-white/60 hover:bg-white/8 hover:text-white"
-                }`}
-              >
-                <Icon className={`w-4 h-4 shrink-0 transition-colors ${active ? "text-gold-light" : "text-white/40 group-hover:text-white/70"}`} />
-                <span className="flex-1">{label}</span>
-                {active && <ChevronRight className="w-3.5 h-3.5 text-gold-light opacity-60" />}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Bottom links */}
-        <div className="relative px-3 pb-6 space-y-1">
-          <div className="mx-3 h-px bg-white/10 mb-3" />
-          <Link
-            href="/zh-HK"
-            target="_blank"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs text-white/40 hover:text-white/70 hover:bg-white/8 transition-all"
-          >
-            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-            查看前台網站
-          </Link>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs text-white/40 hover:text-white/70 hover:bg-white/8 transition-all w-full cursor-pointer"
-          >
-            <LogOut className="w-3.5 h-3.5 shrink-0" />
-            登出
-          </button>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 min-w-0 overflow-auto">
-        {/* Top bar */}
-        <div className="bg-white border-b border-wine-border px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-text-sub">
-            {navItems.map(({ href, label, exact }) => {
-              const active = isActive(href, exact) || (exact && pathname === href);
-              if (!active) return null;
-              return <span key={href} className="font-medium text-text">{label}</span>;
-            })}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-xs text-amber-700 font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse inline-block" />
-              Demo 模式
-            </span>
-          </div>
-        </div>
-
-        <div className="p-8">{children}</div>
-      </main>
-    </div>
+      </body>
+    </html>
   );
 }
