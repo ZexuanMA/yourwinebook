@@ -3,7 +3,10 @@
     "allow": [
       "Bash(wc -l /root/wine-app/messages/*.json)",
       "Bash(find /root/wine-app -name schema.sql -o -name prisma -o -name .env*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(ls:*)"
     ]
   }
 }
