@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Wine } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { DEMO_ACCOUNTS } from "@/lib/mock-auth";
 
 export default function LoginPage() {
@@ -36,49 +36,74 @@ export default function LoginPage() {
     }
   };
 
-  const fillAccount = (e: string, p: string) => {
-    setEmail(e);
-    setPassword(p);
-    setError("");
-  };
-
   return (
-    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-3">
-            <Wine className="w-7 h-7 text-[#8B1A1A]" />
-            <span className="text-xl font-semibold text-[#1A1A1A]">Your Wine Book</span>
+    <div className="min-h-screen flex">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-[480px] bg-wine flex-col justify-between p-12 shrink-0 relative overflow-hidden">
+        {/* Background texture */}
+        <div className="absolute inset-0 opacity-5"
+          style={{ backgroundImage: "radial-gradient(circle at 20% 80%, #fff 1px, transparent 1px), radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }}
+        />
+        <div className="relative">
+          <div className="flex items-center gap-2.5 mb-16">
+            <span className="text-2xl">🍷</span>
+            <span className="font-en text-lg font-bold text-white tracking-wide">Your Wine Book</span>
           </div>
-          <h1 className="text-2xl font-semibold text-[#1A1A1A]">酒商後台登入</h1>
-          <p className="text-sm text-[#6B6B6B] mt-1">Merchant Dashboard</p>
+          <h1 className="font-en text-4xl font-bold text-white leading-tight mb-4">
+            酒商後台
+            <br />
+            <span className="text-gold-light">管理中心</span>
+          </h1>
+          <p className="text-white/60 text-sm leading-relaxed">
+            管理你的上架酒款、追蹤比價排名、<br />更新定價和購買連結。
+          </p>
         </div>
 
-        {/* Login form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white border border-[#E8E0D6] rounded-2xl p-8 shadow-sm"
-        >
-          <div className="space-y-5">
+        {/* Decorative wine bottles */}
+        <div className="relative flex items-end justify-center gap-4 mb-8">
+          {["🍷", "🥂", "🍾", "🌸", "🍯"].map((emoji, i) => (
+            <div
+              key={i}
+              className="text-4xl opacity-20 hover:opacity-40 transition-opacity"
+              style={{ transform: `translateY(${[0, -8, -16, -8, 0][i]}px)` }}
+            >
+              {emoji}
+            </div>
+          ))}
+        </div>
+
+        <p className="relative text-white/30 text-xs">
+          © 2025 Your Wine Book · Merchant Portal
+        </p>
+      </div>
+
+      {/* Right panel */}
+      <div className="flex-1 bg-bg flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-[400px]">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-8">
+            <span className="text-xl">🍷</span>
+            <span className="font-en text-base font-bold text-wine">Your Wine Book</span>
+          </div>
+
+          <h2 className="text-2xl font-semibold text-text mb-1">歡迎回來</h2>
+          <p className="text-sm text-text-sub mb-8">使用你的酒商帳號登入</p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                Email
-              </label>
+              <label className="block text-sm font-medium text-text mb-1.5">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="your@email.com"
-                className="w-full px-4 py-3 border border-[#E8E0D6] rounded-xl text-sm outline-none focus:border-[#B8956A] transition-colors"
+                className="w-full px-4 py-3 bg-white border border-wine-border rounded-xl text-sm outline-none focus:border-gold focus:shadow-[0_0_0_3px_rgba(184,149,106,0.12)] transition-all placeholder:text-text-sub/40"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                密碼 Password
-              </label>
+              <label className="block text-sm font-medium text-text mb-1.5">密碼</label>
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
@@ -86,12 +111,12 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-[#E8E0D6] rounded-xl text-sm outline-none focus:border-[#B8956A] transition-colors pr-11"
+                  className="w-full px-4 py-3 bg-white border border-wine-border rounded-xl text-sm outline-none focus:border-gold focus:shadow-[0_0_0_3px_rgba(184,149,106,0.12)] transition-all pr-11"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B6B6B] hover:text-[#1A1A1A] transition-colors cursor-pointer"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-sub hover:text-text transition-colors cursor-pointer"
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -99,39 +124,41 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-lg">
-                {error}
-              </p>
+              <div className="flex items-center gap-2 px-4 py-3 bg-red-light border border-red-200 rounded-xl text-sm text-wine">
+                <span>⚠</span> {error}
+              </div>
             )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#8B1A1A] text-white rounded-xl text-sm font-medium hover:bg-[#6B1515] transition-colors disabled:opacity-50 cursor-pointer"
+              className="w-full py-3 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors disabled:opacity-50 cursor-pointer mt-2 shadow-sm"
             >
-              {loading ? "登入中…" : "登入"}
+              {loading ? "登入中…" : "登入後台"}
             </button>
-          </div>
-        </form>
+          </form>
 
-        {/* Demo accounts */}
-        <div className="mt-6 bg-white border border-[#E8E0D6] rounded-2xl p-5">
-          <p className="text-xs font-semibold text-[#6B6B6B] uppercase tracking-wider mb-3">
-            Demo 帳號（點擊自動填入）
-          </p>
-          <div className="space-y-2">
-            {DEMO_ACCOUNTS.map((a) => (
-              <button
-                key={a.email}
-                onClick={() => fillAccount(a.email, a.password)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#FAF8F5] transition-colors text-left cursor-pointer border border-transparent hover:border-[#E8E0D6]"
-              >
-                <span className="text-sm font-medium text-[#1A1A1A]">{a.name}</span>
-                <span className="text-xs text-[#6B6B6B] font-mono">{a.email}</span>
-              </button>
-            ))}
+          {/* Demo accounts */}
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="h-px flex-1 bg-wine-border" />
+              <span className="text-xs text-text-sub">Demo 帳號</span>
+              <div className="h-px flex-1 bg-wine-border" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.map((a) => (
+                <button
+                  key={a.email}
+                  onClick={() => { setEmail(a.email); setPassword(a.password); setError(""); }}
+                  className="text-left px-3 py-2.5 bg-white border border-wine-border rounded-xl hover:border-gold hover:shadow-sm transition-all cursor-pointer group"
+                >
+                  <p className="text-xs font-semibold text-text group-hover:text-wine transition-colors truncate">{a.name}</p>
+                  <p className="text-[11px] text-text-sub/60 mt-0.5 truncate">{a.email}</p>
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-xs text-text-sub/50 mt-3">所有帳號密碼：<span className="font-mono font-semibold text-text-sub">demo123</span></p>
           </div>
-          <p className="text-xs text-[#6B6B6B] mt-3">所有帳號密碼均為 <span className="font-mono font-semibold">demo123</span></p>
         </div>
       </div>
     </div>
