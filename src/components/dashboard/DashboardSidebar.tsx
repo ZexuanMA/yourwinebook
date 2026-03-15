@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   List,
   PlusCircle,
+  BarChart2,
   LogOut,
   ExternalLink,
   ChevronRight,
@@ -19,9 +20,10 @@ interface Merchant {
 }
 
 const navItems = [
-  { href: "/dashboard",           label: "總覽",    icon: LayoutDashboard, exact: true  },
-  { href: "/dashboard/wines",     label: "酒款管理", icon: List,            exact: false },
-  { href: "/dashboard/wines/new", label: "新增酒款", icon: PlusCircle,      exact: true  },
+  { href: "/dashboard",              label: "總覽",    icon: LayoutDashboard, exact: true  },
+  { href: "/dashboard/wines",        label: "酒款管理", icon: List,            exact: false },
+  { href: "/dashboard/wines/new",    label: "新增酒款", icon: PlusCircle,      exact: true  },
+  { href: "/dashboard/analytics",    label: "流量分析", icon: BarChart2,       exact: true  },
 ];
 
 export function DashboardSidebar() {
