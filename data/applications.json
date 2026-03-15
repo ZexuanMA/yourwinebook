@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "mmrnam9msune",
+    "companyName": "Beijing",
+    "contactName": "Zexuan",
+    "email": "478798@4576879.com",
+    "phone": "6676869",
+    "wineCount": 11,
+    "website": "",
+    "message": "",
+    "status": "pending",
+    "submittedAt": "2026-03-15T11:02:14.842Z"
+  },
+  {
+    "id": "mmrnfy5jly0v",
+    "companyName": "456",
+    "contactName": "345",
+    "email": "345@4.com",
+    "phone": "4567",
+    "wineCount": 55,
+    "website": "",
+    "message": "",
+    "status": "pending",
+    "submittedAt": "2026-03-15T11:06:23.527Z"
+  }
+]

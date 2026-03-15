@@ -27,6 +27,69 @@
       "pageLabel": "Search",
       "sessionId": "zs90ijj7qimmrn1ydu",
       "timestamp": "2026-03-15T10:56:58.941Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/search",
+      "pageLabel": "Search",
+      "sessionId": "zs90ijj7qimmrn1ydu",
+      "timestamp": "2026-03-15T11:01:44.604Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/join",
+      "pageLabel": "Join",
+      "sessionId": "zs90ijj7qimmrn1ydu",
+      "timestamp": "2026-03-15T11:01:48.050Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/join",
+      "pageLabel": "Join",
+      "sessionId": "zs90ijj7qimmrn1ydu",
+      "timestamp": "2026-03-15T11:05:02.601Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "x72ryiszr9mmrpdz9t",
+      "timestamp": "2026-03-15T12:00:51.576Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "a5hm3p3s9ckmmrq5kll",
+      "timestamp": "2026-03-15T12:22:20.037Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "ylq4r0srbqemmrqb9xe",
+      "timestamp": "2026-03-15T12:26:44.398Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "8gsdixbx9jmmrryj1y",
+      "timestamp": "2026-03-15T13:12:49.116Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "dhv5lkkej0smmrsedly",
+      "timestamp": "2026-03-15T13:25:08.484Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "nhsuurod2zmmrszmdd",
+      "timestamp": "2026-03-15T13:41:39.573Z"
     }
   ]
 }

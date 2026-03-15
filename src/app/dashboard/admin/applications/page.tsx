@@ -20,15 +20,18 @@ const STATUS_CONFIG: Record<AppStatus, { label: string; bg: string; text: string
 
 export default function AdminApplicationsPage() {
   const [apps, setApps] = useState<MerchantApplication[]>([]);
+  const [fetchError, setFetchError] = useState("");
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<AppStatus | "all">("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const loadApps = useCallback(async () => {
     const res = await fetch("/api/admin/applications");
+    const data = await res.json();
     if (res.ok) {
-      const data = await res.json();
       setApps(data.applications);
+    } else {
+      setFetchError(`HTTP ${res.status}: ${data.error ?? JSON.stringify(data)}`);
     }
   }, []);
 
@@ -70,6 +73,12 @@ export default function AdminApplicationsPage() {
         <h1 className="text-2xl font-semibold text-text">入駐申請管理</h1>
         <p className="text-sm text-text-sub mt-1">審核通過申請的酒商，審核後可聯繫對方開通帳號</p>
       </div>
+
+      {fetchError && (
+        <div className="px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+          ⚠ 載入失敗：{fetchError}
+        </div>
+      )}
 
       {/* Status filter tabs */}
       <div className="flex gap-2 flex-wrap">
