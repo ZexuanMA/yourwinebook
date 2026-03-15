@@ -78,6 +78,10 @@ export default function AccountPage() {
   const handlePasswordSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwError("");
+    if (!pwForm.current) {
+      setPwError("請輸入當前密碼");
+      return;
+    }
     if (!pwForm.next || pwForm.next.length < 6) {
       setPwError("新密碼至少需要 6 個字符");
       return;
@@ -98,6 +102,8 @@ export default function AccountPage() {
       setPwSaved(true);
       setPwForm({ current: "", next: "", confirm: "" });
       setTimeout(() => setPwSaved(false), 3000);
+    } catch {
+      setPwError("網絡錯誤，請稍後重試");
     } finally {
       setPwSaving(false);
     }
