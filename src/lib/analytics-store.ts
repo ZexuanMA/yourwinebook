@@ -1,5 +1,62 @@
-import fs from "fs";
+/**
+ * SQLite-backed analytics store.
+ *
+ * Why SQLite + WAL:
+ *  - WAL mode: concurrent reads never block, writes serialised at OS level — safe at 400+ concurrency
+ *  - Raw events kept forever (no MAX_EVENTS cap)
+ *  - SQL aggregations are orders of magnitude faster than JS array scans
+ *  - No external service required; trivial to migrate to Postgres later
+ */
+
+import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
+
+// ── DB init ───────────────────────────────────────────────────────────────────
+
+const DB_PATH = path.join(process.cwd(), "data", "analytics.db");
+
+function openDb(): Database.Database {
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+  const db = new Database(DB_PATH);
+
+  // WAL mode: readers and writers don't block each other
+  db.pragma("journal_mode = WAL");
+  db.pragma("synchronous = NORMAL"); // safe with WAL, ~3× faster than FULL
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS events (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      type        TEXT NOT NULL,
+      path        TEXT,
+      page_label  TEXT,
+      wine_slug   TEXT,
+      wine_name   TEXT,
+      wine_emoji  TEXT,
+      merchant    TEXT,
+      session_id  TEXT NOT NULL,
+      timestamp   TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_type      ON events (type);
+    CREATE INDEX IF NOT EXISTS idx_ts        ON events (timestamp);
+    CREATE INDEX IF NOT EXISTS idx_wine_slug ON events (wine_slug);
+    CREATE INDEX IF NOT EXISTS idx_merchant  ON events (merchant);
+    CREATE INDEX IF NOT EXISTS idx_session   ON events (session_id);
+  `);
+
+  return db;
+}
+
+// Singleton — reuse the connection across hot-reloads in dev
+const globalForDb = global as unknown as { _analyticsDb?: Database.Database };
+function getDb(): Database.Database {
+  if (!globalForDb._analyticsDb || !globalForDb._analyticsDb.open) {
+    globalForDb._analyticsDb = openDb();
+  }
+  return globalForDb._analyticsDb;
+}
+
+// ── Types (public, unchanged so API routes need no edits) ─────────────────────
 
 export type EventType = "pageview" | "wine_view" | "price_click";
 
@@ -15,38 +72,17 @@ export interface TrackEvent {
   timestamp: string;
 }
 
-interface AnalyticsData {
-  events: TrackEvent[];
-}
-
-const DATA_FILE = path.join(process.cwd(), "data", "analytics.json");
-const MAX_EVENTS = 2000;
-
-function readStore(): AnalyticsData {
-  try {
-    return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8")) as AnalyticsData;
-  } catch {
-    return { events: [] };
-  }
-}
-
-function writeStore(data: AnalyticsData): void {
-  try {
-    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
-  } catch (err) {
-    console.error("[analytics-store] write error:", err);
-  }
-}
+// ── Write ─────────────────────────────────────────────────────────────────────
 
 export function trackEvent(event: TrackEvent): void {
-  const data = readStore();
-  data.events.push(event);
-  if (data.events.length > MAX_EVENTS) {
-    data.events = data.events.slice(-MAX_EVENTS);
-  }
-  writeStore(data);
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO events (type, path, page_label, wine_slug, wine_name, wine_emoji, merchant, session_id, timestamp)
+    VALUES (@type, @path, @pageLabel, @wineSlug, @wineName, @wineEmoji, @merchant, @sessionId, @timestamp)
+  `).run(event);
 }
+
+// ── Admin analytics summary ───────────────────────────────────────────────────
 
 export interface AnalyticsSummary {
   daily: Array<{ date: string; pageViews: number; visitors: number; sessions: number }>;
@@ -57,70 +93,78 @@ export interface AnalyticsSummary {
 }
 
 export function getAnalyticsSummary(): AnalyticsSummary {
-  const { events } = readStore();
+  const db = getDb();
 
-  // Daily (last 30 days)
+  // Daily — last 30 days (SQLite date functions work on ISO strings)
+  const dailyRows = db.prepare(`
+    SELECT
+      strftime('%m/%d', timestamp) AS date,
+      COUNT(CASE WHEN type = 'pageview' THEN 1 END) AS pageViews,
+      COUNT(DISTINCT CASE WHEN type = 'pageview' THEN session_id END) AS visitors
+    FROM events
+    WHERE timestamp >= datetime('now', '-30 days')
+    GROUP BY strftime('%Y-%m-%d', timestamp)
+    ORDER BY strftime('%Y-%m-%d', timestamp)
+  `).all() as Array<{ date: string; pageViews: number; visitors: number }>;
+
+  // Fill gaps so the chart always has 30 data points
+  const dailyMap = new Map<string, { pageViews: number; visitors: number }>();
   const now = new Date();
-  const dailyMap = new Map<string, { pageViews: number; sessionIds: Set<string> }>();
   for (let i = 29; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
     const key = `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
-    dailyMap.set(key, { pageViews: 0, sessionIds: new Set() });
+    dailyMap.set(key, { pageViews: 0, visitors: 0 });
   }
-  for (const e of events) {
-    if (e.type !== "pageview") continue;
-    const d = new Date(e.timestamp);
-    const key = `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
-    const entry = dailyMap.get(key);
-    if (entry) { entry.pageViews++; entry.sessionIds.add(e.sessionId); }
-  }
+  for (const r of dailyRows) dailyMap.set(r.date, { pageViews: r.pageViews, visitors: r.visitors });
   const daily = Array.from(dailyMap.entries()).map(([date, v]) => ({
-    date, pageViews: v.pageViews, visitors: v.sessionIds.size, sessions: v.sessionIds.size,
+    date, pageViews: v.pageViews, visitors: v.visitors, sessions: v.visitors,
   }));
 
-  // Pages
-  const pageMap = new Map<string, { label: string; views: number }>();
-  for (const e of events) {
-    if (e.type !== "pageview" || !e.path) continue;
-    const existing = pageMap.get(e.path);
-    if (existing) existing.views++;
-    else pageMap.set(e.path, { label: e.pageLabel ?? e.path, views: 1 });
-  }
-  const pages = Array.from(pageMap.entries())
-    .map(([p, v]) => ({ path: p, label: v.label, views: v.views }))
-    .sort((a, b) => b.views - a.views).slice(0, 10);
+  // Top pages
+  const pages = (db.prepare(`
+    SELECT path, page_label AS label, COUNT(*) AS views
+    FROM events
+    WHERE type = 'pageview' AND path IS NOT NULL
+    GROUP BY path
+    ORDER BY views DESC
+    LIMIT 10
+  `).all() as Array<{ path: string; label: string; views: number }>);
 
-  // Wines
-  const wineMap = new Map<string, { name: string; emoji: string; views: number; clickouts: number }>();
-  for (const e of events) {
-    if (!e.wineSlug) continue;
-    const existing = wineMap.get(e.wineSlug);
-    if (existing) {
-      if (e.type === "wine_view") existing.views++;
-      if (e.type === "price_click") existing.clickouts++;
-    } else {
-      wineMap.set(e.wineSlug, { name: e.wineName ?? e.wineSlug, emoji: e.wineEmoji ?? "🍷", views: e.type === "wine_view" ? 1 : 0, clickouts: e.type === "price_click" ? 1 : 0 });
-    }
-  }
-  const wines = Array.from(wineMap.entries())
-    .map(([slug, v]) => ({ slug, ...v }))
-    .sort((a, b) => b.views - a.views).slice(0, 10);
+  // Top wines
+  const wines = (db.prepare(`
+    SELECT
+      wine_slug AS slug,
+      MAX(wine_name) AS name,
+      MAX(wine_emoji) AS emoji,
+      COUNT(CASE WHEN type = 'wine_view'   THEN 1 END) AS views,
+      COUNT(CASE WHEN type = 'price_click' THEN 1 END) AS clickouts
+    FROM events
+    WHERE wine_slug IS NOT NULL
+    GROUP BY wine_slug
+    ORDER BY views DESC
+    LIMIT 10
+  `).all() as Array<{ slug: string; name: string; emoji: string; views: number; clickouts: number }>);
 
   // Recent page views (last 20)
-  const recentPageViews = events
-    .filter((e) => e.type === "pageview")
-    .slice(-20).reverse()
-    .map((e, i) => ({ id: String(i), path: e.path ?? "/", label: e.pageLabel ?? e.path ?? "/", sessionId: e.sessionId, timestamp: e.timestamp }));
+  const recentPageViews = (db.prepare(`
+    SELECT id, path, page_label AS label, session_id AS sessionId, timestamp
+    FROM events
+    WHERE type = 'pageview'
+    ORDER BY id DESC
+    LIMIT 20
+  `).all() as Array<{ id: number; path: string; label: string; sessionId: string; timestamp: string }>)
+    .map((r) => ({ ...r, id: String(r.id) }));
 
   // Totals
-  const allSessions = new Set(events.map((e) => e.sessionId));
-  const totals = {
-    pageViews: events.filter((e) => e.type === "pageview").length,
-    uniqueSessions: allSessions.size,
-    wineViews: events.filter((e) => e.type === "wine_view").length,
-    priceClicks: events.filter((e) => e.type === "price_click").length,
-  };
+  const totals = db.prepare(`
+    SELECT
+      COUNT(CASE WHEN type = 'pageview'    THEN 1 END) AS pageViews,
+      COUNT(DISTINCT session_id)                        AS uniqueSessions,
+      COUNT(CASE WHEN type = 'wine_view'   THEN 1 END) AS wineViews,
+      COUNT(CASE WHEN type = 'price_click' THEN 1 END) AS priceClicks
+    FROM events
+  `).get() as { pageViews: number; uniqueSessions: number; wineViews: number; priceClicks: number };
 
   return { daily, pages, wines, recentPageViews, totals };
 }
@@ -137,50 +181,57 @@ export function getMerchantAnalyticsSummary(
   merchantSlug: string,
   merchantWineSlugs: string[],
 ): MerchantAnalyticsSummary {
-  const { events } = readStore();
-  const slugSet = new Set(merchantWineSlugs);
+  const db = getDb();
 
-  const wineMap = new Map<string, { name: string; emoji: string; views: number; clickouts: number }>();
-  for (const slug of merchantWineSlugs) {
-    wineMap.set(slug, { name: slug, emoji: "🍷", views: 0, clickouts: 0 });
+  if (merchantWineSlugs.length === 0) {
+    return { wineStats: [], totals: { wineViews: 0, priceClicks: 0 }, recentClicks: [] };
   }
 
-  for (const e of events) {
-    if (e.type === "wine_view" && e.wineSlug && slugSet.has(e.wineSlug)) {
-      const entry = wineMap.get(e.wineSlug)!;
-      entry.views++;
-      if (e.wineName) entry.name = e.wineName;
-      if (e.wineEmoji) entry.emoji = e.wineEmoji;
-    }
-    if (e.type === "price_click" && e.merchant === merchantSlug && e.wineSlug) {
-      const entry = wineMap.get(e.wineSlug);
-      if (entry) {
-        entry.clickouts++;
-        if (e.wineName) entry.name = e.wineName;
-        if (e.wineEmoji) entry.emoji = e.wineEmoji;
-      }
-    }
-  }
+  const placeholders = merchantWineSlugs.map(() => "?").join(",");
 
-  const wineStats = Array.from(wineMap.entries())
-    .map(([slug, v]) => ({ slug, ...v }))
-    .sort((a, b) => b.views - a.views);
+  const wineRows = db.prepare(`
+    SELECT
+      wine_slug AS slug,
+      MAX(wine_name)  AS name,
+      MAX(wine_emoji) AS emoji,
+      COUNT(CASE WHEN type = 'wine_view'   THEN 1 END) AS views,
+      COUNT(CASE WHEN type = 'price_click' AND merchant = ? THEN 1 END) AS clickouts
+    FROM events
+    WHERE wine_slug IN (${placeholders})
+    GROUP BY wine_slug
+    ORDER BY views DESC
+  `).all(merchantSlug, ...merchantWineSlugs) as Array<{
+    slug: string; name: string | null; emoji: string | null; views: number; clickouts: number;
+  }>;
+
+  const wineStats = wineRows.map((r) => ({
+    slug: r.slug,
+    name: r.name ?? r.slug,
+    emoji: r.emoji ?? "🍷",
+    views: r.views,
+    clickouts: r.clickouts,
+  }));
 
   const totals = {
     wineViews: wineStats.reduce((s, w) => s + w.views, 0),
     priceClicks: wineStats.reduce((s, w) => s + w.clickouts, 0),
   };
 
-  const recentClicks = events
-    .filter((e) => e.type === "price_click" && e.merchant === merchantSlug)
-    .slice(-20).reverse()
-    .map((e) => ({
-      wineSlug: e.wineSlug ?? "",
-      wineName: e.wineName ?? "",
-      wineEmoji: e.wineEmoji ?? "🍷",
-      sessionId: e.sessionId,
-      timestamp: e.timestamp,
-    }));
+  const recentClicks = (db.prepare(`
+    SELECT wine_slug, wine_name, wine_emoji, session_id AS sessionId, timestamp
+    FROM events
+    WHERE type = 'price_click' AND merchant = ?
+    ORDER BY id DESC
+    LIMIT 20
+  `).all(merchantSlug) as Array<{
+    wine_slug: string; wine_name: string | null; wine_emoji: string | null; sessionId: string; timestamp: string;
+  }>).map((r) => ({
+    wineSlug: r.wine_slug,
+    wineName: r.wine_name ?? "",
+    wineEmoji: r.wine_emoji ?? "🍷",
+    sessionId: r.sessionId,
+    timestamp: r.timestamp,
+  }));
 
   return { wineStats, totals, recentClicks };
 }
@@ -194,32 +245,24 @@ export interface PerMerchantStats {
 }
 
 export function getPerMerchantStats(merchantWineMap: Record<string, string[]>): PerMerchantStats[] {
-  const { events } = readStore();
+  const db = getDb();
 
-  const stats: Record<string, { wineViews: number; priceClicks: number }> = {};
-  for (const slug of Object.keys(merchantWineMap)) {
-    stats[slug] = { wineViews: 0, priceClicks: 0 };
-  }
+  return Object.entries(merchantWineMap).map(([slug, wineSlugs]) => {
+    if (wineSlugs.length === 0) return { slug, wineViews: 0, priceClicks: 0 };
 
-  const wineToMerchants = new Map<string, string[]>();
-  for (const [merchantSlug, wineSlugs] of Object.entries(merchantWineMap)) {
-    for (const wineSlug of wineSlugs) {
-      const existing = wineToMerchants.get(wineSlug) ?? [];
-      existing.push(merchantSlug);
-      wineToMerchants.set(wineSlug, existing);
-    }
-  }
+    const placeholders = wineSlugs.map(() => "?").join(",");
+    const { wineViews } = db.prepare(`
+      SELECT COUNT(*) AS wineViews
+      FROM events
+      WHERE type = 'wine_view' AND wine_slug IN (${placeholders})
+    `).get(...wineSlugs) as { wineViews: number };
 
-  for (const e of events) {
-    if (e.type === "wine_view" && e.wineSlug) {
-      for (const m of wineToMerchants.get(e.wineSlug) ?? []) {
-        if (stats[m]) stats[m].wineViews++;
-      }
-    }
-    if (e.type === "price_click" && e.merchant && stats[e.merchant]) {
-      stats[e.merchant].priceClicks++;
-    }
-  }
+    const { priceClicks } = db.prepare(`
+      SELECT COUNT(*) AS priceClicks
+      FROM events
+      WHERE type = 'price_click' AND merchant = ?
+    `).get(slug) as { priceClicks: number };
 
-  return Object.entries(stats).map(([slug, v]) => ({ slug, ...v }));
+    return { slug, wineViews, priceClicks };
+  });
 }
