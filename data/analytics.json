@@ -219,6 +219,27 @@
       "pageLabel": "Home",
       "sessionId": "489t7exv6anmmrupzut",
       "timestamp": "2026-03-15T14:30:09.733Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:34:49.376Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "ss5wwqvtucmmruwebo",
+      "timestamp": "2026-03-15T14:35:08.451Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "lhf9l9hpy6mmrva190",
+      "timestamp": "2026-03-15T14:45:44.602Z"
     }
   ]
 }

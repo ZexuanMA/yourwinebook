@@ -3,6 +3,7 @@ import {
   verifyMerchantCredentials,
   getAllMerchantsFromStore,
 } from "./merchant-store";
+import { getAdminPublic, verifyAdminCredentials } from "./admin-store";
 
 export type UserRole = "admin" | "merchant";
 export type AccountStatus = "active" | "inactive" | "pending";
@@ -19,20 +20,9 @@ export interface MockAccount {
   description?: string;
 }
 
-const ADMIN: MockAccount & { password: string } = {
-  slug: "admin",
-  name: "平台管理員",
-  email: "admin@yourwinebook.com",
-  password: "admin123",
-  role: "admin",
-  status: "active",
-  joinDate: "2024-01-01",
-};
-
 export function verifyCredentials(email: string, password: string): MockAccount | null {
-  if (email === ADMIN.email && password === ADMIN.password) {
-    const { password: _, ...rest } = ADMIN; void _;
-    return rest;
+  if (verifyAdminCredentials(email, password)) {
+    return getAdminPublic();
   }
   const m = verifyMerchantCredentials(email, password);
   if (m) return { slug: m.slug, name: m.name, email: m.email, role: "merchant", status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate, description: m.description };
@@ -41,8 +31,7 @@ export function verifyCredentials(email: string, password: string): MockAccount 
 
 export function getMockAccount(slug: string): MockAccount | null {
   if (slug === "admin") {
-    const { password: _, ...rest } = ADMIN; void _;
-    return rest;
+    return getAdminPublic();
   }
   const m = getMerchantBySlug(slug);
   if (m) return { slug: m.slug, name: m.name, email: m.email, role: "merchant", status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate, description: m.description };
@@ -57,11 +46,6 @@ export function getAllMerchants(): MockAccount[] {
   }));
 }
 
-// Still exported so login page compiles; merchant entries removed since accounts are real now
-export const DEMO_ACCOUNTS = [
-  { email: ADMIN.email, password: ADMIN.password, name: ADMIN.name, role: "admin" },
-];
-
 // Keep for compatibility
 export interface MerchantApplication {
   id: string; companyName: string; contactName: string; email: string;
@@ -69,3 +53,4 @@ export interface MerchantApplication {
   status: "pending" | "contacted" | "approved" | "rejected"; submittedAt: string;
 }
 export const mockApplications: MerchantApplication[] = [];
+export const DEMO_ACCOUNTS: { email: string; password: string; name: string; role: string }[] = [];

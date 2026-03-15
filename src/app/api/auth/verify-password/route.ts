@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifyMerchantPassword, updateMerchantPassword } from "@/lib/merchant-store";
+import { verifyAdminPassword, updateAdminPassword } from "@/lib/admin-store";
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
@@ -9,11 +10,15 @@ export async function POST(request: NextRequest) {
 
   const { currentPassword, newPassword } = await request.json();
 
+  if (!newPassword || newPassword.length < 6) {
+    return NextResponse.json({ error: "新密碼至少需要 6 個字符" }, { status: 400 });
+  }
+
   if (slug === "admin") {
-    // Admin password is hardcoded for now
-    if (currentPassword !== "admin123") {
+    if (!verifyAdminPassword(currentPassword)) {
       return NextResponse.json({ error: "當前密碼不正確" }, { status: 400 });
     }
+    updateAdminPassword(newPassword);
     return NextResponse.json({ ok: true });
   }
 
@@ -21,9 +26,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "當前密碼不正確" }, { status: 400 });
   }
 
-  if (newPassword) {
-    updateMerchantPassword(slug, newPassword);
-  }
-
+  updateMerchantPassword(slug, newPassword);
   return NextResponse.json({ ok: true });
 }
