@@ -1,14 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { getAllMerchants } from "@/lib/mock-auth";
-import { merchants } from "@/lib/mock-data";
+import { useState, useEffect, useCallback } from "react";
 import {
   Search, CheckCircle, XCircle, Clock,
-  ExternalLink, ChevronDown, ChevronUp,
+  ExternalLink, ChevronDown, ChevronUp, Plus, X,
 } from "lucide-react";
 
 type AccountStatus = "active" | "inactive" | "pending";
+
+interface Merchant {
+  slug: string;
+  name: string;
+  email: string;
+  role: "merchant";
+  status: AccountStatus;
+  phone?: string;
+  website?: string;
+  joinDate: string;
+  description?: string;
+  winesListed?: number;
+  bestPrices?: number;
+  rating?: number;
+}
 
 const STATUS_CONFIG: Record<AccountStatus, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
   active:   { label: "正常",   bg: "bg-green-50",  text: "text-green-700",  icon: <CheckCircle className="w-3.5 h-3.5" /> },
@@ -17,44 +30,152 @@ const STATUS_CONFIG: Record<AccountStatus, { label: string; bg: string; text: st
 };
 
 export default function AdminAccountsPage() {
-  const allMerchants = getAllMerchants();
+  const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<AccountStatus | "all">("all");
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
-  const [statuses, setStatuses] = useState<Record<string, AccountStatus>>(
-    Object.fromEntries(allMerchants.map((m) => [m.slug, m.status]))
-  );
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: "", email: "", password: "", phone: "", website: "", description: "" });
+  const [createError, setCreateError] = useState("");
+  const [creating, setCreating] = useState(false);
 
-  const filtered = allMerchants.filter((m) => {
+  const loadMerchants = useCallback(async () => {
+    const res = await fetch("/api/admin/accounts");
+    if (res.ok) {
+      const data = await res.json();
+      setMerchants(data.merchants);
+    }
+  }, []);
+
+  useEffect(() => { loadMerchants(); }, [loadMerchants]);
+
+  const filtered = merchants.filter((m) => {
     const matchSearch =
       !search ||
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.email.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "all" || statuses[m.slug] === filterStatus;
+    const matchStatus = filterStatus === "all" || m.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
-  const toggleStatus = (slug: string) => {
-    setStatuses((prev) => ({
-      ...prev,
-      [slug]: prev[slug] === "active" ? "inactive" : "active",
-    }));
+  const toggleStatus = async (slug: string, current: AccountStatus) => {
+    const next: AccountStatus = current === "active" ? "inactive" : "active";
+    const res = await fetch(`/api/admin/accounts/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: next }),
+    });
+    if (res.ok) {
+      setMerchants((prev) => prev.map((m) => m.slug === slug ? { ...m, status: next } : m));
+    }
+  };
+
+  const approveAccount = async (slug: string) => {
+    const res = await fetch(`/api/admin/accounts/${slug}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "active" }),
+    });
+    if (res.ok) {
+      setMerchants((prev) => prev.map((m) => m.slug === slug ? { ...m, status: "active" } : m));
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreateError("");
+    setCreating(true);
+    try {
+      const res = await fetch("/api/admin/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(createForm),
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        setCreateError(d.error ?? "建立失敗");
+        return;
+      }
+      setShowCreate(false);
+      setCreateForm({ name: "", email: "", password: "", phone: "", website: "", description: "" });
+      loadMerchants();
+    } finally {
+      setCreating(false);
+    }
   };
 
   const counts = {
-    all: allMerchants.length,
-    active: allMerchants.filter((m) => statuses[m.slug] === "active").length,
-    inactive: allMerchants.filter((m) => statuses[m.slug] === "inactive").length,
-    pending: allMerchants.filter((m) => statuses[m.slug] === "pending").length,
+    all: merchants.length,
+    active: merchants.filter((m) => m.status === "active").length,
+    inactive: merchants.filter((m) => m.status === "inactive").length,
+    pending: merchants.filter((m) => m.status === "pending").length,
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-text">酒商帳號管理</h1>
-        <p className="text-sm text-text-sub mt-1">查看並管理所有已入駐的酒商帳號</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-text">酒商帳號管理</h1>
+          <p className="text-sm text-text-sub mt-1">查看並管理所有已入駐的酒商帳號</p>
+        </div>
+        <button
+          onClick={() => setShowCreate(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors cursor-pointer shadow-sm"
+        >
+          <Plus className="w-4 h-4" /> 新增酒商
+        </button>
       </div>
+
+      {/* Create modal */}
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-semibold text-text">新增酒商帳號</h2>
+              <button onClick={() => setShowCreate(false)} className="text-text-sub hover:text-text cursor-pointer"><X className="w-5 h-5" /></button>
+            </div>
+            <form onSubmit={handleCreate} className="space-y-3">
+              {[
+                { label: "酒商名稱 *", key: "name", type: "text", placeholder: "Watson's Wine" },
+                { label: "Email *", key: "email", type: "email", placeholder: "contact@merchant.com" },
+                { label: "密碼 *", key: "password", type: "password", placeholder: "至少8位" },
+                { label: "電話", key: "phone", type: "text", placeholder: "+852 xxxx xxxx" },
+                { label: "網站", key: "website", type: "url", placeholder: "https://..." },
+              ].map(({ label, key, type, placeholder }) => (
+                <div key={key}>
+                  <label className="block text-xs font-medium text-text-sub mb-1">{label}</label>
+                  <input
+                    type={type}
+                    value={createForm[key as keyof typeof createForm]}
+                    onChange={(e) => setCreateForm((p) => ({ ...p, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    required={label.endsWith("*")}
+                    className="w-full px-3 py-2 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold transition-colors"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-xs font-medium text-text-sub mb-1">商家簡介</label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, description: e.target.value }))}
+                  placeholder="簡短介紹..."
+                  rows={2}
+                  className="w-full px-3 py-2 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold transition-colors resize-none"
+                />
+              </div>
+              {createError && <p className="text-xs text-red-600">{createError}</p>}
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowCreate(false)} className="flex-1 py-2 border border-wine-border rounded-xl text-sm text-text-sub hover:bg-bg transition-colors cursor-pointer">取消</button>
+                <button type="submit" disabled={creating} className="flex-1 py-2 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors disabled:opacity-50 cursor-pointer">
+                  {creating ? "建立中…" : "建立帳號"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-4">
@@ -96,8 +217,6 @@ export default function AdminAccountsPage() {
               <tr className="bg-bg border-b border-wine-border">
                 <th className="text-left px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">酒商</th>
                 <th className="text-left px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">Email</th>
-                <th className="text-right px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">上架酒款</th>
-                <th className="text-right px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">評分</th>
                 <th className="text-center px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">狀態</th>
                 <th className="text-center px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">入駐日期</th>
                 <th className="text-right px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">操作</th>
@@ -105,8 +224,7 @@ export default function AdminAccountsPage() {
             </thead>
             <tbody className="divide-y divide-[#F5F0EA]">
               {filtered.map((m) => {
-                const info = merchants.find((x) => x.slug === m.slug);
-                const status = statuses[m.slug] as AccountStatus;
+                const status = m.status;
                 const cfg = STATUS_CONFIG[status];
                 const isExpanded = expandedSlug === m.slug;
                 return (
@@ -128,11 +246,6 @@ export default function AdminAccountsPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4 text-text-sub">{m.email}</td>
-                      <td className="px-4 py-4 text-right font-semibold text-text">{info?.winesListed ?? "—"}</td>
-                      <td className="px-4 py-4 text-right">
-                        <span className="font-semibold text-text">{info?.rating?.toFixed(1) ?? "—"}</span>
-                        <span className="text-text-sub/50 text-xs"> ★</span>
-                      </td>
                       <td className="px-4 py-4 text-center">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
                           {cfg.icon} {cfg.label}
@@ -151,7 +264,7 @@ export default function AdminAccountsPage() {
                           </button>
                           {status !== "pending" && (
                             <button
-                              onClick={() => toggleStatus(m.slug)}
+                              onClick={() => toggleStatus(m.slug, status)}
                               className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                                 status === "active"
                                   ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"
@@ -163,7 +276,7 @@ export default function AdminAccountsPage() {
                           )}
                           {status === "pending" && (
                             <button
-                              onClick={() => setStatuses((p) => ({ ...p, [m.slug]: "active" }))}
+                              onClick={() => approveAccount(m.slug)}
                               className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-100 rounded-lg text-xs font-medium cursor-pointer hover:bg-green-100 transition-all"
                             >
                               審核通過
@@ -176,7 +289,7 @@ export default function AdminAccountsPage() {
                     {/* Expanded row */}
                     {isExpanded && (
                       <tr key={`${m.slug}-detail`} className="bg-bg">
-                        <td colSpan={7} className="px-6 py-5">
+                        <td colSpan={5} className="px-6 py-5">
                           <div className="grid grid-cols-3 gap-6">
                             <div>
                               <p className="text-xs font-semibold text-text-sub uppercase tracking-wider mb-2">聯繫資料</p>
@@ -184,9 +297,9 @@ export default function AdminAccountsPage() {
                               <p className="text-sm text-text-sub">{m.email}</p>
                             </div>
                             <div>
-                              <p className="text-xs font-semibold text-text-sub uppercase tracking-wider mb-2">平台數據</p>
-                              <p className="text-sm text-text">{info?.winesListed ?? 0} 款上架 · {info?.bestPrices ?? 0} 款最低價</p>
-                              <p className="text-sm text-text-sub">評分 {info?.rating?.toFixed(1) ?? "—"} ★</p>
+                              <p className="text-xs font-semibold text-text-sub uppercase tracking-wider mb-2">入駐資料</p>
+                              <p className="text-sm text-text">Slug: {m.slug}</p>
+                              <p className="text-sm text-text-sub">加入於 {new Date(m.joinDate).toLocaleDateString("zh-HK")}</p>
                             </div>
                             <div>
                               <p className="text-xs font-semibold text-text-sub uppercase tracking-wider mb-2">商家簡介</p>
@@ -203,7 +316,6 @@ export default function AdminAccountsPage() {
           </table>
         )}
       </div>
-
     </div>
   );
 }

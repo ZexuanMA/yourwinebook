@@ -1,7 +1,6 @@
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
-import { getMockAccount } from "./lib/mock-auth";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -14,10 +13,9 @@ export default function middleware(request: NextRequest) {
     if (!slug) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
-    // Protect /dashboard/admin — admin only
+    // Protect /dashboard/admin — admin slug is always "admin"
     if (pathname.startsWith("/dashboard/admin")) {
-      const account = getMockAccount(slug);
-      if (!account || account.role !== "admin") {
+      if (slug !== "admin") {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     }

@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { DEMO_ACCOUNTS } from "@/lib/mock-auth";
+
+const DEMO_ACCOUNTS = [
+  { email: "admin@yourwinebook.com", password: "admin123", name: "平台管理員", role: "admin" },
+];
 
 export default function LoginPage() {
   const router = useRouter();

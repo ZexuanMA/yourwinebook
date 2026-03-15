@@ -1,10 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { mockApplications, MerchantApplication } from "@/lib/mock-auth";
 import { CheckCircle, XCircle, Clock, MessageSquare, Phone, Globe, Search } from "lucide-react";
 
+interface MerchantApplication {
+  id: string; companyName: string; contactName: string; email: string;
+  phone: string; wineCount: number; website?: string; message?: string;
+  status: "pending" | "contacted" | "approved" | "rejected"; submittedAt: string;
+}
+
 type AppStatus = MerchantApplication["status"];
+
+const mockApplications: MerchantApplication[] = [];
 
 const STATUS_CONFIG: Record<AppStatus, { label: string; bg: string; text: string; border: string }> = {
   pending:   { label: "待處理", bg: "bg-amber-50",  text: "text-amber-700",  border: "border-amber-200" },
