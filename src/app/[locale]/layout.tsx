@@ -7,6 +7,7 @@ import { routing } from "@/i18n/routing";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import "../globals.css";
+import { PageTracker } from "@/components/analytics/PageTracker";
 
 const dmSans = DM_Sans({
   subsets: ["latin"],
@@ -46,6 +47,7 @@ export default async function LocaleLayout({
         className={`${dmSans.variable} ${notoSansTC.variable} font-zh bg-bg text-text leading-relaxed antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
+          <PageTracker />
           <Navbar />
           <main>{children}</main>
           <Footer />

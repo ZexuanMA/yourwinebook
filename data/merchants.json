@@ -1,0 +1,68 @@
+[
+  {
+    "slug": "watsons-wine",
+    "name": "Watson's Wine",
+    "email": "watsons@demo.com",
+    "password": "demo123",
+    "phone": "+852 2123 4567",
+    "website": "https://www.watsonswine.com",
+    "description": "深耕香港葡萄酒市場超過二十年，全港最齊全的葡萄酒庫存之一。",
+    "status": "active",
+    "joinDate": "2024-03-12"
+  },
+  {
+    "slug": "wine-and-co",
+    "name": "Wine & Co",
+    "email": "wineandco@demo.com",
+    "password": "demo123",
+    "phone": "+852 2345 6789",
+    "website": "https://www.wineandco.hk",
+    "description": "專注歐洲精品酒莊的進口商，主打法國、意大利小農酒。",
+    "status": "active",
+    "joinDate": "2024-04-01"
+  },
+  {
+    "slug": "cellardoor",
+    "name": "CellarDoor",
+    "email": "cellardoor@demo.com",
+    "password": "demo123",
+    "phone": "+852 3456 7890",
+    "website": "https://www.cellardoor.hk",
+    "description": "新世代線上酒舖，以年輕化選酒和親民定價著稱。",
+    "status": "active",
+    "joinDate": "2024-05-15"
+  },
+  {
+    "slug": "vinhk",
+    "name": "VinHK",
+    "email": "vinhk@demo.com",
+    "password": "demo123",
+    "phone": "+852 4567 8901",
+    "website": "https://www.vinhk.com",
+    "description": "主打自然酒和有機酒的專門店。",
+    "status": "active",
+    "joinDate": "2024-06-20"
+  },
+  {
+    "slug": "grape-hk",
+    "name": "Grape HK",
+    "email": "grape@demo.com",
+    "password": "demo123",
+    "phone": "+852 5678 9012",
+    "website": "https://www.grapehk.com",
+    "description": "以批量採購壓低成本，提供極具競爭力的價格。",
+    "status": "inactive",
+    "joinDate": "2024-07-08"
+  },
+  {
+    "slug": "bottleshop",
+    "name": "BottleShop",
+    "email": "bottle@demo.com",
+    "password": "demo123",
+    "phone": "+852 6789 0123",
+    "website": "https://www.bottleshop.hk",
+    "description": "精選世界各地得獎酒款，每月推出主題酒單。",
+    "status": "pending",
+    "joinDate": "2024-09-30"
+  }
+]

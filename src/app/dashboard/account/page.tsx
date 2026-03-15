@@ -78,24 +78,29 @@ export default function AccountPage() {
   const handlePasswordSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwError("");
-    if (pwForm.current !== "demo123" && pwForm.current !== "admin123") {
-      setPwError("當前密碼不正確");
-      return;
-    }
-    if (pwForm.next.length < 6) {
+    if (!pwForm.next || pwForm.next.length < 6) {
       setPwError("新密碼至少需要 6 個字符");
       return;
     }
     if (pwForm.next !== pwForm.confirm) {
-      setPwError("兩次輸入的新密碼不一致");
+      setPwError("兩次密碼不一致");
       return;
     }
     setPwSaving(true);
-    await new Promise((r) => setTimeout(r, 700));
-    setPwSaving(false);
-    setPwSaved(true);
-    setPwForm({ current: "", next: "", confirm: "" });
-    setTimeout(() => setPwSaved(false), 3000);
+    try {
+      const res = await fetch("/api/auth/verify-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.next }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setPwError(data.error ?? "密碼修改失敗"); return; }
+      setPwSaved(true);
+      setPwForm({ current: "", next: "", confirm: "" });
+      setTimeout(() => setPwSaved(false), 3000);
+    } finally {
+      setPwSaving(false);
+    }
   };
 
   if (!account) {
@@ -260,9 +265,6 @@ export default function AccountPage() {
         </Section>
       )}
 
-      <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-        <span className="font-semibold">Demo 模式：</span>所有修改僅在當前頁面生效，不會真正保存。
-      </div>
     </div>
   );
 }

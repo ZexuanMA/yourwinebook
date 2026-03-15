@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { WineCard } from "@/components/wine/WineCard";
 import { ChevronDown } from "lucide-react";
@@ -18,6 +18,17 @@ export default function WineDetailClient({ wine, prices, similarWines }: Props) 
   const locale = useLocale();
   const isZh = locale === "zh-HK";
   const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const sid = sessionStorage.getItem("wb_sid") ?? (Math.random().toString(36).slice(2) + Date.now().toString(36));
+    sessionStorage.setItem("wb_sid", sid);
+    fetch("/api/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "wine_view", wineSlug: wine.slug, wineName: wine.name, wineEmoji: wine.emoji, sessionId: sid }),
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wine.slug]);
 
   const fullRegion = getFullRegion(wine, locale);
   const tags = isZh ? wine.tags_zh : wine.tags_en;
@@ -82,7 +93,15 @@ export default function WineDetailClient({ wine, prices, similarWines }: Props) 
                             )}
                           </td>
                           <td className="py-3.5 text-right w-[100px]">
-                            <button className="px-5 py-2 bg-wine text-white border-none rounded-lg text-[13px] font-medium cursor-pointer hover:bg-wine-dark transition-colors">
+                            <button
+                              className="px-5 py-2 bg-wine text-white border-none rounded-lg text-[13px] font-medium cursor-pointer hover:bg-wine-dark transition-colors"
+                              onClick={() => {
+                                const sid = sessionStorage.getItem("wb_sid") ?? "";
+                                fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ type: "price_click", wineSlug: wine.slug, wineName: wine.name, wineEmoji: wine.emoji, merchant: p.merchantSlug, sessionId: sid }),
+                                }).catch(() => {});
+                              }}
+                            >
                               {t("buyBtn")} →
                             </button>
                           </td>

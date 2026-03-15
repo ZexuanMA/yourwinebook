@@ -214,9 +214,6 @@ export default function AdminApplicationsPage() {
         )}
       </div>
 
-      <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-        <span className="font-semibold">Demo 模式：</span>審核操作僅影響當前頁面，重整後恢復初始狀態。
-      </div>
     </div>
   );
 }

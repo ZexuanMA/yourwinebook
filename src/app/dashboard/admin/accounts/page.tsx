@@ -204,9 +204,6 @@ export default function AdminAccountsPage() {
         )}
       </div>
 
-      <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-        <span className="font-semibold">Demo 模式：</span>停用/啟用操作僅影響當前頁面狀態，重整後恢復。接入 Supabase 後將持久化。
-      </div>
     </div>
   );
 }

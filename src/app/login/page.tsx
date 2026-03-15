@@ -138,11 +138,11 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Demo accounts */}
+          {/* Quick login */}
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-3">
               <div className="h-px flex-1 bg-wine-border" />
-              <span className="text-xs text-text-sub">Demo 帳號</span>
+              <span className="text-xs text-text-sub">快速登入</span>
               <div className="h-px flex-1 bg-wine-border" />
             </div>
             {/* Admin account */}
@@ -159,20 +159,6 @@ export default function LoginPage() {
                 <p className="text-[11px] text-text-sub/60 mt-0.5 truncate">{a.email} · admin123</p>
               </button>
             ))}
-            {/* Merchant accounts */}
-            <div className="grid grid-cols-2 gap-2">
-              {DEMO_ACCOUNTS.filter((a) => a.role === "merchant").map((a) => (
-                <button
-                  key={a.email}
-                  onClick={() => { setEmail(a.email); setPassword(a.password); setError(""); }}
-                  className="text-left px-3 py-2.5 bg-white border border-wine-border rounded-xl hover:border-gold hover:shadow-sm transition-all cursor-pointer group"
-                >
-                  <p className="text-xs font-semibold text-text group-hover:text-wine transition-colors truncate">{a.name}</p>
-                  <p className="text-[11px] text-text-sub/60 mt-0.5 truncate">{a.email}</p>
-                </button>
-              ))}
-            </div>
-            <p className="text-center text-xs text-text-sub/50 mt-3">酒商密碼：<span className="font-mono font-semibold text-text-sub">demo123</span></p>
           </div>
         </div>
       </div>

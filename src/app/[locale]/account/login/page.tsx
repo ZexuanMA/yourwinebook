@@ -13,13 +13,6 @@ export default function UserLoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const DEMO = [
-    { name: "陳大文", email: "david@demo.com" },
-    { name: "李美玲", email: "mary@demo.com" },
-    { name: "James Wong", email: "james@demo.com" },
-    { name: "Sophie Lam", email: "sophie@demo.com" },
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); setLoading(true);
@@ -72,23 +65,6 @@ export default function UserLoginPage() {
             </button>
           </form>
 
-          <div className="flex items-center gap-3 my-5">
-            <div className="h-px flex-1 bg-wine-border" />
-            <span className="text-xs text-text-sub">或使用 Demo 帳號</span>
-            <div className="h-px flex-1 bg-wine-border" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            {DEMO.map((d) => (
-              <button key={d.email}
-                onClick={() => { setEmail(d.email); setPassword("user123"); setError(""); }}
-                className="text-left px-3 py-2.5 bg-bg border border-wine-border rounded-xl hover:border-gold transition-all cursor-pointer group">
-                <p className="text-xs font-semibold text-text group-hover:text-wine transition-colors truncate">{d.name}</p>
-                <p className="text-[11px] text-text-sub/60 truncate mt-0.5">{d.email}</p>
-              </button>
-            ))}
-          </div>
-          <p className="text-center text-xs text-text-sub/50 mt-3">Demo 密碼均為 <span className="font-mono font-semibold">user123</span></p>
         </div>
 
         <p className="text-center text-sm text-text-sub mt-5">
