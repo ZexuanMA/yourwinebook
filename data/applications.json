@@ -8,7 +8,7 @@
     "wineCount": 11,
     "website": "",
     "message": "",
-    "status": "pending",
+    "status": "approved",
     "submittedAt": "2026-03-15T11:02:14.842Z"
   },
   {
@@ -20,7 +20,19 @@
     "wineCount": 55,
     "website": "",
     "message": "",
-    "status": "pending",
+    "status": "rejected",
     "submittedAt": "2026-03-15T11:06:23.527Z"
+  },
+  {
+    "id": "mmrtzx9id0h8",
+    "companyName": "CHENNA",
+    "contactName": "CHENNA",
+    "email": "456789@163.com",
+    "phone": "3546789",
+    "wineCount": 75,
+    "website": "",
+    "message": "",
+    "status": "approved",
+    "submittedAt": "2026-03-15T14:09:53.190Z"
   }
 ]

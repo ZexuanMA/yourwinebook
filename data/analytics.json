@@ -90,6 +90,135 @@
       "pageLabel": "Home",
       "sessionId": "nhsuurod2zmmrszmdd",
       "timestamp": "2026-03-15T13:41:39.573Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/join",
+      "pageLabel": "Join",
+      "sessionId": "zs90ijj7qimmrn1ydu",
+      "timestamp": "2026-03-15T14:09:26.617Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:12:55.104Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/account/login",
+      "pageLabel": "用戶登入",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:13:21.126Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/account/register",
+      "pageLabel": "用戶注冊",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:13:23.614Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/account",
+      "pageLabel": "用戶中心",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:14:33.906Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK/wines/cloudy-bay-sauvignon-blanc-2023",
+      "pageLabel": "酒款詳情",
+      "sessionId": "qtzj31lpfsmmrue3t1",
+      "timestamp": "2026-03-15T14:20:55.006Z"
+    },
+    {
+      "type": "wine_view",
+      "wineSlug": "cloudy-bay-sauvignon-blanc-2023",
+      "wineName": "Cloudy Bay Sauvignon Blanc 2023",
+      "wineEmoji": "🍾",
+      "sessionId": "qtzj31lpfsmmrue3t1",
+      "timestamp": "2026-03-15T14:20:55.037Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK/wines/masi-costasera-amarone-2018",
+      "pageLabel": "酒款詳情",
+      "sessionId": "skd14aus3chmmruemdg",
+      "timestamp": "2026-03-15T14:21:19.083Z"
+    },
+    {
+      "type": "wine_view",
+      "wineSlug": "masi-costasera-amarone-2018",
+      "wineName": "Masi Costasera Amarone 2018",
+      "wineEmoji": "🍾",
+      "sessionId": "skd14aus3chmmruemdg",
+      "timestamp": "2026-03-15T14:21:19.088Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/search",
+      "pageLabel": "Search",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:21:40.081Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants",
+      "pageLabel": "Merchants",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:21:44.139Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants/wine-and-co",
+      "pageLabel": "酒商詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:21:50.558Z"
+    },
+    {
+      "type": "wine_view",
+      "wineSlug": "masi-costasera-amarone-2018",
+      "wineName": "Masi Costasera Amarone 2018",
+      "wineEmoji": "🍾",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:21:53.531Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/wines/masi-costasera-amarone-2018",
+      "pageLabel": "酒款詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:21:53.539Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T14:24:03.802Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "zcdajd7vsfrmmrunigm",
+      "timestamp": "2026-03-15T14:28:13.878Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "7lwd2zv4fc5mmrupoln",
+      "timestamp": "2026-03-15T14:29:55.145Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "489t7exv6anmmrupzut",
+      "timestamp": "2026-03-15T14:30:09.733Z"
     }
   ]
 }

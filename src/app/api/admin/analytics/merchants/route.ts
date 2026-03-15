@@ -1,0 +1,26 @@
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { getMockAccount } from "@/lib/mock-auth";
+import { getPerMerchantStats } from "@/lib/analytics-store";
+import { winePrices } from "@/lib/mock-data";
+
+async function requireAdmin() {
+  const cookieStore = await cookies();
+  const slug = cookieStore.get("wb_session")?.value;
+  if (!slug) return false;
+  return getMockAccount(slug)?.role === "admin";
+}
+
+export async function GET() {
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+  const merchantWineMap: Record<string, string[]> = {};
+  for (const [wineSlug, prices] of Object.entries(winePrices)) {
+    for (const p of prices) {
+      if (!merchantWineMap[p.merchantSlug]) merchantWineMap[p.merchantSlug] = [];
+      merchantWineMap[p.merchantSlug].push(wineSlug);
+    }
+  }
+
+  return NextResponse.json(getPerMerchantStats(merchantWineMap));
+}

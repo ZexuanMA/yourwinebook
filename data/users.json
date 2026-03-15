@@ -80,5 +80,16 @@
     "bookmarks": [
       "cloudy-bay-sauvignon-blanc-2023"
     ]
+  },
+  {
+    "id": "u1773584072688",
+    "name": "Theo",
+    "email": "theodorearmand11@gmail.com",
+    "password": "123456",
+    "status": "active",
+    "preferredLang": "zh-HK",
+    "joinDate": "2026-03-15",
+    "lastSeen": "2026-03-15",
+    "bookmarks": []
   }
 ]

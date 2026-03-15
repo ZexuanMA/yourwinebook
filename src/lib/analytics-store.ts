@@ -124,3 +124,102 @@ export function getAnalyticsSummary(): AnalyticsSummary {
 
   return { daily, pages, wines, recentPageViews, totals };
 }
+
+// ── Merchant analytics ────────────────────────────────────────────────────────
+
+export interface MerchantAnalyticsSummary {
+  wineStats: Array<{ slug: string; name: string; emoji: string; views: number; clickouts: number }>;
+  totals: { wineViews: number; priceClicks: number };
+  recentClicks: Array<{ wineSlug: string; wineName: string; wineEmoji: string; sessionId: string; timestamp: string }>;
+}
+
+export function getMerchantAnalyticsSummary(
+  merchantSlug: string,
+  merchantWineSlugs: string[],
+): MerchantAnalyticsSummary {
+  const { events } = readStore();
+  const slugSet = new Set(merchantWineSlugs);
+
+  const wineMap = new Map<string, { name: string; emoji: string; views: number; clickouts: number }>();
+  for (const slug of merchantWineSlugs) {
+    wineMap.set(slug, { name: slug, emoji: "🍷", views: 0, clickouts: 0 });
+  }
+
+  for (const e of events) {
+    if (e.type === "wine_view" && e.wineSlug && slugSet.has(e.wineSlug)) {
+      const entry = wineMap.get(e.wineSlug)!;
+      entry.views++;
+      if (e.wineName) entry.name = e.wineName;
+      if (e.wineEmoji) entry.emoji = e.wineEmoji;
+    }
+    if (e.type === "price_click" && e.merchant === merchantSlug && e.wineSlug) {
+      const entry = wineMap.get(e.wineSlug);
+      if (entry) {
+        entry.clickouts++;
+        if (e.wineName) entry.name = e.wineName;
+        if (e.wineEmoji) entry.emoji = e.wineEmoji;
+      }
+    }
+  }
+
+  const wineStats = Array.from(wineMap.entries())
+    .map(([slug, v]) => ({ slug, ...v }))
+    .sort((a, b) => b.views - a.views);
+
+  const totals = {
+    wineViews: wineStats.reduce((s, w) => s + w.views, 0),
+    priceClicks: wineStats.reduce((s, w) => s + w.clickouts, 0),
+  };
+
+  const recentClicks = events
+    .filter((e) => e.type === "price_click" && e.merchant === merchantSlug)
+    .slice(-20).reverse()
+    .map((e) => ({
+      wineSlug: e.wineSlug ?? "",
+      wineName: e.wineName ?? "",
+      wineEmoji: e.wineEmoji ?? "🍷",
+      sessionId: e.sessionId,
+      timestamp: e.timestamp,
+    }));
+
+  return { wineStats, totals, recentClicks };
+}
+
+// ── Per-merchant stats for admin ──────────────────────────────────────────────
+
+export interface PerMerchantStats {
+  slug: string;
+  wineViews: number;
+  priceClicks: number;
+}
+
+export function getPerMerchantStats(merchantWineMap: Record<string, string[]>): PerMerchantStats[] {
+  const { events } = readStore();
+
+  const stats: Record<string, { wineViews: number; priceClicks: number }> = {};
+  for (const slug of Object.keys(merchantWineMap)) {
+    stats[slug] = { wineViews: 0, priceClicks: 0 };
+  }
+
+  const wineToMerchants = new Map<string, string[]>();
+  for (const [merchantSlug, wineSlugs] of Object.entries(merchantWineMap)) {
+    for (const wineSlug of wineSlugs) {
+      const existing = wineToMerchants.get(wineSlug) ?? [];
+      existing.push(merchantSlug);
+      wineToMerchants.set(wineSlug, existing);
+    }
+  }
+
+  for (const e of events) {
+    if (e.type === "wine_view" && e.wineSlug) {
+      for (const m of wineToMerchants.get(e.wineSlug) ?? []) {
+        if (stats[m]) stats[m].wineViews++;
+      }
+    }
+    if (e.type === "price_click" && e.merchant && stats[e.merchant]) {
+      stats[e.merchant].priceClicks++;
+    }
+  }
+
+  return Object.entries(stats).map(([slug, v]) => ({ slug, ...v }));
+}
