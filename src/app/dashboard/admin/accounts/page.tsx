@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import {
-  Search, CheckCircle, XCircle, Clock,
+  Search, CheckCircle, XCircle,
   ExternalLink, ChevronDown, ChevronUp, Plus, X, Eye, MousePointerClick, Heart,
 } from "lucide-react";
 import type { PerMerchantStats } from "@/lib/analytics-store";
@@ -11,7 +11,7 @@ interface MerchantStatsWithFavorites extends PerMerchantStats {
   favoriteCount: number;
 }
 
-type AccountStatus = "active" | "inactive" | "pending";
+type AccountStatus = "active" | "inactive";
 
 interface Merchant {
   slug: string;
@@ -31,7 +31,6 @@ interface Merchant {
 const STATUS_CONFIG: Record<AccountStatus, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
   active:   { label: "正常",   bg: "bg-green-50",  text: "text-green-700",  icon: <CheckCircle className="w-3.5 h-3.5" /> },
   inactive: { label: "已停用", bg: "bg-red-50",    text: "text-red-600",    icon: <XCircle     className="w-3.5 h-3.5" /> },
-  pending:  { label: "待審核", bg: "bg-amber-50",  text: "text-amber-700",  icon: <Clock       className="w-3.5 h-3.5" /> },
 };
 
 export default function AdminAccountsPage() {
@@ -86,17 +85,6 @@ export default function AdminAccountsPage() {
     }
   };
 
-  const approveAccount = async (slug: string) => {
-    const res = await fetch(`/api/admin/accounts/${slug}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "active" }),
-    });
-    if (res.ok) {
-      setMerchants((prev) => prev.map((m) => m.slug === slug ? { ...m, status: "active" } : m));
-    }
-  };
-
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreateError("");
@@ -124,7 +112,6 @@ export default function AdminAccountsPage() {
     all: merchants.length,
     active: merchants.filter((m) => m.status === "active").length,
     inactive: merchants.filter((m) => m.status === "inactive").length,
-    pending: merchants.filter((m) => m.status === "pending").length,
   };
 
   return (
@@ -194,10 +181,10 @@ export default function AdminAccountsPage() {
       )}
 
       {/* Summary cards */}
-      <div className="grid grid-cols-4 gap-4">
-        {(["all", "active", "inactive", "pending"] as const).map((key) => {
-          const labels = { all: "全部帳號", active: "正常運營", inactive: "已停用", pending: "待審核" };
-          const colors = { all: "text-text", active: "text-green-600", inactive: "text-red-500", pending: "text-amber-600" };
+      <div className="grid grid-cols-3 gap-4">
+        {(["all", "active", "inactive"] as const).map((key) => {
+          const labels = { all: "全部帳號", active: "正常運營", inactive: "已停用" };
+          const colors = { all: "text-text", active: "text-green-600", inactive: "text-red-500" };
           return (
             <button
               key={key}
@@ -278,26 +265,16 @@ export default function AdminAccountsPage() {
                           >
                             詳情 {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                           </button>
-                          {status !== "pending" && (
-                            <button
-                              onClick={() => toggleStatus(m.slug, status)}
-                              className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                                status === "active"
-                                  ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"
-                                  : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"
-                              }`}
-                            >
-                              {status === "active" ? "停用" : "啟用"}
-                            </button>
-                          )}
-                          {status === "pending" && (
-                            <button
-                              onClick={() => approveAccount(m.slug)}
-                              className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-100 rounded-lg text-xs font-medium cursor-pointer hover:bg-green-100 transition-all"
-                            >
-                              審核通過
-                            </button>
-                          )}
+                          <button
+                            onClick={() => toggleStatus(m.slug, status)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
+                              status === "active"
+                                ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"
+                                : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"
+                            }`}
+                          >
+                            {status === "active" ? "停用" : "啟用"}
+                          </button>
                         </div>
                       </td>
                     </tr>
