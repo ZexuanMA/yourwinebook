@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CheckCircle, XCircle, Clock, MessageSquare, Phone, Globe, Search } from "lucide-react";
 
 interface MerchantApplication {
@@ -11,8 +11,6 @@ interface MerchantApplication {
 
 type AppStatus = MerchantApplication["status"];
 
-const mockApplications: MerchantApplication[] = [];
-
 const STATUS_CONFIG: Record<AppStatus, { label: string; bg: string; text: string; border: string }> = {
   pending:   { label: "待處理", bg: "bg-amber-50",  text: "text-amber-700",  border: "border-amber-200" },
   contacted: { label: "已聯繫", bg: "bg-blue-50",   text: "text-blue-700",   border: "border-blue-200"  },
@@ -21,13 +19,30 @@ const STATUS_CONFIG: Record<AppStatus, { label: string; bg: string; text: string
 };
 
 export default function AdminApplicationsPage() {
-  const [apps, setApps] = useState(mockApplications);
+  const [apps, setApps] = useState<MerchantApplication[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<AppStatus | "all">("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  const updateStatus = (id: string, status: AppStatus) => {
-    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+  const loadApps = useCallback(async () => {
+    const res = await fetch("/api/admin/applications");
+    if (res.ok) {
+      const data = await res.json();
+      setApps(data.applications);
+    }
+  }, []);
+
+  useEffect(() => { loadApps(); }, [loadApps]);
+
+  const updateStatus = async (id: string, status: AppStatus) => {
+    const res = await fetch(`/api/admin/applications/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+    }
   };
 
   const filtered = apps.filter((a) => {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { submitMerchantApplication } from "@/lib/queries";
+import { createApplication } from "@/lib/application-store";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -12,9 +12,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const result = await submitMerchantApplication(body);
-  if (!result.success) {
-    return NextResponse.json({ error: result.error }, { status: 500 });
-  }
-  return NextResponse.json({ success: true }, { status: 201 });
+  const app = createApplication(body);
+  return NextResponse.json({ success: true, id: app.id }, { status: 201 });
 }

@@ -1,1 +1,32 @@
-{ "events": [] }
+{
+  "events": [
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "0yiwgghj1ngcmmrn0orv",
+      "timestamp": "2026-03-15T10:54:31.771Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "zs90ijj7qimmrn1ydu",
+      "timestamp": "2026-03-15T10:55:30.794Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/join",
+      "pageLabel": "Join",
+      "sessionId": "zs90ijj7qimmrn1ydu",
+      "timestamp": "2026-03-15T10:55:33.937Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/search",
+      "pageLabel": "Search",
+      "sessionId": "zs90ijj7qimmrn1ydu",
+      "timestamp": "2026-03-15T10:56:58.941Z"
+    }
+  ]
+}

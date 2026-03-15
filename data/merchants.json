@@ -51,7 +51,7 @@
     "phone": "+852 5678 9012",
     "website": "https://www.grapehk.com",
     "description": "以批量採購壓低成本，提供極具競爭力的價格。",
-    "status": "inactive",
+    "status": "active",
     "joinDate": "2024-07-08"
   },
   {
@@ -62,7 +62,7 @@
     "phone": "+852 6789 0123",
     "website": "https://www.bottleshop.hk",
     "description": "精選世界各地得獎酒款，每月推出主題酒單。",
-    "status": "pending",
+    "status": "active",
     "joinDate": "2024-09-30"
   }
 ]
