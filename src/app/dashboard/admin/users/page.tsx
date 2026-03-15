@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { getAllUsers } from "@/lib/mock-users";
+import { useState, useEffect, useCallback } from "react";
 import { wines } from "@/lib/mock-data";
-import { Search, CheckCircle, XCircle, Bookmark, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, CheckCircle, XCircle, Bookmark, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 
 type UserStatus = "active" | "suspended";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  status: UserStatus;
+  preferredLang: "zh-HK" | "en";
+  joinDate: string;
+  lastSeen: string;
+  bookmarks: string[];
+}
 
 const STATUS_CONFIG: Record<UserStatus, { label: string; bg: string; text: string }> = {
   active:    { label: "正常",   bg: "bg-green-50", text: "text-green-700" },
@@ -13,38 +23,70 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; bg: string; text: strin
 };
 
 export default function AdminUsersPage() {
-  const allUsers = getAllUsers();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<UserStatus | "all">("all");
-  const [statuses, setStatuses] = useState<Record<string, UserStatus>>(
-    Object.fromEntries(allUsers.map((u) => [u.id, u.status as UserStatus]))
-  );
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  const filtered = allUsers.filter((u) => {
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/users");
+      const data = await res.json();
+      if (data.users) setUsers(data.users);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+  const toggleStatus = async (user: User) => {
+    const next: UserStatus = user.status === "active" ? "suspended" : "active";
+    setTogglingId(user.id);
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      if (res.ok) {
+        setUsers((prev) => prev.map((u) => u.id === user.id ? { ...u, status: next } : u));
+      }
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
+  const filtered = users.filter((u) => {
     const matchSearch = !search ||
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "all" || statuses[u.id] === filterStatus;
+    const matchStatus = filterStatus === "all" || u.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
   const counts = {
-    all: allUsers.length,
-    active: allUsers.filter((u) => statuses[u.id] === "active").length,
-    suspended: allUsers.filter((u) => statuses[u.id] === "suspended").length,
-  };
-
-  const toggleStatus = (id: string) => {
-    setStatuses((p) => ({ ...p, [id]: p[id] === "active" ? "suspended" : "active" }));
+    all: users.length,
+    active: users.filter((u) => u.status === "active").length,
+    suspended: users.filter((u) => u.status === "suspended").length,
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold text-text">用戶管理</h1>
-        <p className="text-sm text-text-sub mt-1">查看並管理所有已注冊的用戶帳號</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-text">用戶管理</h1>
+          <p className="text-sm text-text-sub mt-1">查看並管理所有已注冊的用戶帳號</p>
+        </div>
+        <button onClick={fetchUsers} disabled={loading}
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold hover:text-text transition-all cursor-pointer disabled:opacity-50">
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+          刷新
+        </button>
       </div>
 
       {/* Summary cards */}
@@ -55,7 +97,7 @@ export default function AdminUsersPage() {
           return (
             <button key={key} onClick={() => setFilterStatus(key)}
               className={`bg-white border rounded-2xl px-5 py-4 text-left hover:shadow-md transition-all cursor-pointer ${filterStatus === key ? "border-wine shadow-sm" : "border-wine-border"}`}>
-              <p className={`text-2xl font-bold ${colors[key]}`}>{counts[key]}</p>
+              <p className={`text-2xl font-bold ${colors[key]}`}>{loading ? "—" : counts[key]}</p>
               <p className="text-sm text-text-sub mt-0.5">{labels[key]}</p>
             </button>
           );
@@ -73,7 +115,9 @@ export default function AdminUsersPage() {
 
       {/* Table */}
       <div className="bg-white border border-wine-border rounded-2xl overflow-hidden">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 text-text-sub text-sm">載入中…</div>
+        ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-text-sub text-sm">沒有符合條件的用戶</div>
         ) : (
           <table className="w-full text-sm">
@@ -90,8 +134,7 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-[#F5F0EA]">
               {filtered.map((u) => {
-                const status = statuses[u.id] as UserStatus;
-                const cfg = STATUS_CONFIG[status];
+                const cfg = STATUS_CONFIG[u.status];
                 const isExpanded = expandedId === u.id;
                 const bookmarkedWines = wines.filter((w) => u.bookmarks.includes(w.slug));
                 return (
@@ -125,7 +168,7 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
-                          {status === "active"
+                          {u.status === "active"
                             ? <CheckCircle className="w-3.5 h-3.5" />
                             : <XCircle    className="w-3.5 h-3.5" />}
                           {cfg.label}
@@ -139,13 +182,13 @@ export default function AdminUsersPage() {
                               收藏 {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                             </button>
                           )}
-                          <button onClick={() => toggleStatus(u.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all ${
-                              status === "active"
+                          <button onClick={() => toggleStatus(u)} disabled={togglingId === u.id}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition-all disabled:opacity-50 ${
+                              u.status === "active"
                                 ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"
                                 : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-100"
                             }`}>
-                            {status === "active" ? "停用" : "啟用"}
+                            {togglingId === u.id ? "…" : u.status === "active" ? "停用" : "啟用"}
                           </button>
                         </div>
                       </td>
@@ -173,10 +216,6 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
         )}
-      </div>
-
-      <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700">
-        <span className="font-semibold">Demo 模式：</span>停用/啟用操作僅影響當前頁面，重整後恢復。
       </div>
     </div>
   );
