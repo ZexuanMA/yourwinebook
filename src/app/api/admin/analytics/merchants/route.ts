@@ -4,6 +4,7 @@ import { getMockAccount } from "@/lib/mock-auth";
 import { getPerMerchantStats } from "@/lib/analytics-store";
 import { winePrices } from "@/lib/mock-data";
 import { getMerchantFavoriteCount } from "@/lib/user-store";
+import { getAllMerchantsFromStore } from "@/lib/merchant-store";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -23,7 +24,14 @@ export async function GET() {
     }
   }
 
+  const merchantList = getAllMerchantsFromStore();
+  const nameMap = Object.fromEntries(merchantList.map((m) => [m.slug, m.name]));
+
   const stats = getPerMerchantStats(merchantWineMap);
-  const withFavorites = stats.map((s) => ({ ...s, favoriteCount: getMerchantFavoriteCount(s.slug) }));
+  const withFavorites = stats.map((s) => ({
+    ...s,
+    name: nameMap[s.slug] ?? s.slug,
+    favoriteCount: getMerchantFavoriteCount(s.slug),
+  }));
   return NextResponse.json(withFavorites);
 }

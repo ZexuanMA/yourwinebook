@@ -13,7 +13,10 @@
       "moet-chandon-brut-imperial",
       "whispering-angel-rose-2023"
     ],
-    "merchantBookmarks": ["watsons-wine", "wine-and-co"]
+    "merchantBookmarks": [
+      "watsons-wine",
+      "wine-and-co"
+    ]
   },
   {
     "id": "u2",
@@ -28,7 +31,10 @@
       "penfolds-bin-389-2021",
       "masi-costasera-amarone-2018"
     ],
-    "merchantBookmarks": ["cellardoor", "watsons-wine"]
+    "merchantBookmarks": [
+      "cellardoor",
+      "watsons-wine"
+    ]
   },
   {
     "id": "u3",
@@ -43,7 +49,9 @@
       "cloudy-bay-sauvignon-blanc-2023",
       "santa-margherita-pinot-grigio"
     ],
-    "merchantBookmarks": ["wine-and-co"]
+    "merchantBookmarks": [
+      "wine-and-co"
+    ]
   },
   {
     "id": "u4",
@@ -71,7 +79,11 @@
       "whispering-angel-rose-2023",
       "penfolds-bin-389-2021"
     ],
-    "merchantBookmarks": ["bottleshop", "vinhk", "watsons-wine"]
+    "merchantBookmarks": [
+      "bottleshop",
+      "vinhk",
+      "watsons-wine"
+    ]
   },
   {
     "id": "u6",
@@ -85,13 +97,32 @@
     "bookmarks": [
       "cloudy-bay-sauvignon-blanc-2023"
     ],
-    "merchantBookmarks": ["grape-hk"]
+    "merchantBookmarks": [
+      "grape-hk"
+    ]
   },
   {
     "id": "u1773584072688",
     "name": "Theo",
     "email": "theodorearmand11@gmail.com",
     "password": "ad7581jnP123!",
+    "status": "active",
+    "preferredLang": "zh-HK",
+    "joinDate": "2026-03-15",
+    "lastSeen": "2026-03-15",
+    "bookmarks": [
+      "rioja-marques-de-riscal-reserva-2018"
+    ],
+    "merchantBookmarks": [
+      "grape-hk",
+      "wine-and-co"
+    ]
+  },
+  {
+    "id": "u1773588835863",
+    "name": "Melash",
+    "email": "2912721344@qq.com",
+    "password": "145170",
     "status": "active",
     "preferredLang": "zh-HK",
     "joinDate": "2026-03-15",

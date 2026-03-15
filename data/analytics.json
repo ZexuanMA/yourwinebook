@@ -402,6 +402,199 @@
       "merchant": "wine-and-co",
       "sessionId": "06oaqr8nho7vmmru3tif",
       "timestamp": "2026-03-15T15:31:32.624Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "jgmrku1tzdimmrwzl2k",
+      "timestamp": "2026-03-15T15:33:36.441Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK/account/login",
+      "pageLabel": "用戶登入",
+      "sessionId": "jgmrku1tzdimmrwzl2k",
+      "timestamp": "2026-03-15T15:33:39.844Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK/account/register",
+      "pageLabel": "用戶注冊",
+      "sessionId": "jgmrku1tzdimmrwzl2k",
+      "timestamp": "2026-03-15T15:33:44.506Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/wines/masi-costasera-amarone-2018",
+      "pageLabel": "酒款詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:33:50.980Z"
+    },
+    {
+      "type": "wine_view",
+      "wineSlug": "masi-costasera-amarone-2018",
+      "wineName": "Masi Costasera Amarone 2018",
+      "wineEmoji": "🍾",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:33:51.467Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/search",
+      "pageLabel": "Search",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:33:53.591Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants",
+      "pageLabel": "Merchants",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:33:54.637Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK/account",
+      "pageLabel": "用戶中心",
+      "sessionId": "jgmrku1tzdimmrwzl2k",
+      "timestamp": "2026-03-15T15:33:56.933Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants/grape-hk",
+      "pageLabel": "酒商詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:33:57.440Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/wines/rioja-marques-de-riscal-reserva-2018",
+      "pageLabel": "酒款詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:34:13.614Z"
+    },
+    {
+      "type": "wine_view",
+      "wineSlug": "rioja-marques-de-riscal-reserva-2018",
+      "wineName": "Marqués de Riscal Reserva 2018",
+      "wineEmoji": "🍷",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:34:13.781Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en",
+      "pageLabel": "Home",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:34:21.734Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK",
+      "pageLabel": "首頁",
+      "sessionId": "jgmrku1tzdimmrwzl2k",
+      "timestamp": "2026-03-15T15:34:43.993Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK/account/login",
+      "pageLabel": "用戶登入",
+      "sessionId": "jgmrku1tzdimmrwzl2k",
+      "timestamp": "2026-03-15T15:34:45.376Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/zh-HK/account",
+      "pageLabel": "用戶中心",
+      "sessionId": "jgmrku1tzdimmrwzl2k",
+      "timestamp": "2026-03-15T15:34:47.495Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants",
+      "pageLabel": "Merchants",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:38:01.088Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants/wine-and-co",
+      "pageLabel": "酒商詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:38:02.152Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/account",
+      "pageLabel": "用戶中心",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:38:10.487Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants",
+      "pageLabel": "Merchants",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:38:23.593Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/merchants/wine-and-co",
+      "pageLabel": "酒商詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:40:10.360Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/wines/moet-chandon-brut-imperial",
+      "pageLabel": "酒款詳情",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:40:15.430Z"
+    },
+    {
+      "type": "wine_view",
+      "wineSlug": "moet-chandon-brut-imperial",
+      "wineName": "Moët & Chandon Brut Impérial",
+      "wineEmoji": "🥂",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:40:16.027Z"
+    },
+    {
+      "type": "price_click",
+      "wineSlug": "moet-chandon-brut-imperial",
+      "wineName": "Moët & Chandon Brut Impérial",
+      "wineEmoji": "🥂",
+      "merchant": "wine-and-co",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:40:17.001Z"
+    },
+    {
+      "type": "price_click",
+      "wineSlug": "moet-chandon-brut-imperial",
+      "wineName": "Moët & Chandon Brut Impérial",
+      "wineEmoji": "🥂",
+      "merchant": "wine-and-co",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:40:27.827Z"
+    },
+    {
+      "type": "price_click",
+      "wineSlug": "moet-chandon-brut-imperial",
+      "wineName": "Moët & Chandon Brut Impérial",
+      "wineEmoji": "🥂",
+      "merchant": "wine-and-co",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:40:27.832Z"
+    },
+    {
+      "type": "price_click",
+      "wineSlug": "moet-chandon-brut-imperial",
+      "wineName": "Moët & Chandon Brut Impérial",
+      "wineEmoji": "🥂",
+      "merchant": "wine-and-co",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:40:28.358Z"
     }
   ]
 }

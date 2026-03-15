@@ -18,12 +18,20 @@ const TooltipStyle = {
 function AdminAnalytics() {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [merchantStats, setMerchantStats] = useState<{ slug: string; name: string; favoriteCount: number; priceClicks: number; wineViews: number }[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/analytics");
-      if (res.ok) setData(await res.json());
+      const [analyticsRes, merchantRes] = await Promise.all([
+        fetch("/api/admin/analytics"),
+        fetch("/api/admin/analytics/merchants"),
+      ]);
+      if (analyticsRes.ok) setData(await analyticsRes.json());
+      if (merchantRes.ok) {
+        const list = await merchantRes.json();
+        setMerchantStats([...list].sort((a: { favoriteCount: number }, b: { favoriteCount: number }) => b.favoriteCount - a.favoriteCount));
+      }
     } finally {
       setLoading(false);
     }
@@ -95,34 +103,30 @@ function AdminAnalytics() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
         <div className="bg-white border border-wine-border rounded-2xl overflow-hidden">
           <div className="px-6 py-4 border-b border-wine-border">
-            <h2 className="font-semibold text-text">熱門頁面</h2>
-            <p className="text-xs text-text-sub mt-0.5">按頁面瀏覽量排序</p>
+            <h2 className="font-semibold text-text">熱門酒商</h2>
+            <p className="text-xs text-text-sub mt-0.5">按用戶收藏量排序</p>
           </div>
-          {loading || !data || data.pages.length === 0 ? (
-            <div className="py-12 text-center text-text-sub text-sm">{loading ? "載入中…" : "暫無數據，訪問前台後將自動記錄"}</div>
+          {loading ? (
+            <div className="py-12 text-center text-text-sub text-sm">載入中…</div>
+          ) : merchantStats.length === 0 ? (
+            <div className="py-12 text-center text-text-sub text-sm">暫無數據</div>
           ) : (
-            <table className="w-full text-sm">
-              <thead><tr className="bg-bg border-b border-wine-border">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">頁面</th>
-                <th className="text-right px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">瀏覽量</th>
-              </tr></thead>
-              <tbody className="divide-y divide-[#F5F0EA]">
-                {data.pages.map((p, i) => (
-                  <tr key={p.path} className="hover:bg-bg transition-colors">
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-xs text-text-sub/40 w-4 text-right shrink-0">{i + 1}</span>
-                        <div>
-                          <p className="font-medium text-text">{p.label}</p>
-                          <p className="text-xs text-text-sub/60">{p.path}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-3.5 text-right font-semibold text-text">{p.views.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="divide-y divide-[#F5F0EA]">
+              {merchantStats.map((m, i) => (
+                <div key={m.slug} className="px-6 py-4 flex items-center gap-4 hover:bg-bg transition-colors">
+                  <span className="text-xs text-text-sub/40 w-4 text-right shrink-0">{i + 1}</span>
+                  <div className="w-9 h-9 bg-red-light rounded-xl flex items-center justify-center text-lg shrink-0">🍷</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-text truncate">{m.name}</p>
+                    <p className="text-xs text-text-sub mt-0.5">{m.wineViews} 酒款瀏覽 · {m.priceClicks} 比價點擊</p>
+                  </div>
+                  <div className="text-right shrink-0 flex items-center gap-1.5">
+                    <span className="text-sm font-bold text-wine">{m.favoriteCount}</span>
+                    <span className="text-xs text-text-sub">收藏</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
@@ -178,41 +182,6 @@ function AdminAnalytics() {
         )}
       </div>
 
-      <div className="bg-white border border-wine-border rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-wine-border flex items-center justify-between">
-          <div>
-            <h2 className="font-semibold text-text">最近訪問記錄</h2>
-            <p className="text-xs text-text-sub mt-0.5">最新 20 條頁面訪問</p>
-          </div>
-          <span className="inline-flex items-center gap-1.5 text-xs text-green-700 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
-            實時
-          </span>
-        </div>
-        {loading || !data || data.recentPageViews.length === 0 ? (
-          <div className="py-12 text-center text-text-sub text-sm">{loading ? "載入中…" : "暫無訪問記錄"}</div>
-        ) : (
-          <table className="w-full text-sm">
-            <thead><tr className="bg-bg border-b border-wine-border">
-              <th className="text-left px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">頁面</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">Session</th>
-              <th className="text-right px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">時間</th>
-            </tr></thead>
-            <tbody className="divide-y divide-[#F5F0EA]">
-              {data.recentPageViews.map((v) => (
-                <tr key={v.id + v.timestamp} className="hover:bg-bg transition-colors">
-                  <td className="px-6 py-3.5">
-                    <p className="font-medium text-text">{v.label}</p>
-                    <p className="text-xs text-text-sub/60">{v.path}</p>
-                  </td>
-                  <td className="px-4 py-3.5 font-mono text-xs text-text-sub">{v.sessionId.slice(0, 8)}…</td>
-                  <td className="px-6 py-3.5 text-right text-text-sub text-xs">{new Date(v.timestamp).toLocaleTimeString("zh-HK")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
     </div>
   );
 }
