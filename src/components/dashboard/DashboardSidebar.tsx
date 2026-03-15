@@ -15,6 +15,7 @@ import {
   ClipboardList,
   Settings,
   ShieldCheck,
+  UserRound,
 } from "lucide-react";
 
 interface Account {
@@ -35,6 +36,7 @@ const merchantNav = [
 const adminNav = [
   { href: "/dashboard",                    label: "總覽",    icon: LayoutDashboard, exact: true  },
   { href: "/dashboard/admin/accounts",     label: "酒商帳號", icon: Users,           exact: true  },
+  { href: "/dashboard/admin/users",        label: "用戶管理", icon: UserRound,       exact: true  },
   { href: "/dashboard/admin/applications", label: "入駐申請", icon: ClipboardList,   exact: true  },
   { href: "/dashboard/analytics",          label: "流量分析", icon: BarChart2,       exact: true  },
   { href: "/dashboard/account",            label: "帳號設置", icon: Settings,        exact: true  },
