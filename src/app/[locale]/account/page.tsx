@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
-import { LogOut, Bookmark, User, Settings, Eye, EyeOff, CheckCircle } from "lucide-react";
-import { wines } from "@/lib/mock-data";
+import { LogOut, Bookmark, User, Settings, Eye, EyeOff, CheckCircle, Store } from "lucide-react";
+import { wines, merchants } from "@/lib/mock-data";
 
 interface UserProfile {
   id: string;
@@ -15,9 +15,10 @@ interface UserProfile {
   preferredLang: string;
   joinDate: string;
   bookmarks: string[];
+  merchantBookmarks: string[];
 }
 
-type Tab = "bookmarks" | "profile" | "security";
+type Tab = "bookmarks" | "merchantBookmarks" | "profile" | "security";
 
 export default function UserAccountPage() {
   const router = useRouter();
@@ -91,11 +92,13 @@ export default function UserAccountPage() {
   if (!user) return null;
 
   const bookmarkedWines = wines.filter((w) => user.bookmarks.includes(w.slug));
+  const bookmarkedMerchants = merchants.filter((m) => (user.merchantBookmarks ?? []).includes(m.slug));
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-    { key: "bookmarks", label: `收藏酒款 (${bookmarkedWines.length})`, icon: <Bookmark className="w-4 h-4" /> },
-    { key: "profile",   label: "個人資料", icon: <User className="w-4 h-4" /> },
-    { key: "security",  label: "安全設置", icon: <Settings className="w-4 h-4" /> },
+    { key: "bookmarks",         label: `收藏酒款 (${bookmarkedWines.length})`,     icon: <Bookmark className="w-4 h-4" /> },
+    { key: "merchantBookmarks", label: `收藏酒商 (${bookmarkedMerchants.length})`, icon: <Store    className="w-4 h-4" /> },
+    { key: "profile",           label: "個人資料",                                  icon: <User     className="w-4 h-4" /> },
+    { key: "security",          label: "安全設置",                                  icon: <Settings className="w-4 h-4" /> },
   ];
 
   const inputCls = "w-full px-4 py-2.5 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(184,149,106,0.10)] transition-all";
@@ -113,7 +116,7 @@ export default function UserAccountPage() {
             <h1 className="text-xl font-semibold text-text">{user.name}</h1>
             <p className="text-sm text-text-sub mt-0.5">{user.email}</p>
             <p className="text-xs text-text-sub/60 mt-1">
-              加入於 {new Date(user.joinDate).toLocaleDateString("zh-HK")} · {bookmarkedWines.length} 款收藏
+              加入於 {new Date(user.joinDate).toLocaleDateString("zh-HK")} · {bookmarkedWines.length} 款酒 · {bookmarkedMerchants.length} 家酒商
             </p>
           </div>
           <button onClick={handleLogout}
@@ -168,6 +171,47 @@ export default function UserAccountPage() {
                             <span className="text-xs text-text-sub font-normal ml-1">起</span>
                           </p>
                           <span className="text-xs text-text-sub">{wine.merchantCount} 家酒商</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Merchant Bookmarks */}
+        {tab === "merchantBookmarks" && (
+          <div>
+            {bookmarkedMerchants.length === 0 ? (
+              <div className="bg-white border border-wine-border rounded-2xl py-20 text-center">
+                <p className="text-4xl mb-3">🏪</p>
+                <p className="text-sm font-medium text-text mb-1">還沒有收藏的酒商</p>
+                <p className="text-xs text-text-sub mb-5">瀏覽酒商頁面時點擊收藏按鈕</p>
+                <Link href="/merchants" className="inline-flex items-center gap-2 px-5 py-2.5 bg-wine text-white rounded-xl text-sm font-medium hover:bg-wine-dark transition-colors">
+                  探索酒商
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {bookmarkedMerchants.map((m) => (
+                  <Link key={m.slug} href={`/merchants/${m.slug}`}
+                    className="bg-white border border-wine-border rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group block">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-bg-card rounded-xl flex items-center justify-center text-2xl shrink-0 border border-wine-border group-hover:scale-110 transition-transform">
+                        🍷
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-text text-sm leading-tight group-hover:text-wine transition-colors">
+                          {m.name}
+                        </p>
+                        <p className="text-xs text-text-sub mt-1 line-clamp-2">
+                          {locale === "zh-HK" ? m.description_zh : m.description_en}
+                        </p>
+                        <div className="flex items-center gap-3 mt-3">
+                          <span className="text-xs text-text-sub">{m.winesListed} 款酒</span>
+                          <span className="text-xs text-text-sub">⭐ {m.rating}</span>
                         </div>
                       </div>
                     </div>

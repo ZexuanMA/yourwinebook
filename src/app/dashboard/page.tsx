@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PlusCircle, TrendingDown, Package, Star, ArrowUpRight, Trophy } from "lucide-react";
+import { PlusCircle, TrendingDown, Package, Star, ArrowUpRight, Trophy, Heart } from "lucide-react";
 import { wines, merchants, winePrices } from "@/lib/mock-data";
 
 interface Merchant {
   slug: string;
   name: string;
+  favoriteCount?: number;
 }
 
 const TYPE_COLOR: Record<string, string> = {
@@ -24,7 +25,14 @@ export default function DashboardHome() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => (r.ok ? r.json() : null))
-      .then(setMerchant);
+      .then((m) => {
+        if (!m) return;
+        setMerchant(m);
+        fetch(`/api/merchants/${m.slug}/stats`)
+          .then((r) => r.json())
+          .then((d) => setMerchant((prev) => prev ? { ...prev, favoriteCount: d.favoriteCount } : prev))
+          .catch(() => {});
+      });
   }, []);
 
   if (!merchant) {
@@ -91,6 +99,15 @@ export default function DashboardHome() {
       iconColor: "text-gold",
       accent: "#B8956A",
     },
+    {
+      label: "被收藏量",
+      value: merchant.favoriteCount ?? "—",
+      sub: "用戶收藏了你的店鋪",
+      icon: Heart,
+      iconBg: "bg-red-light",
+      iconColor: "text-wine",
+      accent: "#5B2E35",
+    },
   ];
 
   return (
@@ -113,7 +130,7 @@ export default function DashboardHome() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         {stats.map(({ label, value, sub, icon: Icon, iconBg, iconColor }) => (
           <div key={label} className="bg-white border border-wine-border rounded-2xl p-6 hover:shadow-md transition-shadow">
             <div className="flex items-start justify-between mb-4">

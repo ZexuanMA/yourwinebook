@@ -12,7 +12,8 @@
       "cloudy-bay-sauvignon-blanc-2023",
       "moet-chandon-brut-imperial",
       "whispering-angel-rose-2023"
-    ]
+    ],
+    "merchantBookmarks": ["watsons-wine", "wine-and-co"]
   },
   {
     "id": "u2",
@@ -26,7 +27,8 @@
     "bookmarks": [
       "penfolds-bin-389-2021",
       "masi-costasera-amarone-2018"
-    ]
+    ],
+    "merchantBookmarks": ["cellardoor", "watsons-wine"]
   },
   {
     "id": "u3",
@@ -40,7 +42,8 @@
     "bookmarks": [
       "cloudy-bay-sauvignon-blanc-2023",
       "santa-margherita-pinot-grigio"
-    ]
+    ],
+    "merchantBookmarks": ["wine-and-co"]
   },
   {
     "id": "u4",
@@ -51,7 +54,8 @@
     "preferredLang": "zh-HK",
     "joinDate": "2025-01-25",
     "lastSeen": "2025-02-28",
-    "bookmarks": []
+    "bookmarks": [],
+    "merchantBookmarks": []
   },
   {
     "id": "u5",
@@ -66,7 +70,8 @@
       "moet-chandon-brut-imperial",
       "whispering-angel-rose-2023",
       "penfolds-bin-389-2021"
-    ]
+    ],
+    "merchantBookmarks": ["bottleshop", "vinhk", "watsons-wine"]
   },
   {
     "id": "u6",
@@ -79,17 +84,19 @@
     "lastSeen": "2025-03-14",
     "bookmarks": [
       "cloudy-bay-sauvignon-blanc-2023"
-    ]
+    ],
+    "merchantBookmarks": ["grape-hk"]
   },
   {
     "id": "u1773584072688",
     "name": "Theo",
     "email": "theodorearmand11@gmail.com",
-    "password": "123456",
+    "password": "ad7581jnP123!",
     "status": "active",
     "preferredLang": "zh-HK",
     "joinDate": "2026-03-15",
     "lastSeen": "2026-03-15",
-    "bookmarks": []
+    "bookmarks": [],
+    "merchantBookmarks": []
   }
 ]

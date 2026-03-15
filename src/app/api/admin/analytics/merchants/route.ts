@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { getMockAccount } from "@/lib/mock-auth";
 import { getPerMerchantStats } from "@/lib/analytics-store";
 import { winePrices } from "@/lib/mock-data";
+import { getMerchantFavoriteCount } from "@/lib/user-store";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -22,5 +23,7 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json(getPerMerchantStats(merchantWineMap));
+  const stats = getPerMerchantStats(merchantWineMap);
+  const withFavorites = stats.map((s) => ({ ...s, favoriteCount: getMerchantFavoriteCount(s.slug) }));
+  return NextResponse.json(withFavorites);
 }

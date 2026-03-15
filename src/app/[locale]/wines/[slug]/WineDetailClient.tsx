@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { WineCard } from "@/components/wine/WineCard";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Bookmark, BookmarkCheck } from "lucide-react";
 import type { Wine, MerchantPrice } from "@/lib/mock-data";
 import { toWineCard, getFullRegion, getTastingNotes, getRegionStory } from "@/lib/locale-helpers";
 
@@ -18,6 +18,30 @@ export default function WineDetailClient({ wine, prices, similarWines }: Props) 
   const locale = useLocale();
   const isZh = locale === "zh-HK";
   const [expanded, setExpanded] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/user/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((u) => { if (u) setBookmarked((u.bookmarks ?? []).includes(wine.slug)); })
+      .catch(() => {});
+  }, [wine.slug]);
+
+  const toggleBookmark = async () => {
+    setBookmarkLoading(true);
+    try {
+      const res = await fetch("/api/user/bookmarks/wines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wineSlug: wine.slug }),
+      });
+      if (res.status === 401) { window.location.href = `/${locale}/account/login`; return; }
+      if (res.ok) { const d = await res.json(); setBookmarked(d.bookmarked); }
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
 
   useEffect(() => {
     const sid = sessionStorage.getItem("wb_sid") ?? (Math.random().toString(36).slice(2) + Date.now().toString(36));
@@ -48,7 +72,21 @@ export default function WineDetailClient({ wine, prices, similarWines }: Props) 
 
             {/* Info */}
             <div>
-              <h1 className="font-en text-[28px] font-bold mb-1">{wine.name}</h1>
+              <div className="flex items-start justify-between gap-3 mb-1">
+                <h1 className="font-en text-[28px] font-bold">{wine.name}</h1>
+                <button
+                  onClick={toggleBookmark}
+                  disabled={bookmarkLoading}
+                  title={bookmarked ? "取消收藏" : "收藏酒款"}
+                  className={`shrink-0 mt-1 p-2.5 rounded-xl border transition-all cursor-pointer disabled:opacity-50 ${
+                    bookmarked
+                      ? "bg-wine text-white border-wine"
+                      : "bg-white text-text-sub border-wine-border hover:border-wine hover:text-wine"
+                  }`}
+                >
+                  {bookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
+                </button>
+              </div>
               <p className="text-[15px] text-text-sub mb-5">{fullRegion}</p>
 
               <div className="flex flex-wrap gap-2 mb-5">

@@ -21,6 +21,7 @@ export interface StoredUser {
   joinDate: string;
   lastSeen: string;
   bookmarks: string[];
+  merchantBookmarks: string[];
 }
 
 export type PublicUser = Omit<StoredUser, "password">;
@@ -76,6 +77,7 @@ export function registerUser(name: string, email: string, password: string): Pub
     joinDate: new Date().toISOString().slice(0, 10),
     lastSeen: new Date().toISOString().slice(0, 10),
     bookmarks: [],
+    merchantBookmarks: [],
   };
   users.push(newUser);
   writeStore(users);
@@ -91,6 +93,32 @@ export function setUserStatus(id: string, status: UserStatus): PublicUser | null
   writeStore(users);
   const { password: _, ...rest } = users[idx]; void _;
   return rest;
+}
+
+export function toggleWineBookmark(id: string, wineSlug: string): boolean {
+  const users = readStore();
+  const idx = users.findIndex((u) => u.id === id);
+  if (idx === -1) return false;
+  const bookmarks = users[idx].bookmarks ?? [];
+  const has = bookmarks.includes(wineSlug);
+  users[idx].bookmarks = has ? bookmarks.filter((s) => s !== wineSlug) : [...bookmarks, wineSlug];
+  writeStore(users);
+  return !has; // true = now bookmarked
+}
+
+export function toggleMerchantBookmark(id: string, merchantSlug: string): boolean {
+  const users = readStore();
+  const idx = users.findIndex((u) => u.id === id);
+  if (idx === -1) return false;
+  const bookmarks = users[idx].merchantBookmarks ?? [];
+  const has = bookmarks.includes(merchantSlug);
+  users[idx].merchantBookmarks = has ? bookmarks.filter((s) => s !== merchantSlug) : [...bookmarks, merchantSlug];
+  writeStore(users);
+  return !has;
+}
+
+export function getMerchantFavoriteCount(merchantSlug: string): number {
+  return readStore().filter((u) => (u.merchantBookmarks ?? []).includes(merchantSlug)).length;
 }
 
 export function verifyUserPassword(id: string, password: string): boolean {

@@ -3,9 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Search, CheckCircle, XCircle, Clock,
-  ExternalLink, ChevronDown, ChevronUp, Plus, X, Eye, MousePointerClick,
+  ExternalLink, ChevronDown, ChevronUp, Plus, X, Eye, MousePointerClick, Heart,
 } from "lucide-react";
 import type { PerMerchantStats } from "@/lib/analytics-store";
+
+interface MerchantStatsWithFavorites extends PerMerchantStats {
+  favoriteCount: number;
+}
 
 type AccountStatus = "active" | "inactive" | "pending";
 
@@ -39,7 +43,7 @@ export default function AdminAccountsPage() {
   const [createForm, setCreateForm] = useState({ name: "", email: "", password: "", phone: "", website: "", description: "" });
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
-  const [merchantStats, setMerchantStats] = useState<Record<string, PerMerchantStats>>({});
+  const [merchantStats, setMerchantStats] = useState<Record<string, MerchantStatsWithFavorites>>({});
 
   const loadMerchants = useCallback(async () => {
     const res = await fetch("/api/admin/accounts");
@@ -52,8 +56,8 @@ export default function AdminAccountsPage() {
   const loadStats = useCallback(async () => {
     const res = await fetch("/api/admin/analytics/merchants");
     if (res.ok) {
-      const list: PerMerchantStats[] = await res.json();
-      const map: Record<string, PerMerchantStats> = {};
+      const list: MerchantStatsWithFavorites[] = await res.json();
+      const map: Record<string, MerchantStatsWithFavorites> = {};
       for (const s of list) map[s.slug] = s;
       setMerchantStats(map);
     }
@@ -321,12 +325,13 @@ export default function AdminAccountsPage() {
                           {/* Analytics stats */}
                           <div>
                             <p className="text-xs font-semibold text-text-sub uppercase tracking-wider mb-3">平台數據</p>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-4 gap-3">
                               {(() => {
                                 const s = merchantStats[m.slug];
                                 const views = s?.wineViews ?? 0;
                                 const clicks = s?.priceClicks ?? 0;
                                 const rate = views > 0 ? Math.round((clicks / views) * 100) : 0;
+                                const favs = s?.favoriteCount ?? 0;
                                 return (
                                   <>
                                     <div className="bg-white border border-wine-border rounded-xl px-4 py-3 flex items-center gap-3">
@@ -354,6 +359,15 @@ export default function AdminAccountsPage() {
                                       <div>
                                         <p className={`text-lg font-bold ${rate >= 10 ? "text-green-600" : "text-text"}`}>{rate}%</p>
                                         <p className="text-[11px] text-text-sub">轉化率</p>
+                                      </div>
+                                    </div>
+                                    <div className="bg-white border border-wine-border rounded-xl px-4 py-3 flex items-center gap-3">
+                                      <div className="p-2 bg-red-light rounded-lg shrink-0">
+                                        <Heart className="w-3.5 h-3.5 text-wine" />
+                                      </div>
+                                      <div>
+                                        <p className="text-lg font-bold text-text">{favs}</p>
+                                        <p className="text-[11px] text-text-sub">被收藏量</p>
                                       </div>
                                     </div>
                                   </>
