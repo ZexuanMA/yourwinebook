@@ -240,6 +240,20 @@
       "pageLabel": "首頁",
       "sessionId": "lhf9l9hpy6mmrva190",
       "timestamp": "2026-03-15T14:45:44.602Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/account",
+      "pageLabel": "用戶中心",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:10:00.940Z"
+    },
+    {
+      "type": "pageview",
+      "path": "/en/account",
+      "pageLabel": "用戶中心",
+      "sessionId": "06oaqr8nho7vmmru3tif",
+      "timestamp": "2026-03-15T15:12:00.342Z"
     }
   ]
 }

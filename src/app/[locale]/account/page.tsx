@@ -62,13 +62,23 @@ export default function UserAccountPage() {
   const handlePasswordSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwError("");
-    if (pw.current !== "user123") { setPwError("當前密碼不正確"); return; }
+    if (!pw.current) { setPwError("請輸入當前密碼"); return; }
     if (pw.next.length < 6) { setPwError("新密碼至少 6 個字符"); return; }
     if (pw.next !== pw.confirm) { setPwError("兩次密碼不一致"); return; }
-    await new Promise((r) => setTimeout(r, 600));
-    setPwSaved(true);
-    setPw({ current: "", next: "", confirm: "" });
-    setTimeout(() => setPwSaved(false), 3000);
+    try {
+      const res = await fetch("/api/user/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: pw.current, newPassword: pw.next }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setPwError(data.error ?? "密碼修改失敗"); return; }
+      setPwSaved(true);
+      setPw({ current: "", next: "", confirm: "" });
+      setTimeout(() => setPwSaved(false), 3000);
+    } catch {
+      setPwError("網絡錯誤，請稍後重試");
+    }
   };
 
   if (loading) return (

@@ -93,6 +93,20 @@ export function setUserStatus(id: string, status: UserStatus): PublicUser | null
   return rest;
 }
 
+export function verifyUserPassword(id: string, password: string): boolean {
+  const u = readStore().find((u) => u.id === id);
+  return u?.password === password;
+}
+
+export function updateUserPassword(id: string, newPassword: string): boolean {
+  const users = readStore();
+  const idx = users.findIndex((u) => u.id === id);
+  if (idx === -1) return false;
+  users[idx].password = newPassword;
+  writeStore(users);
+  return true;
+}
+
 export function updateLastSeen(id: string): void {
   const users = readStore();
   const idx = users.findIndex((u) => u.id === id);
