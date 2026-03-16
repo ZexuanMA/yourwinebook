@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useParams } from "next/navigation";
 import { WineCard } from "@/components/wine/WineCard";
-import { wines, merchants } from "@/lib/mock-data";
+import { merchants } from "@/lib/mock-data";
+import type { Wine } from "@/lib/mock-data";
 import { toWineCard } from "@/lib/locale-helpers";
 import { Bookmark, BookmarkCheck, Heart } from "lucide-react";
 
@@ -17,13 +18,17 @@ export default function MerchantPage() {
   const slug = params.slug as string;
 
   const merchant = merchants.find((m) => m.slug === slug) ?? merchants[0];
-  const wineCards = wines.map((w) => toWineCard(w, locale));
+  const [wineList, setWineList] = useState<Wine[]>([]);
 
   const [bookmarked, setBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState<number | null>(null);
 
   useEffect(() => {
+    fetch(`/api/merchants/${slug}/wines`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: Wine[]) => setWineList(data))
+      .catch(() => {});
     fetch("/api/user/auth/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((u) => { if (u) setBookmarked((u.merchantBookmarks ?? []).includes(slug)); })
@@ -147,7 +152,7 @@ export default function MerchantPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {wineCards.map((wine) => (
+            {wineList.map((w) => toWineCard(w, locale)).map((wine) => (
               <WineCard key={wine.slug} wine={wine} />
             ))}
           </div>

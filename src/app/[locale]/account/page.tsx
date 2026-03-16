@@ -5,7 +5,8 @@ import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { LogOut, Bookmark, User, Settings, Eye, EyeOff, CheckCircle, Store } from "lucide-react";
-import { wines, merchants } from "@/lib/mock-data";
+import { merchants } from "@/lib/mock-data";
+import type { Wine } from "@/lib/mock-data";
 
 interface UserProfile {
   id: string;
@@ -26,6 +27,7 @@ export default function UserAccountPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("bookmarks");
+  const [allWines, setAllWines] = useState<Wine[]>([]);
 
   // Profile form
   const [name, setName] = useState("");
@@ -46,6 +48,9 @@ export default function UserAccountPage() {
         setName(u.name);
       })
       .finally(() => setLoading(false));
+    fetch("/api/wines?limit=100")
+      .then((r) => (r.ok ? r.json() : { wines: [] }))
+      .then((d) => setAllWines(d.wines));
   }, [router]);
 
   const handleLogout = async () => {
@@ -91,7 +96,7 @@ export default function UserAccountPage() {
 
   if (!user) return null;
 
-  const bookmarkedWines = wines.filter((w) => user.bookmarks.includes(w.slug));
+  const bookmarkedWines = allWines.filter((w) => user.bookmarks.includes(w.slug));
   const bookmarkedMerchants = merchants.filter((m) => (user.merchantBookmarks ?? []).includes(m.slug));
 
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [

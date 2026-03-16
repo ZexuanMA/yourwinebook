@@ -5,22 +5,21 @@ import { SceneCard } from "@/components/scene/SceneCard";
 import { WineCard } from "@/components/wine/WineCard";
 import { AiRecItem } from "@/components/ai/AiRecItem";
 import { HeroSearch } from "@/components/search/HeroSearch";
-import { wines, scenes, partners } from "@/lib/mock-data";
+import { scenes, partners } from "@/lib/mock-data";
+import { getFeaturedWines } from "@/lib/queries";
 import { toWineCard, getSceneLocale } from "@/lib/locale-helpers";
 
-export default function HomePage() {
+export default async function HomePage() {
   const t = useTranslations();
   const locale = useLocale();
 
   const sceneCards = scenes.map((s) => getSceneLocale(s, locale));
 
-  const featuredWines = wines
-    .filter((w) => w.is_featured)
-    .slice(0, 3)
-    .map((w) => ({
-      ...toWineCard(w, locale),
-      badge: w.badge ? t("featured.editorsPick") : undefined,
-    }));
+  const featured = await getFeaturedWines();
+  const featuredWines = featured.map((w) => ({
+    ...toWineCard(w, locale),
+    badge: w.badge ? t("featured.editorsPick") : undefined,
+  }));
 
   return (
     <>

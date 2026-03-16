@@ -2,8 +2,10 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import { WineCard } from "@/components/wine/WineCard";
-import { wines, scenes } from "@/lib/mock-data";
+import { scenes } from "@/lib/mock-data";
+import type { Wine } from "@/lib/mock-data";
 import { toWineCard, getSceneLocale } from "@/lib/locale-helpers";
 
 export default function ScenePage() {
@@ -17,10 +19,14 @@ export default function ScenePage() {
   const scene = scenes.find((s) => s.slug === slug) ?? scenes[0];
   const localized = getSceneLocale(scene, locale);
 
-  // Get wines for this scene
-  const sceneWineList = scene.wineSlugs
-    .map((ws) => wines.find((w) => w.slug === ws))
-    .filter((w): w is NonNullable<typeof w> => !!w);
+  const [sceneWineList, setSceneWineList] = useState<Wine[]>([]);
+
+  useEffect(() => {
+    fetch(`/api/scenes/${slug}/wines`)
+      .then((r) => (r.ok ? r.json() : []))
+      .then((data: Wine[]) => setSceneWineList(data))
+      .catch(() => {});
+  }, [slug]);
 
   const wineCards = sceneWineList.map((w) => ({
     ...toWineCard(w, locale),
