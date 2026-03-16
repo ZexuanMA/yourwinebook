@@ -1,6 +1,23 @@
 {
   "posts": [
     {
+      "id": "p1773671505610",
+      "authorId": "u1773584072688",
+      "authorType": "user",
+      "authorName": "Theo",
+      "title": "CLoude bay",
+      "content": "It's so good",
+      "tags": [
+        "氣泡酒"
+      ],
+      "likes": [
+        "u1773584072688"
+      ],
+      "commentCount": 0,
+      "createdAt": "2026-03-16T14:31:45.610Z",
+      "updatedAt": "2026-03-16T14:31:45.610Z"
+    },
+    {
       "id": "p1001",
       "authorId": "u1",
       "authorType": "user",
@@ -10,8 +27,17 @@
       "wineSlug": "cloudy-bay-sauvignon-blanc-2023",
       "wineName": "Cloudy Bay Sauvignon Blanc 2023",
       "rating": 4,
-      "tags": ["白酒", "日常自飲", "新手友善"],
-      "likes": ["u2", "u3", "u5"],
+      "tags": [
+        "白酒",
+        "日常自飲",
+        "新手友善"
+      ],
+      "likes": [
+        "u2",
+        "u3",
+        "u5",
+        "u1773584072688"
+      ],
       "commentCount": 2,
       "createdAt": "2026-03-14T10:30:00.000Z",
       "updatedAt": "2026-03-14T10:30:00.000Z"
@@ -26,8 +52,16 @@
       "wineSlug": "moet-chandon-brut-imperial",
       "wineName": "Moët & Chandon Brut Imperial",
       "rating": 5,
-      "tags": ["氣泡酒", "送禮", "聚餐"],
-      "likes": ["u1", "u2", "u4"],
+      "tags": [
+        "氣泡酒",
+        "送禮",
+        "聚餐"
+      ],
+      "likes": [
+        "u1",
+        "u2",
+        "u4"
+      ],
       "commentCount": 1,
       "createdAt": "2026-03-13T18:15:00.000Z",
       "updatedAt": "2026-03-13T18:15:00.000Z"
@@ -42,8 +76,17 @@
       "wineSlug": "penfolds-bin-389-2021",
       "wineName": "Penfolds Bin 389 2021",
       "rating": 5,
-      "tags": ["紅酒", "聚餐", "配中菜"],
-      "likes": ["u1", "u3", "u5", "u6"],
+      "tags": [
+        "紅酒",
+        "聚餐",
+        "配中菜"
+      ],
+      "likes": [
+        "u1",
+        "u3",
+        "u5",
+        "u6"
+      ],
       "commentCount": 2,
       "createdAt": "2026-03-12T14:00:00.000Z",
       "updatedAt": "2026-03-12T14:00:00.000Z"
@@ -55,8 +98,16 @@
       "authorName": "Watson's Wine",
       "title": "本週精選：春季白酒推薦",
       "content": "春天到了，是時候開一瓶清爽的白酒。本週我們精選了幾款適合春天飲用的白酒：Cloudy Bay Sauvignon Blanc 的清新果香、Santa Margherita Pinot Grigio 的優雅花香，都是日常自飲的好選擇。歡迎到店試飲。",
-      "tags": ["白酒", "推薦", "春季"],
-      "likes": ["u1", "u2", "u5"],
+      "tags": [
+        "白酒",
+        "推薦",
+        "春季"
+      ],
+      "likes": [
+        "u1",
+        "u2",
+        "u5"
+      ],
       "commentCount": 1,
       "createdAt": "2026-03-11T09:00:00.000Z",
       "updatedAt": "2026-03-11T09:00:00.000Z"
@@ -71,8 +122,15 @@
       "wineSlug": "whispering-angel-rose-2023",
       "wineName": "Whispering Angel Rosé 2023",
       "rating": 4,
-      "tags": ["粉紅酒", "日常自飲", "聚餐"],
-      "likes": ["u1", "u5"],
+      "tags": [
+        "粉紅酒",
+        "日常自飲",
+        "聚餐"
+      ],
+      "likes": [
+        "u1",
+        "u5"
+      ],
       "commentCount": 1,
       "createdAt": "2026-03-10T16:45:00.000Z",
       "updatedAt": "2026-03-10T16:45:00.000Z"
@@ -84,8 +142,17 @@
       "authorName": "Wine & Co",
       "title": "新手選酒指南：如何讀懂酒標",
       "content": "很多朋友說在酒架前不知道怎麼選。其實看懂酒標就成功一半了。重點看三個地方：1) 產區 - 決定風格；2) 葡萄品種 - 決定口感；3) 年份 - 影響成熟度。有任何問題歡迎留言，我們很樂意幫大家解答。",
-      "tags": ["新手指南", "知識分享"],
-      "likes": ["u1", "u2", "u3", "u4", "u6"],
+      "tags": [
+        "新手指南",
+        "知識分享"
+      ],
+      "likes": [
+        "u1",
+        "u2",
+        "u3",
+        "u4",
+        "u6"
+      ],
       "commentCount": 2,
       "createdAt": "2026-03-09T11:30:00.000Z",
       "updatedAt": "2026-03-09T11:30:00.000Z"
@@ -97,8 +164,15 @@
       "authorName": "王建國",
       "title": "求推薦：HK$200 以下的紅酒",
       "content": "平時下班喜歡小酌一杯，想找幾款 HK$200 以下、口感柔順不會太酸澀的紅酒。主要配簡單的家常菜或者零食。大家有什麼好推薦嗎？",
-      "tags": ["紅酒", "日常自飲", "求推薦"],
-      "likes": ["u2", "u4"],
+      "tags": [
+        "紅酒",
+        "日常自飲",
+        "求推薦"
+      ],
+      "likes": [
+        "u2",
+        "u4"
+      ],
       "commentCount": 3,
       "createdAt": "2026-03-08T20:00:00.000Z",
       "updatedAt": "2026-03-08T20:00:00.000Z"
@@ -112,8 +186,16 @@
       "content": "上週的 Amarone 品鑑會非常成功，感謝大家參加！我們品嚐了 Masi Costasera Amarone 2018，大家對它濃郁的果乾和巧克力風味讚不絕口。下次品鑑會主題會是波爾多 vs 納帕谷，敬請期待。",
       "wineSlug": "masi-costasera-amarone-2018",
       "wineName": "Masi Costasera Amarone 2018",
-      "tags": ["紅酒", "品鑑會", "活動"],
-      "likes": ["u2", "u3"],
+      "tags": [
+        "紅酒",
+        "品鑑會",
+        "活動"
+      ],
+      "likes": [
+        "u2",
+        "u3",
+        "u1773584072688"
+      ],
       "commentCount": 1,
       "createdAt": "2026-03-07T15:00:00.000Z",
       "updatedAt": "2026-03-07T15:00:00.000Z"
