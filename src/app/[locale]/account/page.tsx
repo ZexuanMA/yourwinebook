@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
-import { LogOut, Bookmark, User, Settings, Eye, EyeOff, CheckCircle, Store } from "lucide-react";
+import { LogOut, Bookmark, User, Settings, Eye, EyeOff, CheckCircle, Store, MessageSquare, Heart, MessageCircle, Trash2 } from "lucide-react";
 import { merchants } from "@/lib/mock-data";
 import type { Wine } from "@/lib/mock-data";
 
@@ -19,7 +19,23 @@ interface UserProfile {
   merchantBookmarks: string[];
 }
 
-type Tab = "bookmarks" | "merchantBookmarks" | "profile" | "security";
+interface CommunityPost {
+  id: string;
+  authorId: string;
+  authorType: "user" | "merchant";
+  authorName: string;
+  title: string;
+  content: string;
+  wineSlug?: string;
+  wineName?: string;
+  rating?: number;
+  tags: string[];
+  likes: string[];
+  commentCount: number;
+  createdAt: string;
+}
+
+type Tab = "bookmarks" | "merchantBookmarks" | "posts" | "profile" | "security";
 
 export default function UserAccountPage() {
   const router = useRouter();
@@ -28,6 +44,8 @@ export default function UserAccountPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("bookmarks");
   const [allWines, setAllWines] = useState<Wine[]>([]);
+  const [myPosts, setMyPosts] = useState<CommunityPost[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
 
   // Profile form
   const [name, setName] = useState("");
@@ -40,6 +58,13 @@ export default function UserAccountPage() {
   const [pwSaved, setPwSaved] = useState(false);
 
   useEffect(() => {
+    // Read tab from URL query
+    const params = new URLSearchParams(window.location.search);
+    const urlTab = params.get("tab");
+    if (urlTab && ["bookmarks", "merchantBookmarks", "posts", "profile", "security"].includes(urlTab)) {
+      setTab(urlTab as Tab);
+    }
+
     fetch("/api/user/auth/me")
       .then((r) => (r.ok ? r.json() : null))
       .then((u) => {
@@ -99,9 +124,42 @@ export default function UserAccountPage() {
   const bookmarkedWines = allWines.filter((w) => user.bookmarks.includes(w.slug));
   const bookmarkedMerchants = merchants.filter((m) => (user.merchantBookmarks ?? []).includes(m.slug));
 
+  // Fetch user posts when posts tab is selected
+  useEffect(() => {
+    if (tab === "posts" && user && myPosts.length === 0) {
+      setPostsLoading(true);
+      fetch(`/api/community/posts?authorId=${user.id}&limit=50`)
+        .then((r) => r.json())
+        .then((d) => setMyPosts(d.posts ?? []))
+        .finally(() => setPostsLoading(false));
+    }
+  }, [tab, user, myPosts.length]);
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm("確定要刪除這篇動態嗎？")) return;
+    const res = await fetch(`/api/community/posts/${postId}`, { method: "DELETE" });
+    if (res.ok) {
+      setMyPosts((prev) => prev.filter((p) => p.id !== postId));
+    }
+  };
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    const now = new Date();
+    const diff = now.getTime() - d.getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days < 1) return "今天";
+    if (days < 7) return `${days} 天前`;
+    return d.toLocaleDateString("zh-HK");
+  };
+
+  const totalLikesReceived = myPosts.reduce((sum, p) => sum + p.likes.length, 0);
+  const totalCommentsReceived = myPosts.reduce((sum, p) => sum + p.commentCount, 0);
+
   const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
     { key: "bookmarks",         label: `收藏酒款 (${bookmarkedWines.length})`,     icon: <Bookmark className="w-4 h-4" /> },
     { key: "merchantBookmarks", label: `收藏酒商 (${bookmarkedMerchants.length})`, icon: <Store    className="w-4 h-4" /> },
+    { key: "posts",             label: `我的動態 (${myPosts.length})`,              icon: <MessageSquare className="w-4 h-4" /> },
     { key: "profile",           label: "個人資料",                                  icon: <User     className="w-4 h-4" /> },
     { key: "security",          label: "安全設置",                                  icon: <Settings className="w-4 h-4" /> },
   ];
@@ -121,7 +179,7 @@ export default function UserAccountPage() {
             <h1 className="text-xl font-semibold text-text">{user.name}</h1>
             <p className="text-sm text-text-sub mt-0.5">{user.email}</p>
             <p className="text-xs text-text-sub/60 mt-1">
-              加入於 {new Date(user.joinDate).toLocaleDateString("zh-HK")} · {bookmarkedWines.length} 款酒 · {bookmarkedMerchants.length} 家酒商
+              加入於 {new Date(user.joinDate).toLocaleDateString("zh-HK")} · {bookmarkedWines.length} 款酒 · {bookmarkedMerchants.length} 家酒商 · {myPosts.length} 篇動態
             </p>
           </div>
           <button onClick={handleLogout}
@@ -221,6 +279,92 @@ export default function UserAccountPage() {
                       </div>
                     </div>
                   </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* My Posts */}
+        {tab === "posts" && (
+          <div>
+            {/* Stats summary */}
+            {myPosts.length > 0 && (
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-white border border-wine-border rounded-2xl p-4 text-center">
+                  <p className="text-2xl font-bold text-wine">{myPosts.length}</p>
+                  <p className="text-xs text-text-sub mt-1">發佈動態</p>
+                </div>
+                <div className="bg-white border border-wine-border rounded-2xl p-4 text-center">
+                  <p className="text-2xl font-bold text-wine">{totalLikesReceived}</p>
+                  <p className="text-xs text-text-sub mt-1">收到讚</p>
+                </div>
+                <div className="bg-white border border-wine-border rounded-2xl p-4 text-center">
+                  <p className="text-2xl font-bold text-wine">{totalCommentsReceived}</p>
+                  <p className="text-xs text-text-sub mt-1">收到評論</p>
+                </div>
+              </div>
+            )}
+
+            {postsLoading ? (
+              <div className="space-y-4 animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="bg-white border border-wine-border rounded-2xl p-5 h-32" />
+                ))}
+              </div>
+            ) : myPosts.length === 0 ? (
+              <div className="bg-white border border-wine-border rounded-2xl py-20 text-center">
+                <p className="text-4xl mb-3">📝</p>
+                <p className="text-sm font-medium text-text mb-1">還沒有發佈動態</p>
+                <p className="text-xs text-text-sub mb-5">分享你的品酒心得，和大家交流</p>
+                <Link href="/community/new" className="inline-flex items-center gap-2 px-5 py-2.5 bg-wine text-white rounded-xl text-sm font-medium hover:bg-wine-dark transition-colors">
+                  發佈第一篇動態
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {myPosts.map((post) => (
+                  <div key={post.id} className="bg-white border border-wine-border rounded-2xl p-5">
+                    <div className="flex items-start justify-between mb-2">
+                      <Link href={`/community/${post.id}`} className="group flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-text group-hover:text-wine transition-colors truncate">
+                          {post.title}
+                        </h3>
+                      </Link>
+                      <div className="flex items-center gap-2 ml-3 shrink-0">
+                        <span className="text-xs text-text-sub">{formatDate(post.createdAt)}</span>
+                        <button
+                          onClick={() => handleDeletePost(post.id)}
+                          className="p-1.5 text-text-sub/40 hover:text-wine transition-colors cursor-pointer bg-transparent border-none"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-text-sub line-clamp-2 mb-3">{post.content}</p>
+                    {post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {post.tags.map((tag) => (
+                          <span key={tag} className="px-2 py-0.5 bg-bg-card text-text-sub rounded-full text-[10px]">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4 text-xs text-text-sub">
+                      <span className="flex items-center gap-1">
+                        <Heart className="w-3.5 h-3.5" /> {post.likes.length}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <MessageCircle className="w-3.5 h-3.5" /> {post.commentCount}
+                      </span>
+                      {post.wineName && (
+                        <span className="text-wine text-[10px] ml-auto truncate max-w-[200px]">
+                          {post.wineName}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}

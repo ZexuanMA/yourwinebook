@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
-import { Search, X, User, LogOut, Bookmark, Settings } from "lucide-react";
+import { Search, X, User, LogOut, Bookmark, Settings, MessageSquare } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -95,6 +95,7 @@ export function Navbar() {
           </li>
           <li className="hidden md:block"><Link href="/search" className="hover:text-wine transition-colors">{t("explore")}</Link></li>
           <li className="hidden md:block"><Link href="/merchants" className="hover:text-wine transition-colors">{t("merchants")}</Link></li>
+          <li className="hidden md:block"><Link href="/community" className="hover:text-wine transition-colors">{t("community")}</Link></li>
           <li className="hidden md:block"><Link href="/about" className="hover:text-wine transition-colors">{t("about")}</Link></li>
           <li>
             <button onClick={switchLocale}
@@ -123,6 +124,10 @@ export function Navbar() {
                       <Link href="/account" onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors">
                         <Bookmark className="w-4 h-4 text-text-sub" /> 我的收藏
+                      </Link>
+                      <Link href="/account?tab=posts" onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors">
+                        <MessageSquare className="w-4 h-4 text-text-sub" /> 我的動態
                       </Link>
                       <Link href="/account?tab=profile" onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-text hover:bg-bg transition-colors">

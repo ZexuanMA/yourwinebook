@@ -6,6 +6,7 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "nav.wines": { "zh-HK": "酒款管理", en: "Wine Management" },
   "nav.addWine": { "zh-HK": "新增酒款", en: "Add Wine" },
   "nav.analytics": { "zh-HK": "流量分析", en: "Analytics" },
+  "nav.community": { "zh-HK": "社區互動", en: "Community" },
   "nav.account": { "zh-HK": "帳號設置", en: "Account Settings" },
   "nav.viewFrontend": { "zh-HK": "查看前台網站", en: "View Website" },
   "nav.logout": { "zh-HK": "登出", en: "Log Out" },
@@ -148,6 +149,20 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "mAnalytics.noClicks": { "zh-HK": "暫無點擊記錄", en: "No click records yet" },
   "mAnalytics.loading": { "zh-HK": "載入中…", en: "Loading…" },
   "mAnalytics.time": { "zh-HK": "時間", en: "Time" },
+
+  // ── Community ──
+  "community.title": { "zh-HK": "社區互動", en: "Community" },
+  "community.subtitle": { "zh-HK": "與用戶互動，發佈內容，回覆評論", en: "Interact with users, publish content, reply to comments" },
+  "community.newPost": { "zh-HK": "發佈新動態", en: "New Post" },
+  "community.myPosts": { "zh-HK": "我的動態", en: "My Posts" },
+  "community.mentions": { "zh-HK": "相關討論", en: "Related Discussions" },
+  "community.totalPosts": { "zh-HK": "已發佈", en: "Published" },
+  "community.totalLikes": { "zh-HK": "收到讚", en: "Likes Received" },
+  "community.totalComments": { "zh-HK": "收到評論", en: "Comments Received" },
+  "community.noPosts": { "zh-HK": "還沒有發佈動態", en: "No posts yet" },
+  "community.noPostsHint": { "zh-HK": "發佈內容與用戶互動，提升品牌曝光", en: "Publish content to engage with users and increase brand exposure" },
+  "community.delete": { "zh-HK": "刪除", en: "Delete" },
+  "community.confirmDelete": { "zh-HK": "確定要刪除這篇動態嗎？", en: "Delete this post?" },
 
   // ── Common ──
   "common.total": { "zh-HK": "共", en: "Total" },

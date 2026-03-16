@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   UserRound,
   Languages,
+  MessageSquare,
 } from "lucide-react";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
@@ -31,6 +32,7 @@ const merchantNavKeys = [
   { href: "/dashboard",              key: "nav.overview",   icon: LayoutDashboard, exact: true  },
   { href: "/dashboard/wines",        key: "nav.wines",      icon: List,            exact: false },
   { href: "/dashboard/wines/new",    key: "nav.addWine",    icon: PlusCircle,      exact: true  },
+  { href: "/dashboard/community",    key: "nav.community",  icon: MessageSquare,   exact: true  },
   { href: "/dashboard/analytics",    key: "nav.analytics",  icon: BarChart2,       exact: true  },
   { href: "/dashboard/account",      key: "nav.account",    icon: Settings,        exact: true  },
 ];
@@ -40,6 +42,7 @@ const adminNav = [
   { href: "/dashboard/admin/accounts",     label: "酒商帳號", icon: Users,           exact: true  },
   { href: "/dashboard/admin/users",        label: "用戶管理", icon: UserRound,       exact: true  },
   { href: "/dashboard/admin/applications", label: "入駐申請", icon: ClipboardList,   exact: true  },
+  { href: "/dashboard/community",          label: "社區動態", icon: MessageSquare,   exact: true  },
   { href: "/dashboard/analytics",          label: "流量分析", icon: BarChart2,       exact: true  },
   { href: "/dashboard/account",            label: "帳號設置", icon: Settings,        exact: true  },
 ];
@@ -184,6 +187,7 @@ export function DashboardTopbar() {
     "/dashboard": t("nav.overview"),
     "/dashboard/wines": t("nav.wines"),
     "/dashboard/wines/new": t("nav.addWine"),
+    "/dashboard/community": t("nav.community"),
     "/dashboard/analytics": t("nav.analytics"),
     "/dashboard/account": t("nav.account"),
   };
@@ -193,6 +197,7 @@ export function DashboardTopbar() {
     "/dashboard/admin/accounts": "酒商帳號",
     "/dashboard/admin/users": "用戶管理",
     "/dashboard/admin/applications": "入駐申請",
+    "/dashboard/community": "社區動態",
     "/dashboard/analytics": "流量分析",
     "/dashboard/account": "帳號設置",
   };
