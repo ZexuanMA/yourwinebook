@@ -22,11 +22,6 @@ export function Footer() {
             </Link>
           </li>
           <li>
-            <Link href="/community" className="hover:text-wine transition-colors">
-              {t("community")}
-            </Link>
-          </li>
-          <li>
             <Link href="/about" className="hover:text-wine transition-colors">
               {t("about")}
             </Link>

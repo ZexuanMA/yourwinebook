@@ -78,6 +78,17 @@ export default function UserAccountPage() {
       .then((d) => setAllWines(d.wines));
   }, [router]);
 
+  // Fetch user posts when posts tab is selected
+  useEffect(() => {
+    if (tab === "posts" && user && myPosts.length === 0) {
+      setPostsLoading(true);
+      fetch(`/api/community/posts?authorId=${user.id}&limit=50`)
+        .then((r) => r.json())
+        .then((d) => setMyPosts(d.posts ?? []))
+        .finally(() => setPostsLoading(false));
+    }
+  }, [tab, user, myPosts.length]);
+
   const handleLogout = async () => {
     await fetch("/api/user/auth/logout", { method: "POST" });
     router.push("/account/login");
@@ -123,17 +134,6 @@ export default function UserAccountPage() {
 
   const bookmarkedWines = allWines.filter((w) => user.bookmarks.includes(w.slug));
   const bookmarkedMerchants = merchants.filter((m) => (user.merchantBookmarks ?? []).includes(m.slug));
-
-  // Fetch user posts when posts tab is selected
-  useEffect(() => {
-    if (tab === "posts" && user && myPosts.length === 0) {
-      setPostsLoading(true);
-      fetch(`/api/community/posts?authorId=${user.id}&limit=50`)
-        .then((r) => r.json())
-        .then((d) => setMyPosts(d.posts ?? []))
-        .finally(() => setPostsLoading(false));
-    }
-  }, [tab, user, myPosts.length]);
 
   const handleDeletePost = async (postId: string) => {
     if (!confirm("確定要刪除這篇動態嗎？")) return;

@@ -1,4 +1,4 @@
-import { useTranslations, useLocale } from "next-intl";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { ArrowRight } from "lucide-react";
 import { SceneCard } from "@/components/scene/SceneCard";
@@ -10,8 +10,8 @@ import { getFeaturedWines } from "@/lib/queries";
 import { toWineCard, getSceneLocale } from "@/lib/locale-helpers";
 
 export default async function HomePage() {
-  const t = useTranslations();
-  const locale = useLocale();
+  const t = await getTranslations();
+  const locale = await getLocale();
 
   const sceneCards = scenes.map((s) => getSceneLocale(s, locale));
 
