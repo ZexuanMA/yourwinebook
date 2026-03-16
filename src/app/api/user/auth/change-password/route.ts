@@ -13,10 +13,10 @@ export async function POST(request: NextRequest) {
   if (!newPassword || newPassword.length < 6) {
     return NextResponse.json({ error: "新密碼至少需要 6 個字符" }, { status: 400 });
   }
-  if (!verifyUserPassword(id, currentPassword)) {
+  if (!(await verifyUserPassword(id, currentPassword))) {
     return NextResponse.json({ error: "當前密碼不正確" }, { status: 400 });
   }
 
-  updateUserPassword(id, newPassword);
+  await updateUserPassword(id, newPassword);
   return NextResponse.json({ ok: true });
 }

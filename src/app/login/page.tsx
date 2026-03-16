@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Languages } from "lucide-react";
+import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t, lang, setLang } = useDashboardLang();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
@@ -24,12 +26,12 @@ export default function LoginPage() {
       });
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error ?? "登入失敗");
+        setError(data.error ?? t("login.error"));
         return;
       }
       router.push("/dashboard");
     } catch {
-      setError("網絡錯誤，請重試");
+      setError(t("login.networkError"));
     } finally {
       setLoading(false);
     }
@@ -49,12 +51,12 @@ export default function LoginPage() {
             <span className="font-en text-lg font-bold text-white tracking-wide">Your Wine Book</span>
           </div>
           <h1 className="font-en text-4xl font-bold text-white leading-tight mb-4">
-            酒商後台
+            {t("login.title")}
             <br />
-            <span className="text-gold-light">管理中心</span>
+            <span className="text-gold-light">{t("login.subtitle")}</span>
           </h1>
-          <p className="text-white/60 text-sm leading-relaxed">
-            管理你的上架酒款、追蹤比價排名、<br />更新定價和購買連結。
+          <p className="text-white/60 text-sm leading-relaxed whitespace-pre-line">
+            {t("login.desc")}
           </p>
         </div>
 
@@ -85,8 +87,17 @@ export default function LoginPage() {
             <span className="font-en text-base font-bold text-wine">Your Wine Book</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-text mb-1">歡迎回來</h2>
-          <p className="text-sm text-text-sub mb-8">使用你的酒商帳號登入</p>
+          <div className="flex items-center justify-between mb-1">
+            <h2 className="text-2xl font-semibold text-text">{t("login.welcome")}</h2>
+            <button
+              onClick={() => setLang(lang === "zh-HK" ? "en" : "zh-HK")}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-wine-border rounded-lg text-xs text-text-sub hover:border-gold hover:text-text transition-all cursor-pointer"
+            >
+              <Languages className="w-3.5 h-3.5" />
+              {lang === "zh-HK" ? "EN" : "中"}
+            </button>
+          </div>
+          <p className="text-sm text-text-sub mb-8">{t("login.useAccount")}</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -102,7 +113,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text mb-1.5">密碼</label>
+              <label className="block text-sm font-medium text-text mb-1.5">{t("login.password")}</label>
               <div className="relative">
                 <input
                   type={showPw ? "text" : "password"}
@@ -133,7 +144,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-3 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors disabled:opacity-50 cursor-pointer mt-2 shadow-sm"
             >
-              {loading ? "登入中…" : "登入後台"}
+              {loading ? t("login.loading") : t("login.submit")}
             </button>
           </form>
 

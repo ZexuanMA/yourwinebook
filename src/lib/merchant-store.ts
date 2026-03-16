@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { hashPassword, verifyPassword, isHashed } from "./password";
 
 export type MerchantStatus = "active" | "inactive" | "pending";
 
@@ -13,6 +14,7 @@ export interface StoredMerchant {
   description?: string;
   status: MerchantStatus;
   joinDate: string;
+  preferredLang?: "zh-HK" | "en";
 }
 
 export type PublicMerchant = Omit<StoredMerchant, "password"> & { role: "merchant" };
@@ -50,33 +52,51 @@ export function getMerchantBySlug(slug: string): PublicMerchant | null {
   return m ? toPublic(m) : null;
 }
 
-export function verifyMerchantCredentials(email: string, password: string): PublicMerchant | null {
-  const m = readStore().find((m) => m.email === email && m.password === password);
-  return m ? toPublic(m) : null;
+export async function verifyMerchantCredentials(email: string, password: string): Promise<PublicMerchant | null> {
+  const merchants = readStore();
+  for (const m of merchants) {
+    if (m.email !== email) continue;
+    const ok = await verifyPassword(password, m.password);
+    if (ok) {
+      if (!isHashed(m.password)) {
+        m.password = await hashPassword(password);
+        writeStore(merchants);
+      }
+      return toPublic(m);
+    }
+  }
+  return null;
 }
 
-export function verifyMerchantPassword(slug: string, password: string): boolean {
-  const m = readStore().find((m) => m.slug === slug);
-  return m?.password === password;
+export async function verifyMerchantPassword(slug: string, password: string): Promise<boolean> {
+  const merchants = readStore();
+  const m = merchants.find((m) => m.slug === slug);
+  if (!m) return false;
+  const ok = await verifyPassword(password, m.password);
+  if (ok && !isHashed(m.password)) {
+    m.password = await hashPassword(password);
+    writeStore(merchants);
+  }
+  return ok;
 }
 
-export function updateMerchantPassword(slug: string, newPassword: string): boolean {
+export async function updateMerchantPassword(slug: string, newPassword: string): Promise<boolean> {
   const merchants = readStore();
   const idx = merchants.findIndex((m) => m.slug === slug);
   if (idx === -1) return false;
-  merchants[idx].password = newPassword;
+  merchants[idx].password = await hashPassword(newPassword);
   writeStore(merchants);
   return true;
 }
 
-export function createMerchant(data: {
+export async function createMerchant(data: {
   name: string;
   email: string;
   password: string;
   phone?: string;
   website?: string;
   description?: string;
-}): PublicMerchant | null {
+}): Promise<PublicMerchant | null> {
   const merchants = readStore();
   if (merchants.find((m) => m.email === data.email)) return null;
   const slug = data.name
@@ -88,7 +108,7 @@ export function createMerchant(data: {
     slug,
     name: data.name,
     email: data.email,
-    password: data.password,
+    password: await hashPassword(data.password),
     phone: data.phone,
     website: data.website,
     description: data.description,
@@ -107,4 +127,13 @@ export function setMerchantStatus(slug: string, status: MerchantStatus): PublicM
   merchants[idx].status = status;
   writeStore(merchants);
   return toPublic(merchants[idx]);
+}
+
+export function updateMerchantPreferredLang(slug: string, lang: "zh-HK" | "en"): boolean {
+  const merchants = readStore();
+  const idx = merchants.findIndex((m) => m.slug === slug);
+  if (idx === -1) return false;
+  merchants[idx].preferredLang = lang;
+  writeStore(merchants);
+  return true;
 }

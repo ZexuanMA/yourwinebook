@@ -3,7 +3,7 @@ import { verifyCredentials } from "@/lib/mock-auth";
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
-  const account = verifyCredentials(email, password);
+  const account = await verifyCredentials(email, password);
 
   if (!account) {
     return NextResponse.json({ error: "Email 或密碼錯誤" }, { status: 401 });
@@ -16,5 +16,13 @@ export async function POST(request: NextRequest) {
     maxAge: 60 * 60 * 24 * 7,
     sameSite: "lax",
   });
+  // Set language cookie from merchant preference
+  if (account.preferredLang) {
+    response.cookies.set("wb_dash_lang", account.preferredLang, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+  }
   return response;
 }

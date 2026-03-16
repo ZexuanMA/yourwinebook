@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "name, email and password are required" }, { status: 400 });
   }
 
-  const merchant = createMerchant({ name, email, password, phone, website, description });
+  const merchant = await createMerchant({ name, email, password, phone, website, description });
   if (!merchant) return NextResponse.json({ error: "Email already exists" }, { status: 409 });
 
   return NextResponse.json({ merchant }, { status: 201 });

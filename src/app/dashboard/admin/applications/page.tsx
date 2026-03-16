@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { CheckCircle, XCircle, Clock, MessageSquare, Phone, Globe, Search } from "lucide-react";
+import { CheckCircle, XCircle, Clock, MessageSquare, Phone, Globe, Search, UserPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface MerchantApplication {
   id: string; companyName: string; contactName: string; email: string;
@@ -19,6 +20,7 @@ const STATUS_CONFIG: Record<AppStatus, { label: string; bg: string; text: string
 };
 
 export default function AdminApplicationsPage() {
+  const router = useRouter();
   const [apps, setApps] = useState<MerchantApplication[]>([]);
   const [fetchError, setFetchError] = useState("");
   const [search, setSearch] = useState("");
@@ -46,6 +48,17 @@ export default function AdminApplicationsPage() {
     if (res.ok) {
       setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
     }
+  };
+
+  const handleCreateAccount = (app: MerchantApplication) => {
+    const params = new URLSearchParams({
+      fromApp: "1",
+      name: app.companyName,
+      email: app.email,
+      phone: app.phone,
+      website: app.website ?? "",
+    });
+    router.push(`/dashboard/admin/accounts?${params.toString()}`);
   };
 
   const filtered = apps.filter((a) => {
@@ -230,7 +243,24 @@ export default function AdminApplicationsPage() {
                       </button>
                     </>
                   )}
-                  {(app.status === "approved" || app.status === "rejected") && (
+                  {app.status === "approved" && (
+                    <>
+                      <button
+                        onClick={() => updateStatus(app.id, "pending")}
+                        className="px-4 py-2 bg-bg border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold transition-colors cursor-pointer"
+                      >
+                        重置為待處理
+                      </button>
+                      <button
+                        onClick={() => handleCreateAccount(app)}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-wine text-white rounded-xl text-xs font-semibold hover:bg-wine-dark transition-colors cursor-pointer"
+                      >
+                        <UserPlus className="w-3.5 h-3.5" />
+                        創建酒商帳號
+                      </button>
+                    </>
+                  )}
+                  {app.status === "rejected" && (
                     <button
                       onClick={() => updateStatus(app.id, "pending")}
                       className="px-4 py-2 bg-bg border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold transition-colors cursor-pointer"

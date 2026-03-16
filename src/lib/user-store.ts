@@ -2,12 +2,11 @@
  * File-based persistent user store.
  * Reads/writes to data/users.json so new registrations survive
  * hot-reloads and server restarts during development.
- *
- * All functions are synchronous to keep call-sites simple.
  */
 
 import fs from "fs";
 import path from "path";
+import { hashPassword, verifyPassword, isHashed } from "./password";
 
 export type UserStatus = "active" | "suspended";
 
@@ -57,21 +56,31 @@ export function getUserById(id: string): PublicUser | null {
   return rest;
 }
 
-export function verifyCredentials(email: string, password: string): PublicUser | null {
-  const u = readStore().find((u) => u.email === email && u.password === password);
-  if (!u) return null;
-  const { password: _, ...rest } = u; void _;
-  return rest;
+export async function verifyCredentials(email: string, password: string): Promise<PublicUser | null> {
+  const users = readStore();
+  for (const u of users) {
+    if (u.email !== email) continue;
+    const ok = await verifyPassword(password, u.password);
+    if (ok) {
+      if (!isHashed(u.password)) {
+        u.password = await hashPassword(password);
+        writeStore(users);
+      }
+      const { password: _, ...rest } = u; void _;
+      return rest;
+    }
+  }
+  return null;
 }
 
-export function registerUser(name: string, email: string, password: string): PublicUser | null {
+export async function registerUser(name: string, email: string, password: string): Promise<PublicUser | null> {
   const users = readStore();
-  if (users.find((u) => u.email === email)) return null; // already exists
+  if (users.find((u) => u.email === email)) return null;
   const newUser: StoredUser = {
     id: `u${Date.now()}`,
     name,
     email,
-    password,
+    password: await hashPassword(password),
     status: "active",
     preferredLang: "zh-HK",
     joinDate: new Date().toISOString().slice(0, 10),
@@ -103,7 +112,7 @@ export function toggleWineBookmark(id: string, wineSlug: string): boolean {
   const has = bookmarks.includes(wineSlug);
   users[idx].bookmarks = has ? bookmarks.filter((s) => s !== wineSlug) : [...bookmarks, wineSlug];
   writeStore(users);
-  return !has; // true = now bookmarked
+  return !has;
 }
 
 export function toggleMerchantBookmark(id: string, merchantSlug: string): boolean {
@@ -121,16 +130,23 @@ export function getMerchantFavoriteCount(merchantSlug: string): number {
   return readStore().filter((u) => (u.merchantBookmarks ?? []).includes(merchantSlug)).length;
 }
 
-export function verifyUserPassword(id: string, password: string): boolean {
-  const u = readStore().find((u) => u.id === id);
-  return u?.password === password;
+export async function verifyUserPassword(id: string, password: string): Promise<boolean> {
+  const users = readStore();
+  const u = users.find((u) => u.id === id);
+  if (!u) return false;
+  const ok = await verifyPassword(password, u.password);
+  if (ok && !isHashed(u.password)) {
+    u.password = await hashPassword(password);
+    writeStore(users);
+  }
+  return ok;
 }
 
-export function updateUserPassword(id: string, newPassword: string): boolean {
+export async function updateUserPassword(id: string, newPassword: string): Promise<boolean> {
   const users = readStore();
   const idx = users.findIndex((u) => u.id === id);
   if (idx === -1) return false;
-  users[idx].password = newPassword;
+  users[idx].password = await hashPassword(newPassword);
   writeStore(users);
   return true;
 }

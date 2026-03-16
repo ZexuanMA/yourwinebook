@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Sans, Noto_Sans_TC } from "next/font/google";
+import { cookies } from "next/headers";
+import { DashboardLangProvider } from "@/lib/dashboard-lang-context";
+import type { DashboardLang } from "@/lib/dashboard-i18n";
 import "../globals.css";
 
 const dmSans = DM_Sans({
@@ -18,11 +21,16 @@ export const metadata: Metadata = {
   title: "登入 — Your Wine Book 酒商後台",
 };
 
-export default function LoginLayout({ children }: { children: React.ReactNode }) {
+export default async function LoginLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get("wb_dash_lang")?.value ?? "zh-HK") as DashboardLang;
+
   return (
-    <html lang="zh-HK">
+    <html lang={lang === "en" ? "en" : "zh-HK"}>
       <body className={`${dmSans.variable} ${notoSansTC.variable} font-zh bg-bg text-text antialiased`}>
-        {children}
+        <DashboardLangProvider initial={lang}>
+          {children}
+        </DashboardLangProvider>
       </body>
     </html>
   );

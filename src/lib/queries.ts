@@ -3,9 +3,9 @@ import {
   wines as mockWines,
   merchants as mockMerchants,
   scenes as mockScenes,
-  winePrices as mockWinePrices,
   partners as mockPartners,
 } from "./mock-data";
+import { getMergedPrices } from "./price-store";
 import type { Wine, Merchant, MerchantPrice, Scene } from "./mock-data";
 import type { WineFilters, PaginatedWines, MerchantApplicationInput } from "./types";
 
@@ -233,7 +233,7 @@ export async function getWinePrices(slug: string): Promise<MerchantPrice[]> {
       }
     }
   }
-  return mockWinePrices[slug] ?? [];
+  return getMergedPrices(slug);
 }
 
 // ============================================================

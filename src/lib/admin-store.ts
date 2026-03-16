@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { hashPassword, verifyPassword, isHashed } from "./password";
 
 interface AdminData {
   slug: string;
@@ -33,17 +34,29 @@ export function getAdminPublic() {
   return { ...rest, role: "admin" as const, status: "active" as const };
 }
 
-export function verifyAdminCredentials(email: string, password: string): boolean {
+export async function verifyAdminCredentials(email: string, password: string): Promise<boolean> {
   const admin = readAdmin();
-  return admin.email === email && admin.password === password;
+  if (admin.email !== email) return false;
+  const ok = await verifyPassword(password, admin.password);
+  if (ok && !isHashed(admin.password)) {
+    admin.password = await hashPassword(password);
+    writeAdmin(admin);
+  }
+  return ok;
 }
 
-export function verifyAdminPassword(password: string): boolean {
-  return readAdmin().password === password;
+export async function verifyAdminPassword(password: string): Promise<boolean> {
+  const admin = readAdmin();
+  const ok = await verifyPassword(password, admin.password);
+  if (ok && !isHashed(admin.password)) {
+    admin.password = await hashPassword(password);
+    writeAdmin(admin);
+  }
+  return ok;
 }
 
-export function updateAdminPassword(newPassword: string): void {
+export async function updateAdminPassword(newPassword: string): Promise<void> {
   const admin = readAdmin();
-  admin.password = newPassword;
+  admin.password = await hashPassword(newPassword);
   writeAdmin(admin);
 }

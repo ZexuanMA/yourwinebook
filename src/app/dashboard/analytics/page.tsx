@@ -7,13 +7,14 @@ import {
 } from "recharts";
 import { Eye, Users, MousePointerClick, TrendingUp, Clock, RefreshCw, ShoppingCart } from "lucide-react";
 import type { AnalyticsSummary, MerchantAnalyticsSummary } from "@/lib/analytics-store";
+import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
 const TooltipStyle = {
   contentStyle: { background: "#fff", border: "1px solid #E5E0DA", borderRadius: 12, fontSize: 12, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" },
   labelStyle: { color: "#6B6560", marginBottom: 4, fontWeight: 600 },
 };
 
-// ── Admin analytics view ──────────────────────────────────────────────────────
+// ── Admin analytics view (stays Chinese) ─────────────────────────────────────
 
 function AdminAnalytics() {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
@@ -186,11 +187,12 @@ function AdminAnalytics() {
   );
 }
 
-// ── Merchant analytics view ───────────────────────────────────────────────────
+// ── Merchant analytics view (translated) ─────────────────────────────────────
 
 function MerchantAnalytics() {
   const [data, setData] = useState<MerchantAnalyticsSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useDashboardLang();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -209,23 +211,23 @@ function MerchantAnalytics() {
   const conversionRate = totalViews > 0 ? Math.round((totalClicks / totalViews) * 100) : 0;
 
   const statCards = [
-    { label: "酒款頁瀏覽",  value: loading ? "—" : totalViews.toLocaleString(),  icon: Eye,           iconBg: "bg-red-light", iconColor: "text-wine"        },
-    { label: "收到比價點擊", value: loading ? "—" : totalClicks.toLocaleString(), icon: ShoppingCart,  iconBg: "bg-green-50",  iconColor: "text-green-700"   },
-    { label: "整體轉化率",   value: loading ? "—" : `${conversionRate}%`,         icon: TrendingUp,    iconBg: "bg-orange-50", iconColor: "text-orange-600"  },
-    { label: "上架酒款",     value: loading ? "—" : (data?.wineStats.length ?? 0).toLocaleString(), icon: MousePointerClick, iconBg: "bg-purple-50", iconColor: "text-purple-600" },
+    { label: t("mAnalytics.wineViews"),      value: loading ? "—" : totalViews.toLocaleString(),  icon: Eye,           iconBg: "bg-red-light", iconColor: "text-wine"        },
+    { label: t("mAnalytics.priceClicks"),     value: loading ? "—" : totalClicks.toLocaleString(), icon: ShoppingCart,  iconBg: "bg-green-50",  iconColor: "text-green-700"   },
+    { label: t("mAnalytics.conversionRate"),  value: loading ? "—" : `${conversionRate}%`,         icon: TrendingUp,    iconBg: "bg-orange-50", iconColor: "text-orange-600"  },
+    { label: t("mAnalytics.winesListed"),     value: loading ? "—" : (data?.wineStats.length ?? 0).toLocaleString(), icon: MousePointerClick, iconBg: "bg-purple-50", iconColor: "text-purple-600" },
   ];
 
   return (
     <div className="space-y-7">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-text">流量分析</h1>
-          <p className="text-sm text-text-sub mt-1">你的酒款在平台上的曝光與點擊數據</p>
+          <h1 className="text-2xl font-semibold text-text">{t("mAnalytics.title")}</h1>
+          <p className="text-sm text-text-sub mt-1">{t("mAnalytics.subtitle")}</p>
         </div>
         <button onClick={fetchData} disabled={loading}
           className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold hover:text-text transition-all cursor-pointer disabled:opacity-50">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          刷新
+          {t("mAnalytics.refresh")}
         </button>
       </div>
 
@@ -247,21 +249,21 @@ function MerchantAnalytics() {
       {/* Per-wine breakdown */}
       <div className="bg-white border border-wine-border rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-wine-border">
-          <h2 className="font-semibold text-text">酒款表現明細</h2>
-          <p className="text-xs text-text-sub mt-0.5">按酒款頁面瀏覽量排序</p>
+          <h2 className="font-semibold text-text">{t("mAnalytics.winePerformance")}</h2>
+          <p className="text-xs text-text-sub mt-0.5">{t("mAnalytics.winePerformanceSub")}</p>
         </div>
         {loading ? (
-          <div className="py-12 text-center text-text-sub text-sm">載入中…</div>
+          <div className="py-12 text-center text-text-sub text-sm">{t("mAnalytics.loading")}</div>
         ) : !data || data.wineStats.length === 0 ? (
-          <div className="py-12 text-center text-text-sub text-sm">暫無數據，用戶瀏覽你的酒款後將自動記錄</div>
+          <div className="py-12 text-center text-text-sub text-sm">{t("mAnalytics.noData")}</div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-bg border-b border-wine-border">
-                <th className="text-left px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">酒款</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">瀏覽量</th>
-                <th className="text-right px-4 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">比價點擊</th>
-                <th className="text-right px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">轉化率</th>
+                <th className="text-left px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.wine")}</th>
+                <th className="text-right px-4 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("mAnalytics.views")}</th>
+                <th className="text-right px-4 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("mAnalytics.clicks")}</th>
+                <th className="text-right px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("mAnalytics.rate")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F5F0EA]">
@@ -293,24 +295,24 @@ function MerchantAnalytics() {
       <div className="bg-white border border-wine-border rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-wine-border flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-text">最近比價點擊</h2>
-            <p className="text-xs text-text-sub mt-0.5">用戶點擊你的商品連結記錄</p>
+            <h2 className="font-semibold text-text">{t("mAnalytics.recentClicks")}</h2>
+            <p className="text-xs text-text-sub mt-0.5">{t("mAnalytics.recentClicksSub")}</p>
           </div>
           <span className="inline-flex items-center gap-1.5 text-xs text-green-700 bg-green-50 border border-green-100 px-2.5 py-1 rounded-full font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse inline-block" />
-            實時
+            {t("mAnalytics.realtime")}
           </span>
         </div>
         {loading ? (
-          <div className="py-12 text-center text-text-sub text-sm">載入中…</div>
+          <div className="py-12 text-center text-text-sub text-sm">{t("mAnalytics.loading")}</div>
         ) : !data || data.recentClicks.length === 0 ? (
-          <div className="py-12 text-center text-text-sub text-sm">暫無點擊記錄</div>
+          <div className="py-12 text-center text-text-sub text-sm">{t("mAnalytics.noClicks")}</div>
         ) : (
           <table className="w-full text-sm">
             <thead><tr className="bg-bg border-b border-wine-border">
-              <th className="text-left px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">酒款</th>
+              <th className="text-left px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.wine")}</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">Session</th>
-              <th className="text-right px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">時間</th>
+              <th className="text-right px-6 py-3 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("mAnalytics.time")}</th>
             </tr></thead>
             <tbody className="divide-y divide-[#F5F0EA]">
               {data.recentClicks.map((c, i) => (

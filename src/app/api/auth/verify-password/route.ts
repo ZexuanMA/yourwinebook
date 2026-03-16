@@ -15,17 +15,17 @@ export async function POST(request: NextRequest) {
   }
 
   if (slug === "admin") {
-    if (!verifyAdminPassword(currentPassword)) {
+    if (!(await verifyAdminPassword(currentPassword))) {
       return NextResponse.json({ error: "當前密碼不正確" }, { status: 400 });
     }
-    updateAdminPassword(newPassword);
+    await updateAdminPassword(newPassword);
     return NextResponse.json({ ok: true });
   }
 
-  if (!verifyMerchantPassword(slug, currentPassword)) {
+  if (!(await verifyMerchantPassword(slug, currentPassword))) {
     return NextResponse.json({ error: "當前密碼不正確" }, { status: 400 });
   }
 
-  updateMerchantPassword(slug, newPassword);
+  await updateMerchantPassword(slug, newPassword);
   return NextResponse.json({ ok: true });
 }

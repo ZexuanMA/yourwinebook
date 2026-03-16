@@ -18,14 +18,15 @@ export interface MockAccount {
   website?: string;
   joinDate: string;
   description?: string;
+  preferredLang?: "zh-HK" | "en";
 }
 
-export function verifyCredentials(email: string, password: string): MockAccount | null {
-  if (verifyAdminCredentials(email, password)) {
+export async function verifyCredentials(email: string, password: string): Promise<MockAccount | null> {
+  if (await verifyAdminCredentials(email, password)) {
     return getAdminPublic();
   }
-  const m = verifyMerchantCredentials(email, password);
-  if (m) return { slug: m.slug, name: m.name, email: m.email, role: "merchant", status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate, description: m.description };
+  const m = await verifyMerchantCredentials(email, password);
+  if (m) return { slug: m.slug, name: m.name, email: m.email, role: "merchant", status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate, description: m.description, preferredLang: m.preferredLang };
   return null;
 }
 
@@ -34,7 +35,7 @@ export function getMockAccount(slug: string): MockAccount | null {
     return getAdminPublic();
   }
   const m = getMerchantBySlug(slug);
-  if (m) return { slug: m.slug, name: m.name, email: m.email, role: "merchant", status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate, description: m.description };
+  if (m) return { slug: m.slug, name: m.name, email: m.email, role: "merchant", status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate, description: m.description, preferredLang: m.preferredLang };
   return null;
 }
 
@@ -42,7 +43,7 @@ export function getAllMerchants(): MockAccount[] {
   return getAllMerchantsFromStore().map((m) => ({
     slug: m.slug, name: m.name, email: m.email, role: "merchant" as UserRole,
     status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate,
-    description: m.description,
+    description: m.description, preferredLang: m.preferredLang,
   }));
 }
 

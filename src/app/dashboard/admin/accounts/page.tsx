@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Search, CheckCircle, XCircle,
-  ExternalLink, ChevronDown, ChevronUp, Plus, X, Eye, MousePointerClick, Heart,
+  ExternalLink, ChevronDown, ChevronUp, Plus, X, Eye, MousePointerClick, Heart, Copy, Check,
 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { PerMerchantStats } from "@/lib/analytics-store";
 
 interface MerchantStatsWithFavorites extends PerMerchantStats {
@@ -33,7 +34,16 @@ const STATUS_CONFIG: Record<AccountStatus, { label: string; bg: string; text: st
   inactive: { label: "已停用", bg: "bg-red-50",    text: "text-red-600",    icon: <XCircle     className="w-3.5 h-3.5" /> },
 };
 
+function generatePassword(len = 12): string {
+  const chars = "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let pw = "";
+  for (let i = 0; i < len; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  return pw;
+}
+
 export default function AdminAccountsPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [merchants, setMerchants] = useState<Merchant[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<AccountStatus | "all">("all");
@@ -43,6 +53,7 @@ export default function AdminAccountsPage() {
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
   const [merchantStats, setMerchantStats] = useState<Record<string, MerchantStatsWithFavorites>>({});
+  const [copiedPw, setCopiedPw] = useState(false);
 
   const loadMerchants = useCallback(async () => {
     const res = await fetch("/api/admin/accounts");
@@ -63,6 +74,24 @@ export default function AdminAccountsPage() {
   }, []);
 
   useEffect(() => { loadMerchants(); loadStats(); }, [loadMerchants, loadStats]);
+
+  // Auto-open create modal when coming from applications page
+  useEffect(() => {
+    if (searchParams.get("fromApp") === "1") {
+      const pw = generatePassword();
+      setCreateForm({
+        name: searchParams.get("name") ?? "",
+        email: searchParams.get("email") ?? "",
+        password: pw,
+        phone: searchParams.get("phone") ?? "",
+        website: searchParams.get("website") ?? "",
+        description: "",
+      });
+      setShowCreate(true);
+      // Clean up URL params without navigation
+      router.replace("/dashboard/admin/accounts", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   const filtered = merchants.filter((m) => {
     const matchSearch =
@@ -108,6 +137,13 @@ export default function AdminAccountsPage() {
     }
   };
 
+  const handleCopyPassword = () => {
+    navigator.clipboard.writeText(createForm.password).then(() => {
+      setCopiedPw(true);
+      setTimeout(() => setCopiedPw(false), 2000);
+    });
+  };
+
   const counts = {
     all: merchants.length,
     active: merchants.filter((m) => m.status === "active").length,
@@ -123,7 +159,10 @@ export default function AdminAccountsPage() {
           <p className="text-sm text-text-sub mt-1">查看並管理所有已入駐的酒商帳號</p>
         </div>
         <button
-          onClick={() => setShowCreate(true)}
+          onClick={() => {
+            setCreateForm({ name: "", email: "", password: "", phone: "", website: "", description: "" });
+            setShowCreate(true);
+          }}
           className="inline-flex items-center gap-2 px-4 py-2 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors cursor-pointer shadow-sm"
         >
           <Plus className="w-4 h-4" /> 新增酒商
@@ -142,7 +181,48 @@ export default function AdminAccountsPage() {
               {[
                 { label: "酒商名稱 *", key: "name", type: "text", placeholder: "Watson's Wine" },
                 { label: "Email *", key: "email", type: "email", placeholder: "contact@merchant.com" },
-                { label: "密碼 *", key: "password", type: "password", placeholder: "至少8位" },
+              ].map(({ label, key, type, placeholder }) => (
+                <div key={key}>
+                  <label className="block text-xs font-medium text-text-sub mb-1">{label}</label>
+                  <input
+                    type={type}
+                    value={createForm[key as keyof typeof createForm]}
+                    onChange={(e) => setCreateForm((p) => ({ ...p, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    required={label.endsWith("*")}
+                    className="w-full px-3 py-2 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold transition-colors"
+                  />
+                </div>
+              ))}
+              {/* Password with generate & copy */}
+              <div>
+                <label className="block text-xs font-medium text-text-sub mb-1">密碼 *</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={createForm.password}
+                    onChange={(e) => setCreateForm((p) => ({ ...p, password: e.target.value }))}
+                    placeholder="至少8位"
+                    required
+                    className="flex-1 px-3 py-2 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold transition-colors font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setCreateForm((p) => ({ ...p, password: generatePassword() }))}
+                    className="px-3 py-2 bg-bg border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold hover:text-text transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    生成
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyPassword}
+                    className="px-3 py-2 bg-bg border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold hover:text-text transition-all cursor-pointer"
+                  >
+                    {copiedPw ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+              {[
                 { label: "電話", key: "phone", type: "text", placeholder: "+852 xxxx xxxx" },
                 { label: "網站", key: "website", type: "url", placeholder: "https://..." },
               ].map(({ label, key, type, placeholder }) => (
@@ -153,7 +233,6 @@ export default function AdminAccountsPage() {
                     value={createForm[key as keyof typeof createForm]}
                     onChange={(e) => setCreateForm((p) => ({ ...p, [key]: e.target.value }))}
                     placeholder={placeholder}
-                    required={label.endsWith("*")}
                     className="w-full px-3 py-2 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold transition-colors"
                   />
                 </div>
