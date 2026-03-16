@@ -105,7 +105,8 @@ export default function DashboardWines() {
           <h1 className="text-2xl font-semibold text-text">{t("wines.title")}</h1>
           <p className="text-sm text-text-sub mt-1">
             {t("common.total")} <span className="font-semibold text-text">{allMyWines.length}</span> {t("wines.listed")} ·{" "}
-            <span className="text-green-700 font-semibold">{bestCount}</span> {t("wines.bestPrice")}
+            <span className="text-green-700 font-semibold">{bestCount}</span> {t("wines.bestPrice")} ·{" "}
+            <span className="text-text-sub">{t("wines.editPriceHint")}</span>
           </p>
         </div>
         <Link
@@ -224,10 +225,11 @@ export default function DashboardWines() {
                         ) : (
                           <button
                             onClick={() => { setEditingSlug(wine.slug); setEditPrice(String(price)); }}
-                            className="inline-flex items-center gap-1.5 font-semibold text-text hover:text-wine transition-colors cursor-pointer group"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 font-semibold text-text hover:text-wine hover:bg-red-light rounded-lg transition-all cursor-pointer"
+                            title={t("wines.editPrice")}
                           >
                             HK${price}
-                            <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Pencil className="w-3 h-3 text-text-sub/40" />
                           </button>
                         )}
                       </td>

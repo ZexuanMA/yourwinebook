@@ -71,6 +71,8 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "wines.typeSparkling": { "zh-HK": "氣泡酒", en: "Sparkling" },
   "wines.typeRosé": { "zh-HK": "玫瑰酒", en: "Rosé" },
   "wines.typeDessert": { "zh-HK": "甜酒", en: "Dessert" },
+  "wines.editPrice": { "zh-HK": "點擊修改價格", en: "Click to edit price" },
+  "wines.editPriceHint": { "zh-HK": "點擊價格可直接修改", en: "click price to edit" },
 
   // ── New Wine Page ──
   "newWine.back": { "zh-HK": "返回酒款管理", en: "Back to Wine Management" },
