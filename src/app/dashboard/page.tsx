@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PlusCircle, TrendingDown, Package, Star, ArrowUpRight, Trophy, Heart } from "lucide-react";
-import { wines, merchants, winePrices } from "@/lib/mock-data";
+import { merchants } from "@/lib/mock-data";
+import type { Wine, MerchantPrice } from "@/lib/mock-data";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
-interface Merchant {
+interface MerchantAccount {
   slug: string;
   name: string;
   favoriteCount?: number;
@@ -21,7 +22,9 @@ const TYPE_COLOR: Record<string, string> = {
 };
 
 export default function DashboardHome() {
-  const [merchant, setMerchant] = useState<Merchant | null>(null);
+  const [merchant, setMerchant] = useState<MerchantAccount | null>(null);
+  const [wineData, setWineData] = useState<Wine[]>([]);
+  const [priceData, setPriceData] = useState<Record<string, MerchantPrice[]>>({});
   const { t, tf } = useDashboardLang();
 
   useEffect(() => {
@@ -34,6 +37,14 @@ export default function DashboardHome() {
           .then((r) => r.json())
           .then((d) => setMerchant((prev) => prev ? { ...prev, favoriteCount: d.favoriteCount } : prev))
           .catch(() => {});
+        fetch("/api/merchant/wines")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((data) => {
+            if (data) {
+              setWineData(data.wines);
+              setPriceData(data.winePrices);
+            }
+          });
       });
   }, []);
 
@@ -50,18 +61,18 @@ export default function DashboardHome() {
   }
 
   const merchantInfo = merchants.find((m) => m.slug === merchant.slug);
-  const myWines = Object.entries(winePrices)
+  const myWines = Object.entries(priceData)
     .filter(([, prices]) => prices.some((p) => p.merchantSlug === merchant.slug))
     .map(([slug, prices]) => {
-      const wine = wines.find((w) => w.slug === slug);
+      const wine = wineData.find((w) => w.slug === slug);
       const myPrice = prices.find((p) => p.merchantSlug === merchant.slug);
+      if (!wine || !myPrice) return null;
       const lowestPrice = Math.min(...prices.map((p) => p.price));
-      return wine && myPrice
-        ? { wine, price: myPrice.price, isBest: myPrice.isBest, lowestPrice, totalMerchants: prices.length }
-        : null;
+      const isBest = myPrice.price <= lowestPrice;
+      return { wine, price: myPrice.price, isBest, lowestPrice, totalMerchants: prices.length };
     })
     .filter(Boolean) as {
-      wine: (typeof wines)[0];
+      wine: Wine;
       price: number;
       isBest: boolean;
       lowestPrice: number;

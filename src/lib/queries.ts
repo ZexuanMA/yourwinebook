@@ -5,9 +5,21 @@ import {
   scenes as mockScenes,
   partners as mockPartners,
 } from "./mock-data";
-import { getMergedPrices } from "./price-store";
+import { getMergedPrices, getUpdatedMinPrice } from "./price-store";
 import type { Wine, Merchant, MerchantPrice, Scene } from "./mock-data";
 import type { WineFilters, PaginatedWines, MerchantApplicationInput } from "./types";
+
+// ============================================================
+// Helpers
+// ============================================================
+
+/** Apply price-store overrides to wine minPrice values */
+function applyPriceUpdates(wineList: Wine[]): Wine[] {
+  return wineList.map((w) => {
+    const updated = getUpdatedMinPrice(w.slug);
+    return updated !== null ? { ...w, minPrice: updated } : w;
+  });
+}
 
 // ============================================================
 // Wines
@@ -61,8 +73,8 @@ export async function getWinesPaginated(filters?: WineFilters): Promise<Paginate
     }
   }
 
-  // Mock data path
-  let result = [...mockWines];
+  // Mock data path — apply price overrides
+  let result = applyPriceUpdates([...mockWines]);
   if (filters?.type) result = result.filter((w) => w.type === filters.type);
   if (filters?.search) {
     const s = filters.search.toLowerCase();
@@ -171,7 +183,10 @@ export async function getWineBySlug(slug: string): Promise<Wine | null> {
     if (data) return rowToWine(data);
     return null;
   }
-  return mockWines.find((w) => w.slug === slug) ?? null;
+  const wine = mockWines.find((w) => w.slug === slug) ?? null;
+  if (!wine) return null;
+  const updated = getUpdatedMinPrice(wine.slug);
+  return updated !== null ? { ...wine, minPrice: updated } : wine;
 }
 
 export async function getFeaturedWines(): Promise<Wine[]> {
@@ -185,7 +200,7 @@ export async function getFeaturedWines(): Promise<Wine[]> {
       .limit(3);
     if (data) return data.map(rowToWine);
   }
-  return mockWines.filter((w) => w.is_featured).slice(0, 3);
+  return applyPriceUpdates(mockWines.filter((w) => w.is_featured).slice(0, 3));
 }
 
 export async function getSimilarWines(slug: string, limit = 3): Promise<Wine[]> {
@@ -203,10 +218,12 @@ export async function getSimilarWines(slug: string, limit = 3): Promise<Wine[]> 
     }
   }
   const current = mockWines.find((w) => w.slug === slug);
-  if (!current) return mockWines.slice(0, limit);
-  return mockWines
-    .filter((w) => w.slug !== slug && w.type === current.type)
-    .slice(0, limit);
+  if (!current) return applyPriceUpdates(mockWines.slice(0, limit));
+  return applyPriceUpdates(
+    mockWines
+      .filter((w) => w.slug !== slug && w.type === current.type)
+      .slice(0, limit)
+  );
 }
 
 // ============================================================
@@ -283,7 +300,7 @@ export async function getMerchantWines(merchantSlug: string): Promise<Wine[]> {
     }
   }
   // For mock: return all wines (merchants share the same catalog)
-  return mockWines;
+  return applyPriceUpdates([...mockWines]);
 }
 
 export async function getPartners(): Promise<string[]> {

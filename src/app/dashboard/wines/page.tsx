@@ -3,12 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { PlusCircle, ExternalLink, Trophy, Search, Pencil, Check, X } from "lucide-react";
-import { wines, winePrices } from "@/lib/mock-data";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
+import type { Wine, MerchantPrice } from "@/lib/mock-data";
 
 interface Merchant {
   slug: string;
   name: string;
+}
+
+interface WineEntry {
+  wine: Wine;
+  price: number;
+  originalPrice: number;
+  isBest: boolean;
+  lowestPrice: number;
+  totalMerchants: number;
 }
 
 const TYPE_COLOR: Record<string, string> = {
@@ -22,7 +31,8 @@ const TYPE_COLOR: Record<string, string> = {
 export default function DashboardWines() {
   const [merchant, setMerchant] = useState<Merchant | null>(null);
   const [search, setSearch] = useState("");
-  const [priceOverrides, setPriceOverrides] = useState<Record<string, number>>({});
+  const [wineData, setWineData] = useState<Wine[]>([]);
+  const [priceData, setPriceData] = useState<Record<string, MerchantPrice[]>>({});
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
   const [savingPrice, setSavingPrice] = useState(false);
@@ -34,34 +44,34 @@ export default function DashboardWines() {
       .then(setMerchant);
   }, []);
 
-  if (!merchant) {
+  useEffect(() => {
+    if (!merchant) return;
+    fetch("/api/merchant/wines")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) {
+          setWineData(data.wines);
+          setPriceData(data.winePrices);
+        }
+      });
+  }, [merchant]);
+
+  if (!merchant || wineData.length === 0) {
     return <div className="animate-pulse h-96 bg-bg-card rounded-2xl" />;
   }
 
-  const allMyWines = Object.entries(winePrices)
+  const allMyWines = Object.entries(priceData)
     .filter(([, prices]) => prices.some((p) => p.merchantSlug === merchant.slug))
     .map(([slug, prices]) => {
-      const wine = wines.find((w) => w.slug === slug);
+      const wine = wineData.find((w) => w.slug === slug);
       const myPrice = prices.find((p) => p.merchantSlug === merchant.slug);
-      const overridePrice = priceOverrides[slug];
-      const effectivePrice = overridePrice ?? myPrice?.price ?? 0;
-      const lowestPrice = Math.min(...prices.map((p) => {
-        if (p.merchantSlug === merchant.slug && overridePrice !== undefined) return overridePrice;
-        return p.price;
-      }));
+      if (!wine || !myPrice) return null;
+      const effectivePrice = myPrice.price;
+      const lowestPrice = Math.min(...prices.map((p) => p.price));
       const isBest = effectivePrice <= lowestPrice;
-      return wine && myPrice
-        ? { wine, price: effectivePrice, originalPrice: myPrice.price, isBest, lowestPrice, totalMerchants: prices.length }
-        : null;
+      return { wine, price: effectivePrice, originalPrice: myPrice.price, isBest, lowestPrice, totalMerchants: prices.length };
     })
-    .filter(Boolean) as {
-      wine: (typeof wines)[0];
-      price: number;
-      originalPrice: number;
-      isBest: boolean;
-      lowestPrice: number;
-      totalMerchants: number;
-    }[];
+    .filter(Boolean) as WineEntry[];
 
   const filtered = search
     ? allMyWines.filter(
@@ -84,7 +94,13 @@ export default function DashboardWines() {
         body: JSON.stringify({ price: newPrice }),
       });
       if (res.ok) {
-        setPriceOverrides((prev) => ({ ...prev, [wineSlug]: newPrice }));
+        // Refresh merged price data from server
+        const dataRes = await fetch("/api/merchant/wines");
+        if (dataRes.ok) {
+          const data = await dataRes.json();
+          setWineData(data.wines);
+          setPriceData(data.winePrices);
+        }
         setEditingSlug(null);
       }
     } finally {
