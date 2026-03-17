@@ -31,7 +31,18 @@
     - `curl https://yourwinebook.com/api/wines` → 200 ✅
     - `pm2 status` → online, 0 restarts ✅
   - 风险：PM2 配置因 cwd 变化做了 delete + 重建（计划内，非调试操作）
-- [ ] P0a-02 初始化 Expo Mobile 项目
+- [x] P0a-02 初始化 Expo Mobile 项目
+  - 完成时间：2026-03-17
+  - 决策：
+    - 使用 `create-expo-app` tabs 模板，Expo SDK 55
+    - 4 个 Tab：探索(Feed) / 找店(Stores) / 發帖(Create) / 我的(Profile)
+    - app scheme: `yourwinebook`，bundleId: `com.yourwinebook.app`
+    - 品牌色 #FAF8F5 背景，#5B2E35 酒红主色
+    - 删除模板多余文件（modal, dark theme），保持最小骨架
+  - 自检：
+    - `npx expo export --platform web` ✅（4 个 tab 页面全部导出）
+    - Web 生产不受影响 ✅
+  - 风险：无
 - [ ] P0a-03 配置 Metro Monorepo 解析
 - [ ] P0a-04 建立共享包 `packages/domain`
 - [ ] P0a-05 建立 `packages/query-keys`

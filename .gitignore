@@ -33,3 +33,7 @@ next-env.d.ts
 
 # turbo
 .turbo/
+
+# expo
+apps/mobile/dist/
+.expo/
