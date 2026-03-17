@@ -43,12 +43,92 @@
     - `npx expo export --platform web` ✅（4 个 tab 页面全部导出）
     - Web 生产不受影响 ✅
   - 风险：无
-- [ ] P0a-03 配置 Metro Monorepo 解析
-- [ ] P0a-04 建立共享包 `packages/domain`
-- [ ] P0a-05 建立 `packages/query-keys`
-- [ ] P0a-06 建立 `packages/supabase-types`
-- [ ] P0a-07 编写 Schema V1 迁移文件
-- [ ] P0a-08 配置基础 RLS 策略
+- [x] P0a-03 配置 Metro Monorepo 解析
+  - 完成时间：2026-03-17
+  - 决策：
+    - 添加 `@expo/metro-config` 为 devDependency（pnpm strict isolation 需显式声明）
+    - `watchFolders` 设为 workspace root，Metro 可监听 `packages/*` 变更
+    - `nodeModulesPaths` 指向 mobile 和 root 两级 node_modules
+    - `extraNodeModules` 锁定 react/react-native/react-dom 到 mobile 的副本，防止多实例
+    - 不使用 `disableHierarchicalLookup`（与 pnpm .pnpm store 结构冲突）
+    - 创建 `packages/domain` 最小骨架用于验证解析（P0a-04 将完善）
+  - 自检：
+    - `npx expo export --platform web` ✅（10 页面全部导出）
+    - 从 tab 页 import `@ywb/domain` 并成功打入 bundle ✅
+    - `pnpm --filter web build` 不受影响 ✅
+  - 风险：无
+- [x] P0a-04 建立共享包 `packages/domain`
+  - 完成时间：2026-03-17
+  - 决策：
+    - 包名 `@ywb/domain`，纯类型 + 常量包，零运行时依赖
+    - 按领域实体拆分：wine / merchant / scene / user / application / community / analytics / common
+    - 提取 23 个 interface/type + 8 个 const 数组（WINE_TYPES, MERCHANT_STATUSES 等）
+    - Web 的 `types.ts` 改为从 `@ywb/domain` 再导出，现有 import 路径不变
+    - `mock-data.ts` 保持原样（结构兼容，避免大范围 import 变更）
+    - Mobile 已有 `@ywb/domain` workspace 依赖
+  - 自检：
+    - `npx tsc --noEmit`（domain 包）✅
+    - `pnpm --filter web build` ✅（39 页面全部通过）
+    - `npx expo export --platform web` ✅（10 页面全部导出）
+  - 风险：无
+- [x] P0a-05 建立 `packages/query-keys`
+  - 完成时间：2026-03-17
+  - 决策：
+    - 包名 `@ywb/query-keys`，纯 TypeScript key factory，零依赖
+    - 覆盖 8 个实体：wine / merchant / scene / store / post / profile / application / analytics
+    - 每个实体提供 all / detail / 特定查询的 key 函数
+    - store 和 post keys 为 Phase 1A/1B 预留
+  - 自检：
+    - `npx tsc --noEmit`（query-keys 包）✅
+    - `pnpm --filter web build` ✅
+    - `npx expo export --platform web` ✅
+  - 风险：无
+- [x] P0a-06 建立 `packages/supabase-types`
+  - 完成时间：2026-03-17
+  - 决策：
+    - 包名 `@ywb/supabase-types`，占位骨架
+    - `Database` 接口为最小形状（空 Tables），P0a-07 后用 `supabase gen types` 填充
+    - 导出 `Database` 和 `Json` 类型
+    - `gen` 脚本已预留
+  - 自检：
+    - `npx tsc --noEmit`（supabase-types 包）✅
+  - 风险：P0a-07 之前仅为占位，不能实际使用
+- [x] P0a-07 编写 Schema V1 迁移文件
+  - 完成时间：2026-03-17
+  - 决策：
+    - Supabase CLI v2.78.1 + Docker 本地实例
+    - 25 张业务表（含 profiles、merchant_locations、posts、comments、bookmarks 等）
+    - PostGIS 扩展用于门店定位，pg_trgm 用于模糊搜索
+    - `get_nearby_stores` RPC：自动扩圈（5km→10km→20km→50km），含收藏状态
+    - `get_feed` RPC：(created_at, id) 游标分页，过滤拉黑，聚合媒体/产品/点赞/收藏
+    - 3 个触发器：updated_at 自动更新、帖子点赞计数、帖子评论计数
+    - 所有表已启用 RLS（策略在 P0a-08 配置）
+    - `supabase-types` 包已用 `supabase gen types` 填充真实类型
+  - 自检：
+    - `supabase db reset` ✅（迁移完整应用）
+    - 25 张表 + spatial_ref_sys 验证存在 ✅
+    - `get_nearby_stores` 和 `get_feed` RPC 注册成功 ✅
+    - `@ywb/supabase-types` tsc --noEmit ✅
+    - `pnpm --filter web build` ✅
+  - 风险：RLS 策略尚未配置（P0a-08）
+- [x] P0a-08 配置基础 RLS 策略
+  - 完成时间：2026-03-17
+  - 决策：
+    - 75 条 RLS 策略覆盖所有 25 张业务表
+    - `is_admin()` 和 `is_merchant_staff(merchant_id)` 两个 helper 函数（SECURITY DEFINER）
+    - 公开数据（wines, merchants, scenes, regions, tags）：匿名可读
+    - 私有数据（bookmarks, blocks, reports, media_uploads）：仅本人 / 管理员
+    - 社区（posts, comments）：visible 可读，auth 可写，admin 可管理
+    - 门店（merchant_locations）：公开可读，staff / admin 可写
+    - 商户应用（merchant_applications）：匿名可提交，admin 可管理
+  - 自检：
+    - `supabase db reset` ✅（两个迁移文件全部通过）
+    - 75 条 policy 创建验证 ✅
+    - 匿名读 wines 成功 ✅
+    - 匿名/普通用户读 reports 被拦截（返回 0 行）✅
+    - 管理员读 reports 成功（返回 1 行）✅
+    - 普通用户写 merchants 被拦截 ✅
+  - 风险：Edge Function 的 service_role 绕过 RLS 需在 P0b 阶段确认
 - [ ] P0a-09 编写 RLS 集成测试
 - [ ] P0a-10 Mobile 端 Auth Provider
 - [ ] P0a-11 Web 端 Supabase Client 初始化
