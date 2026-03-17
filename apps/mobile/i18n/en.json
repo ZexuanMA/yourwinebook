@@ -1,0 +1,64 @@
+{
+  "tabs": {
+    "feed": "Feed",
+    "stores": "Stores",
+    "create": "Post",
+    "profile": "Profile"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "noResults": "No results found",
+    "seeAll": "See all",
+    "comingSoon": "Coming soon"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display Name",
+    "notLoggedIn": "Not logged in",
+    "loginPrompt": "Sign in to access all features"
+  },
+  "feed": {
+    "title": "Feed",
+    "empty": "Nothing here yet — be the first to post",
+    "like": "Like",
+    "comment": "Comment",
+    "share": "Share"
+  },
+  "stores": {
+    "title": "Stores",
+    "nearby": "Nearby Stores",
+    "noStores": "No stores found nearby",
+    "distance": "Distance",
+    "open": "Open",
+    "closed": "Closed",
+    "navigate": "Navigate",
+    "bookmark": "Bookmark",
+    "unbookmark": "Remove Bookmark"
+  },
+  "create": {
+    "title": "Post",
+    "placeholder": "Share your wine experience…",
+    "addPhotos": "Add Photos",
+    "tagWine": "Tag Wine",
+    "post": "Publish"
+  },
+  "profile": {
+    "title": "Profile",
+    "myPosts": "My Posts",
+    "bookmarks": "Bookmarks",
+    "settings": "Settings",
+    "editProfile": "Edit Profile"
+  }
+}

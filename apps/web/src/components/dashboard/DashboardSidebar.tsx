@@ -18,6 +18,7 @@ import {
   UserRound,
   Languages,
   MessageSquare,
+  ShieldAlert,
 } from "lucide-react";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
@@ -42,6 +43,7 @@ const adminNav = [
   { href: "/dashboard/admin/accounts",     label: "酒商帳號", icon: Users,           exact: true  },
   { href: "/dashboard/admin/users",        label: "用戶管理", icon: UserRound,       exact: true  },
   { href: "/dashboard/admin/applications", label: "入駐申請", icon: ClipboardList,   exact: true  },
+  { href: "/dashboard/admin/moderation",   label: "審核管理", icon: ShieldAlert,     exact: true  },
   { href: "/dashboard/community",          label: "社區動態", icon: MessageSquare,   exact: true  },
   { href: "/dashboard/analytics",          label: "流量分析", icon: BarChart2,       exact: true  },
   { href: "/dashboard/account",            label: "帳號設置", icon: Settings,        exact: true  },
@@ -197,6 +199,7 @@ export function DashboardTopbar() {
     "/dashboard/admin/accounts": "酒商帳號",
     "/dashboard/admin/users": "用戶管理",
     "/dashboard/admin/applications": "入駐申請",
+    "/dashboard/admin/moderation": "審核管理",
     "/dashboard/community": "社區動態",
     "/dashboard/analytics": "流量分析",
     "/dashboard/account": "帳號設置",

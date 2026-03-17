@@ -45,6 +45,10 @@ export { APPLICATION_STATUSES } from "./application";
 // Community
 export type { AuthorType, CommunityPost, CommunityComment } from "./community";
 
+// Media
+export type { BucketName, BucketConfig, MediaValidationError, FileToValidate } from "./media";
+export { BUCKET_CONFIGS, validateFiles, COMPRESSION_TARGETS, POST_LIMITS } from "./media";
+
 // Analytics
 export type {
   EventType,

@@ -8,6 +8,6 @@ export async function POST(request: NextRequest) {
   const { merchantSlug } = await request.json();
   if (!merchantSlug) return NextResponse.json({ error: "Missing merchantSlug" }, { status: 400 });
 
-  const bookmarked = toggleMerchantBookmark(id, merchantSlug);
+  const bookmarked = await toggleMerchantBookmark(id, merchantSlug);
   return NextResponse.json({ bookmarked });
 }

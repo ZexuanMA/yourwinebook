@@ -7,7 +7,7 @@ async function requireAdmin() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug) return false;
-  const account = getMockAccount(slug);
+  const account = await getMockAccount(slug);
   return account?.role === "admin";
 }
 
@@ -26,7 +26,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const user = setUserStatus(id, status);
+  const user = await setUserStatus(id, status);
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
   return NextResponse.json({ ok: true, user });

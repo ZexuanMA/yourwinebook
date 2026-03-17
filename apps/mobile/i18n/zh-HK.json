@@ -1,0 +1,64 @@
+{
+  "tabs": {
+    "feed": "探索",
+    "stores": "找店",
+    "create": "發帖",
+    "profile": "我的"
+  },
+  "common": {
+    "loading": "載入中…",
+    "error": "出了點問題",
+    "retry": "重試",
+    "cancel": "取消",
+    "confirm": "確認",
+    "save": "儲存",
+    "delete": "刪除",
+    "edit": "編輯",
+    "search": "搜尋",
+    "noResults": "沒有找到結果",
+    "seeAll": "查看全部",
+    "comingSoon": "即將上線"
+  },
+  "auth": {
+    "signIn": "登入",
+    "signUp": "註冊",
+    "signOut": "登出",
+    "email": "電郵地址",
+    "password": "密碼",
+    "displayName": "暱稱",
+    "notLoggedIn": "尚未登入",
+    "loginPrompt": "登入以使用完整功能"
+  },
+  "feed": {
+    "title": "探索",
+    "empty": "目前還沒有內容，成為第一個發帖的人吧",
+    "like": "讚",
+    "comment": "評論",
+    "share": "分享"
+  },
+  "stores": {
+    "title": "找店",
+    "nearby": "附近門店",
+    "noStores": "附近暫未找到門店",
+    "distance": "距離",
+    "open": "營業中",
+    "closed": "已休息",
+    "navigate": "導航",
+    "bookmark": "收藏",
+    "unbookmark": "取消收藏"
+  },
+  "create": {
+    "title": "發帖",
+    "placeholder": "分享你的品酒心得…",
+    "addPhotos": "添加照片",
+    "tagWine": "標記酒款",
+    "post": "發佈"
+  },
+  "profile": {
+    "title": "我的",
+    "myPosts": "我的帖子",
+    "bookmarks": "收藏",
+    "settings": "設定",
+    "editProfile": "編輯個人資料"
+  }
+}

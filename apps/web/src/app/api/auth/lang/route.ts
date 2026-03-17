@@ -14,7 +14,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "Invalid lang" }, { status: 400 });
   }
 
-  updateMerchantPreferredLang(slug, lang);
+  await updateMerchantPreferredLang(slug, lang);
 
   const res = NextResponse.json({ ok: true });
   res.cookies.set("wb_dash_lang", lang, {

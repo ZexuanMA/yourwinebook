@@ -30,17 +30,17 @@ export async function verifyCredentials(email: string, password: string): Promis
   return null;
 }
 
-export function getMockAccount(slug: string): MockAccount | null {
+export async function getMockAccount(slug: string): Promise<MockAccount | null> {
   if (slug === "admin") {
     return getAdminPublic();
   }
-  const m = getMerchantBySlug(slug);
+  const m = await getMerchantBySlug(slug);
   if (m) return { slug: m.slug, name: m.name, email: m.email, role: "merchant", status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate, description: m.description, preferredLang: m.preferredLang };
   return null;
 }
 
-export function getAllMerchants(): MockAccount[] {
-  return getAllMerchantsFromStore().map((m) => ({
+export async function getAllMerchants(): Promise<MockAccount[]> {
+  return (await getAllMerchantsFromStore()).map((m) => ({
     slug: m.slug, name: m.name, email: m.email, role: "merchant" as UserRole,
     status: m.status, phone: m.phone, website: m.website, joinDate: m.joinDate,
     description: m.description, preferredLang: m.preferredLang,

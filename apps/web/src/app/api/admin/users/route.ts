@@ -7,7 +7,7 @@ async function requireAdmin() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug) return false;
-  const account = getMockAccount(slug);
+  const account = await getMockAccount(slug);
   return account?.role === "admin";
 }
 
@@ -15,5 +15,5 @@ export async function GET(_request: NextRequest) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  return NextResponse.json({ users: getAllUsers() });
+  return NextResponse.json({ users: await getAllUsers() });
 }

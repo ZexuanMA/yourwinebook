@@ -7,7 +7,7 @@ async function requireAdmin() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug) return null;
-  const account = getMockAccount(slug);
+  const account = await getMockAccount(slug);
   if (!account || account.role !== "admin") return null;
   return account;
 }
@@ -27,7 +27,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const merchant = setMerchantStatus(slug, status);
+  const merchant = await setMerchantStatus(slug, status);
   if (!merchant) return NextResponse.json({ error: "Merchant not found" }, { status: 404 });
 
   return NextResponse.json({ merchant });

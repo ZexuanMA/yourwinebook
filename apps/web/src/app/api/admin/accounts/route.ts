@@ -7,7 +7,7 @@ async function requireAdmin() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug) return null;
-  const account = getMockAccount(slug);
+  const account = await getMockAccount(slug);
   if (!account || account.role !== "admin") return null;
   return account;
 }
@@ -16,7 +16,7 @@ export async function GET() {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const merchants = getAllMerchantsFromStore();
+  const merchants = await getAllMerchantsFromStore();
   return NextResponse.json({ merchants });
 }
 

@@ -3,6 +3,9 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import "../i18n";
+import { QueryProvider } from "../providers/QueryProvider";
+import { AuthProvider } from "../providers/AuthProvider";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -32,8 +35,12 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <QueryProvider>
+      <AuthProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      </AuthProvider>
+    </QueryProvider>
   );
 }

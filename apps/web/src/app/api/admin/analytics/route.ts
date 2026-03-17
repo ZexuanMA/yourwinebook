@@ -7,7 +7,7 @@ async function requireAdmin() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug) return false;
-  return getMockAccount(slug)?.role === "admin";
+  return (await getMockAccount(slug))?.role === "admin";
 }
 
 export async function GET(_request: NextRequest) {

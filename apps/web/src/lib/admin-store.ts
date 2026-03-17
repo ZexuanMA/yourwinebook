@@ -1,6 +1,14 @@
+/**
+ * Admin store — file-based (legacy) or Supabase (when USE_SUPABASE_AUTH=true).
+ * In Supabase mode, admin identity comes from profiles where role='admin'.
+ * Auth functions (verify/update password) are handled by supabase-auth.ts.
+ */
+
 import fs from "fs";
 import path from "path";
 import { hashPassword, verifyPassword, isHashed } from "./password";
+import { USE_SUPABASE_AUTH } from "./supabase-auth";
+import { createSupabaseServer } from "./supabase-server";
 
 interface AdminData {
   slug: string;
@@ -9,6 +17,8 @@ interface AdminData {
   password: string;
   joinDate: string;
 }
+
+// ── Legacy file-based helpers ────────────────────────────────
 
 const DATA_FILE = path.join(process.cwd(), "data", "admin.json");
 
@@ -29,12 +39,45 @@ function writeAdmin(admin: AdminData): void {
   }
 }
 
-export function getAdminPublic() {
+// ── Public API ───────────────────────────────────────────────
+
+export async function getAdminPublic(): Promise<{
+  slug: string;
+  name: string;
+  email: string;
+  role: "admin";
+  status: "active";
+  joinDate: string;
+}> {
+  if (USE_SUPABASE_AUTH) {
+    const supabase = await createSupabaseServer();
+    if (supabase) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id, display_name, email, created_at")
+        .eq("role", "admin")
+        .limit(1)
+        .single();
+
+      if (profile) {
+        return {
+          slug: "admin",
+          name: profile.display_name,
+          email: profile.email,
+          role: "admin",
+          status: "active",
+          joinDate: profile.created_at?.slice(0, 10) ?? "",
+        };
+      }
+    }
+  }
+
   const { password: _, ...rest } = readAdmin(); void _;
   return { ...rest, role: "admin" as const, status: "active" as const };
 }
 
 export async function verifyAdminCredentials(email: string, password: string): Promise<boolean> {
+  // Supabase path handled by supabase-auth.ts signIn
   const admin = readAdmin();
   if (admin.email !== email) return false;
   const ok = await verifyPassword(password, admin.password);
@@ -46,6 +89,7 @@ export async function verifyAdminCredentials(email: string, password: string): P
 }
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {
+  // Supabase path handled in verify-password route directly
   const admin = readAdmin();
   const ok = await verifyPassword(password, admin.password);
   if (ok && !isHashed(admin.password)) {
@@ -56,6 +100,7 @@ export async function verifyAdminPassword(password: string): Promise<boolean> {
 }
 
 export async function updateAdminPassword(newPassword: string): Promise<void> {
+  // Supabase path handled in verify-password route directly
   const admin = readAdmin();
   admin.password = await hashPassword(newPassword);
   writeAdmin(admin);

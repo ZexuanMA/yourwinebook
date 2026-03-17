@@ -8,6 +8,6 @@ export async function POST(request: NextRequest) {
   const { wineSlug } = await request.json();
   if (!wineSlug) return NextResponse.json({ error: "Missing wineSlug" }, { status: 400 });
 
-  const bookmarked = toggleWineBookmark(id, wineSlug);
+  const bookmarked = await toggleWineBookmark(id, wineSlug);
   return NextResponse.json({ bookmarked });
 }

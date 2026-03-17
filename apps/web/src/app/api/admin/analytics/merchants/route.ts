@@ -10,7 +10,7 @@ async function requireAdmin() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug) return false;
-  return getMockAccount(slug)?.role === "admin";
+  return (await getMockAccount(slug))?.role === "admin";
 }
 
 export async function GET() {
@@ -24,14 +24,14 @@ export async function GET() {
     }
   }
 
-  const merchantList = getAllMerchantsFromStore();
+  const merchantList = await getAllMerchantsFromStore();
   const nameMap = Object.fromEntries(merchantList.map((m) => [m.slug, m.name]));
 
   const stats = getPerMerchantStats(merchantWineMap);
-  const withFavorites = stats.map((s) => ({
+  const withFavorites = await Promise.all(stats.map(async (s) => ({
     ...s,
     name: nameMap[s.slug] ?? s.slug,
-    favoriteCount: getMerchantFavoriteCount(s.slug),
-  }));
+    favoriteCount: await getMerchantFavoriteCount(s.slug),
+  })));
   return NextResponse.json(withFavorites);
 }

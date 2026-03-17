@@ -1,10 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>我的</Text>
-      <Text style={styles.subtitle}>個人中心 — 即將上線</Text>
+      <Text style={styles.title}>{t("profile.title")}</Text>
+      <Text style={styles.subtitle}>{t("common.comingSoon")}</Text>
     </View>
   );
 }

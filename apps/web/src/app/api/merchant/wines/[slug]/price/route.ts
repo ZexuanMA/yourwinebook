@@ -11,7 +11,7 @@ export async function PATCH(
   const sessionSlug = cookieStore.get("wb_session")?.value;
   if (!sessionSlug) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const account = getMockAccount(sessionSlug);
+  const account = await getMockAccount(sessionSlug);
   if (!account || account.role !== "merchant") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

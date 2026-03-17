@@ -6,5 +6,5 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  return NextResponse.json({ favoriteCount: getMerchantFavoriteCount(slug) });
+  return NextResponse.json({ favoriteCount: await getMerchantFavoriteCount(slug) });
 }

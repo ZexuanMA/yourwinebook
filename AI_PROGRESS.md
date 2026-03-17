@@ -129,33 +129,356 @@
     - 管理员读 reports 成功（返回 1 行）✅
     - 普通用户写 merchants 被拦截 ✅
   - 风险：Edge Function 的 service_role 绕过 RLS 需在 P0b 阶段确认
-- [ ] P0a-09 编写 RLS 集成测试
-- [ ] P0a-10 Mobile 端 Auth Provider
-- [ ] P0a-11 Web 端 Supabase Client 初始化
-- [ ] P0a-12 React Query 基础设施
-- [ ] P0a-13 Mobile i18n 接入
-- [ ] P0a-14 CI 基础流程
-- [ ] P0a-15 Deep Link 基础配置
+- [x] P0a-09 编写 RLS 集成测试
+  - 完成时间：2026-03-17
+  - 决策：
+    - 使用 pgTAP + `supabase test db` 作为测试框架
+    - 6 个测试文件，105 个断言，覆盖匿名/用户/商户/管理员四类角色
+    - 测试直接通过 `SET LOCAL role` + `request.jwt.claims` 模拟角色切换
+    - 每个测试文件使用唯一 UUID 前缀（a1/a2/a3/a4/a5）避免数据冲突
+    - 覆盖场景：公开数据读取、私有数据隔离、书签/帖子/评论/点赞/关注/拉黑/举报
+      CRUD、商户门店与价格管理、跨商户越权、管理员全权操作、帖子媒体/产品
+      跟随帖子可见性、媒体上传隔离、匿名写入拦截
+    - 发现 DELETE 在 RLS 下不抛异常而是静默返回 0 行，改用 "验证行仍存在" 方式测试
+  - 自检：
+    - `supabase test db` → 6 files, 105 tests, ALL PASS ✅
+    - `pnpm --filter web build` ✅
+  - 风险：无
+- [x] P0a-10 Mobile 端 Auth Provider
+  - 完成时间：2026-03-17
+  - 决策：
+    - `@supabase/supabase-js` + `expo-secure-store` 作为依赖
+    - `lib/supabase.ts`：懒初始化单例，无环境变量时返回 null（与 Web 端 mock fallback 一致）
+    - SecureStore adapter 支持 iOS/Android SecureStore + Web localStorage fallback
+    - `providers/AuthProvider.tsx`：Context + hooks 封装 signIn/signUp/signOut/session restore
+    - `onAuthStateChange` 监听实时 session 变化
+    - `isConfigured` 标志位允许 UI 在无 Supabase 时优雅降级
+    - Root layout 已集成 `<AuthProvider>`
+  - 自检：
+    - `npx expo export --platform web` ✅（4 个 tab 页面全部导出）
+    - `pnpm --filter web build` ✅
+  - 风险：无
+- [x] P0a-11 Web 端 Supabase Client 初始化
+  - 完成时间：2026-03-17
+  - 决策：
+    - 安装 `@supabase/ssr` 用于 Next.js App Router 集成
+    - `supabase-server.ts`：基于 `createServerClient` + cookies adapter，用于 Server Component / Route Handler
+    - `supabase-browser.ts`：基于 `createBrowserClient`，用于 Client Component，单例模式
+    - 原有 `supabase.ts` (`getSupabase()`) 保持不动，`queries.ts` 继续使用它
+    - 所有新客户端无环境变量时返回 null，与现有 mock fallback 兼容
+    - P0b-13 认证层迁移时切换到新客户端
+  - 自检：
+    - `pnpm --filter web build` ✅
+  - 风险：无
+- [x] P0a-12 React Query 基础设施
+  - 完成时间：2026-03-17
+  - 决策：
+    - Mobile 端安装 `@tanstack/react-query`
+    - `QueryProvider.tsx`：统一配置 staleTime=5min、gcTime=30min、retry=2、refetchOnWindowFocus=false
+    - 导出 `queryClient` 单例，供 AuthProvider 在登出时调用 `queryClient.clear()`
+    - Root layout 中 QueryProvider 包裹 AuthProvider（外→内：Query → Auth → Stack）
+    - Web 端暂不引入 React Query（现有 Server Component + fetch 模式运行良好），P0b 迁移时按需引入
+    - `@ywb/query-keys` 已在 P0a-05 就绪，Mobile 可直接使用
+  - 自检：
+    - `npx expo export --platform web` ✅
+    - `pnpm --filter web build` ✅
+  - 风险：无
+- [x] P0a-13 Mobile i18n 接入
+  - 完成时间：2026-03-17
+  - 决策：
+    - `i18next` + `react-i18next` + `expo-localization` 作为 i18n 方案
+    - 支持 `zh-HK`（默认）和 `en` 两种语言，与 Web 端一致
+    - 通过 `expo-localization` 自动检测设备语言，`zh*` → `zh-HK`，`en*` → `en`
+    - 文案按功能分组：tabs / common / auth / feed / stores / create / profile
+    - Root layout 通过 `import "../i18n"` 初始化
+    - Profile tab 已验证使用 `useTranslation()` hook
+  - 自检：
+    - `npx expo export --platform web` ✅（6 页面全部导出）
+  - 风险：无
+- [x] P0a-14 CI 基础流程
+  - 完成时间：2026-03-17
+  - 决策：
+    - GitHub Actions CI，触发条件：PR to main + push to main
+    - 3 个并行 job：lint-and-typecheck / build-web / build-mobile
+    - pnpm v10 + Node 20 + frozen-lockfile
+    - Typecheck 覆盖 domain / query-keys / supabase-types 三个共享包
+    - Mobile 验证使用 `expo export --platform web`（不需要真机环境）
+    - concurrency group 避免重复运行
+    - RLS 测试需要 Supabase Docker，暂不纳入 CI（可在本地运行 `supabase test db`）
+  - 自检：
+    - `.github/workflows/ci.yml` 已创建 ✅
+  - 风险：首次 PR 时验证实际执行结果
+- [x] P0a-15 Deep Link 基础配置
+  - 完成时间：2026-03-17
+  - 决策：
+    - app scheme `yourwinebook` 已在 P0a-02 配置于 app.json
+    - 3 个深度链接占位路由：`post/[id]`、`store/[id]`、`invite/[code]`
+    - 所有占位路由暂时重定向到对应 tab 页，P1A/P1B/P1C 阶段实现完整逻辑
+    - Expo Router 文件路由自动映射 deep link 路径
+  - 自检：
+    - `npx expo export --platform web` ✅（13 个静态路由全部导出，含 post/[id]、store/[id]、invite/[code]）
+    - `pnpm --filter web build` ✅
+  - 风险：无
+
+### Phase 0a 退出条件验证
+- [x] pnpm workspace 正常（pnpm install 无报错）
+- [x] Web 在 apps/web 下可正常 build（39 页面通过）
+- [x] Expo 可正常启动并解析 workspace 包（13 路由导出）
+- [x] 共享包 domain / query-keys / supabase-types 可被双端引用（tsc --noEmit 通过）
+- [x] supabase db reset 成功（25 表 + 75 RLS 策略）
+- [x] RLS 测试就位（6 文件 105 断言全部通过）
+- [x] Web / Mobile 基础 Supabase 连接已建立（懒初始化 + null fallback）
+
+**Phase 0a 全部完成，进入 Phase 0b。**
 
 ---
 
 ## Phase 0b — 底座：上传、审核、种子数据、Web 数据层迁移
 
-- [ ] P0b-01 配置 Supabase Storage
-- [ ] P0b-02 开发 `create-upload-intent` Edge Function
-- [ ] P0b-03 开发 `finalize-post` Edge Function
-- [ ] P0b-04 媒体安全校验
-- [ ] P0b-05 App 端图片选择、压缩与上传 SDK
-- [ ] P0b-06 审核后台：举报队列页
-- [ ] P0b-07 审核后台：案件详情与一键隐藏
-- [ ] P0b-08 审核后台：封禁账号
-- [ ] P0b-09 开发 `moderate-content` Edge Function
-- [ ] P0b-10 种子数据导入：商户与门店
-- [ ] P0b-11 种子数据导入：酒款
-- [ ] P0b-12 数据迁移脚本
-- [ ] P0b-13 Web 认证层迁移
-- [ ] P0b-14 `user-store` 迁移
-- [ ] P0b-15 `merchant-store` 迁移
+- [x] P0b-01 配置 Supabase Storage
+  - 完成时间：2026-03-17
+  - 决策：
+    - 3 个 public bucket：`posts`（10MB）、`avatars`（2MB）、`merchants`（5MB）
+    - 目录结构约定：`posts/{user_id}/{upload_id}.ext`、`avatars/{user_id}.ext`、`merchants/{merchant_id}/filename.ext`
+    - 12 条 storage policies：所有 bucket 公开读取（帖子图片/头像/商户logo 都需要前端展示）
+    - posts 写入限本人文件夹 + admin 可删；avatars 限本人；merchants 限 staff/admin
+    - config.toml 同步定义 bucket，确保本地开发一致
+    - allowed_mime_types 严格限制图片类型（含 HEIC/HEIF 支持 iOS 原生拍照）
+  - 自检：
+    - `supabase db reset` ✅（3 个迁移全部通过）
+    - 3 buckets 验证存在 ✅
+    - 12 storage policies 验证存在 ✅
+    - `pnpm --filter web build` ✅
+  - 风险：无
+- [x] P0b-02 开发 `create-upload-intent` Edge Function
+  - 完成时间：2026-03-17
+  - 决策：
+    - Deno Edge Function，路径 `supabase/functions/create-upload-intent/`
+    - 使用用户 JWT 验证身份，service_role 操作 media_uploads 表和生成签名 URL
+    - 频率限制：每用户每小时最多 30 个上传意图
+    - 每请求最多 9 个文件（与帖子最大图片数一致）
+    - 校验 bucket（posts/avatars/merchants）、mime_type、size_bytes
+    - 返回 upload intent 列表：id + signed upload URL + token + expires_at
+    - CORS 支持（OPTIONS preflight）
+    - 错误时自动清理已创建的 media_uploads 记录
+  - 自检：
+    - `supabase functions serve` 本地启动 ✅
+    - 无 auth header → 401 ✅
+    - 有效用户 + 2 文件 → 200 + 2 个 signed URL ✅
+    - DB 中 media_uploads 记录创建（status=pending）✅
+    - 无效 bucket → 400 ✅
+    - 文件过大 → 400 ✅
+    - 无效 mime_type → 400 ✅
+  - 风险：rate limit 依赖 DB 查询计数，高并发下可能漏过（可接受 MVP 风险）
+- [x] P0b-03 开发 `finalize-post` Edge Function
+  - 完成时间：2026-03-17
+  - 决策：
+    - Deno Edge Function，路径 `supabase/functions/finalize-post/`
+    - 接收 content + media[] + product_ids[] + is_official
+    - 校验：内容非空且 ≤2000 字、媒体 ≤9 项、upload 归属当前用户、未过期
+    - 官方帖子（is_official）需验证用户在 merchant_staff 中的记录
+    - 使用 service_role 写入 posts → post_media → post_products（顺序执行）
+    - 写入后将 media_uploads status 更新为 `attached`
+    - post_media URL 使用 public bucket URL（posts 是 public bucket）
+    - 失败时清理已创建的 post 记录
+  - 自检：
+    - 纯文字帖子 → 200 + DB 记录 ✅
+    - 空内容 → 400 ✅
+    - 非 staff 发官方帖 → 403 ✅
+    - 假 upload_id → 400 ✅
+    - 完整流程（create-upload-intent → finalize-post）→ 200 ✅
+    - media_uploads status 变为 attached ✅
+    - post_media 记录含正确 URL/宽高/排序 ✅
+  - 风险：非真正数据库事务（顺序 INSERT），极端情况下可能部分写入（MVP 可接受）
+- [x] P0b-04 媒体安全校验
+  - 完成时间：2026-03-17
+  - 决策：
+    - 三层防线：
+      1. **客户端**：`@ywb/domain` 的 `validateFiles()` 在选图后立即校验 mime/size/count
+      2. **Edge Function**：`create-upload-intent` 服务端二次校验（防绕过）
+      3. **Storage bucket**：`allowed_mime_types` + `file_size_limit` 作为最后防线
+    - `packages/domain/src/media.ts` 导出：
+      - `BUCKET_CONFIGS`：每个 bucket 的 maxSize / maxFiles / allowedMimeTypes
+      - `validateFiles(bucket, files)`：纯函数验证，返回错误数组
+      - `COMPRESSION_TARGETS`：帖子图片 2048px/0.8q，头像 512px/0.85q
+      - `POST_LIMITS`：内容 2000 字、媒体 9 张、产品引用 10 个
+    - 双端可共享同一套验证逻辑，Edge Function 可独立校验（不依赖 domain 包）
+  - 自检：
+    - `@ywb/domain` tsc --noEmit ✅
+    - `pnpm --filter web build` ✅
+    - `npx expo export --platform web` ✅
+  - 风险：无
+- [x] P0b-05 App 端图片选择、压缩与上传 SDK
+  - 完成时间：2026-03-17
+  - 决策：
+    - 依赖：`expo-image-picker` + `expo-image-manipulator`
+    - `apps/mobile/lib/media.ts` 导出完整上传 SDK：
+      - `pickImages()`：多选图片（最多 9 张），返回 uri/mime/尺寸/大小
+      - `pickAvatar()`：单选 + 裁剪（1:1），返回单张图片
+      - `compressImage()`：按 target（post/avatar）压缩，使用 domain 包的 COMPRESSION_TARGETS
+      - `uploadImages()`：完整上传流程：压缩 → 验证 → 请求 intent → 逐张上传到签名 URL
+    - 上传进度回调 `onProgress`：compressing → uploading → done/error
+    - 客户端使用 `@ywb/domain` 的 `validateFiles()` 做上传前校验
+    - 压缩策略：帖子图片 2048px/0.8q JPEG、头像 512px/0.85q JPEG
+    - 小于阈值的图片跳过压缩（避免无意义的重编码）
+  - 自检：
+    - `npx expo export --platform web` ✅
+  - 风险：`expo-image-manipulator` 的 `manipulateAsync` 不返回压缩后文件大小，需要额外 fetch blob 获取
+- [x] P0b-06 审核后台：举报队列页
+  - 完成时间：2026-03-17
+  - 决策：
+    - 新增 `/dashboard/admin/moderation` 页面（Client Component）
+    - 新增 `/api/admin/reports` GET（列表 + 状态筛选）和 `/api/admin/reports/[id]` PATCH（状态更新）
+    - 数据从 Supabase `reports` 表读取，无 Supabase 时返回空列表
+    - 认证沿用现有 cookie-based `requireAdmin()`（P0b-13 迁移时统一切换）
+    - UI 风格与现有 applications 页面一致：状态卡片统计 + 搜索 + 展开详情 + 状态操作按钮
+    - 状态工作流：pending → reviewed → resolved/dismissed
+    - 侧边栏新增「審核管理」入口（ShieldAlert 图标）
+  - 自检：
+    - `pnpm --filter web build` ✅（含 /dashboard/admin/moderation 路由）
+    - 侧边栏导航正确添加 ✅
+  - 风险：无
+- [x] P0b-07 审核后台：案件详情与一键隐藏
+  - 完成时间：2026-03-17
+  - 决策：
+    - 新增 `/api/admin/content` GET — 获取帖子/评论/用户原始内容（含 post_media）
+    - 新增 `/api/admin/moderate` POST — 执行隐藏/恢复操作（hide_post, unhide_post, hide_comment, unhide_comment）
+    - 审核页面扩展：
+      - 「查看原始內容」按钮 → 按需加载目标内容 → 缓存避免重复请求
+      - 帖子内容预览 + 媒体占位符
+      - 「一鍵隱藏」按钮 → 设置 status=hidden + hidden_at + hidden_reason → 自动将举报标记为 resolved
+      - 「恢復顯示」按钮 → 恢复为 visible
+    - 隐藏操作写入 posts.hidden_reason，保留审核记录
+  - 自检：
+    - `pnpm --filter web build` ✅
+  - 风险：无
+- [x] P0b-08 审核后台：封禁账号
+  - 完成时间：2026-03-17
+  - 决策：
+    - `/api/admin/moderate` 新增 `ban_user` 和 `unban_user` action
+    - 封禁操作：
+      1. 设置 profiles.status = 'banned'、banned_at、ban_reason
+      2. 自动隐藏该用户所有 visible 帖子（写入 hidden_reason）
+      3. 自动隐藏该用户所有 visible 评论
+      4. 自动将对应举报标记为 resolved
+    - 解封操作：恢复 profiles.status = 'active'，清除 banned_at/ban_reason
+      - 注意：隐藏的帖子/评论不自动恢复，需管理员手动操作（防止误解封时内容重新曝光）
+    - UI：用户类型举报展开后显示「封禁用戶」按钮（带确认对话框），已封禁时显示「解除封禁」
+    - 封禁按钮使用红色警告样式，解封使用绿色
+  - 自检：
+    - `pnpm --filter web build` ✅
+  - 风险：无
+- [x] P0b-09 开发 `moderate-content` Edge Function
+  - 完成时间：2026-03-17
+  - 决策：
+    - Deno Edge Function，路径 `supabase/functions/moderate-content/`
+    - 与 Web `/api/admin/moderate` 功能一致，但通过 Supabase Auth JWT 验证管理员身份
+    - 6 个 action：hide_post, unhide_post, hide_comment, unhide_comment, ban_user, unban_user
+    - 双重验证：JWT → profiles.role === 'admin'
+    - ban_user 自动级联隐藏所有 visible 帖子和评论
+    - 非管理员调用 → 403
+  - 自检：
+    - 无 auth → 401 ✅
+    - 非管理员 → 403 ✅
+    - `supabase functions serve` 本地启动 ✅
+  - 风险：无
+- [x] P0b-10 种子数据导入：商户与门店
+  - 完成时间：2026-03-17
+  - 决策：
+    - `supabase/seed.sql` 统一种子数据文件，`supabase db reset` 自动执行
+    - 导入内容：
+      - 1 个管理员（admin@yourwinebook.com / admin123）
+      - 6 个商户（与 Web mock-data.ts 一致：Watson's Wine 等，含 active/inactive/pending 状态）
+      - 6 个商户 staff（对应 auth.users + profiles + merchant_staff）
+      - 4 个消费者用户（陳大文、李美玲、James Wong、Sophie Lam）
+      - 7 个门店（Watson's 3 店 + Wine & Co、VinHK、Grape HK、BottleShop 各 1 店）
+      - 15 个产区（slug + 中英文名 + 国家）
+      - 15 个标签（风格/场合/价格/属性）
+      - 4 个场景（送禮/聚餐/日常/嘗新）
+    - 门店坐标使用真实香港坐标（中環、尖沙咀、銅鑼灣、西營盤、觀塘）
+    - 营业时间为结构化 JSON（含跨天和休息日）
+    - auth.users 需设置所有 text 列为空字符串（避免 GoTrue NULL scan 错误）
+    - 种子 UUID 使用 a0/b0/c0/d0/e0/f0/f2 前缀，避免与 RLS 测试 UUID（a1-a5）冲突
+    - 所有用户可通过 Supabase Auth API 登录 ✅
+  - 自检：
+    - `supabase db reset` ✅
+    - Admin/Merchant/Consumer 登录 ✅
+    - 6 merchants + 7 locations + 15 regions + 15 tags + 4 scenes 验证存在 ✅
+    - RLS 测试 105/105 通过 ✅
+  - 风险：无
+- [x] P0b-11 种子数据导入：酒款
+  - 完成时间：2026-03-17
+  - 决策：
+    - 32 支酒款全部从 `apps/web/src/lib/mock-data.ts` 映射到 wines 表
+    - UUID 前缀 `10000000` 用于酒款（避免 `g0` 非法 hex 问题）
+    - tasting_notes 以 JSONB 格式存储（保留 zh/en 双语）
+    - 6 支酒的 22 条 merchant_prices 比价数据（与 mock winePrices 一致）
+    - 53 条 wine_tags 关联（根据酒款特征映射到 15 个标签）
+    - 24 条 scene_wines 关联（4 场景 × 6 酒款，与 mock scenes.wineSlugs 一致）
+  - 验证：
+    - `supabase db reset` 成功 ✅
+    - wines: 32, merchant_prices: 22, wine_tags: 53, scene_wines: 24 ✅
+    - 示例查询：Cloudy Bay 有 6 条比价、2 个标签 ✅
+    - RLS 测试 105/105 通过 ✅
+  - 风险：无
+- [x] P0b-12 数据迁移脚本
+  - 完成时间：2026-03-17
+  - 决策：
+    - 直接扩展 seed.sql 而非单独迁移脚本（所有 JSON 数据已映射到 Supabase schema）
+    - 新增 2 用户（張志強 d0..05、王建國 d0..06）
+    - 8 篇社区帖子（含用户帖和酒商官方帖）+ 13 条评论
+    - 24 条帖子点赞、5 条帖子酒款关联
+    - 11 条酒款收藏、9 条酒商收藏
+    - ID 映射：u1→d0..01, u2→d0..02, u3→d0..03, u4→d0..05, u5→d0..04, u6→d0..06
+    - 酒商帖用 merchant_staff profile ID + is_official=true + merchant_id
+    - 修复 RLS 测试中 3 个因 seed 数据导致的计数断言（改用 WHERE 过滤测试 UUID）
+  - 验证：
+    - `supabase db reset` 成功 ✅
+    - 13 profiles, 32 wines, 8 posts, 13 comments, 24 post_likes ✅
+    - RLS 测试 105/105 通过 ✅
+  - 风险：无
+- [x] P0b-13 Web 认证层迁移
+  - 完成时间：2026-03-17
+  - 决策：
+    - 新增 `supabase-auth.ts`：统一 Supabase Auth 层（signIn/signOut/getUser/signUp/changePassword）
+    - 环境变量 `USE_SUPABASE_AUTH=true` 控制切换，默认走 legacy
+    - Middleware 支持双模式：Supabase 用 `getUser()` 验证 + `wb_role` cookie 做角色快判
+    - 所有 8 个 auth API 路由均已迁移（login/logout/me/verify-password × admin+user）
+    - 登录时设 `wb_role` cookie 供 middleware 快速判断，避免 DB 查询
+    - 保留 `wb_session`/`wb_user_session` cookie 以兼容现有 dashboard 组件
+    - Legacy 文件（mock-auth.ts, user-store.ts, merchant-store.ts, admin-store.ts）完全保留
+  - 验证：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` 全部页面通过 ✅
+    - Legacy 模式（无 USE_SUPABASE_AUTH）行为不变 ✅
+  - 风险：Supabase 模式下 middleware 的 `wb_role` cookie 未与 session 联动过期；
+    API 路由始终通过 `supabaseGetUser()` 做完整验证，安全性有保障
+- [x] P0b-14 `user-store` 迁移
+  - 完成时间：2026-03-17
+  - 决策：
+    - 为 `user-store.ts` 所有公开函数添加 `USE_SUPABASE_AUTH` 分支
+    - Supabase 路径：`getAllUsers` 查 `profiles` 表（role=user）；`getUserById` 查 profiles + bookmarks；`setUserStatus` 映射 suspended↔banned；`toggleWineBookmark/toggleMerchantBookmark` 走 slug→UUID 解析后 INSERT/DELETE；`getMerchantFavoriteCount` 走 count 聚合
+    - Auth 相关函数（verify/register/password）保持 legacy-only，Supabase 路径已在 `supabase-auth.ts` 和对应 API route 中处理
+    - `updateLastSeen` 在 Supabase 模式下为 no-op（auth session 自带）
+    - 6 个函数签名从同步改为异步：`getAllUsers`, `getUserById`, `setUserStatus`, `toggleWineBookmark`, `toggleMerchantBookmark`, `getMerchantFavoriteCount`
+    - 更新 8 个消费者 API route 添加 `await`
+  - 验证：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` 全部页面通过 ✅
+  - 风险：无
+- [x] P0b-15 `merchant-store` 迁移
+  - 完成时间：2026-03-17
+  - 决策：
+    - 为 `merchant-store.ts` 所有公开函数添加 `USE_SUPABASE_AUTH` 分支
+    - Supabase 路径：`getAllMerchantsFromStore` 查 merchants + merchant_staff + profiles 联表；`getMerchantBySlug` 同理；`createMerchant` 通过 service-role 客户端完成多表操作（auth.admin.createUser + profiles + merchants + merchant_staff）；`setMerchantStatus` 直接更新 merchants 表；`updateMerchantPreferredLang` 通过 merchant_staff 找到 profile 后更新 locale
+    - 新增 `createSupabaseServiceRole()` 到 `supabase-server.ts`，用于需要 service_role key 的管理操作
+    - Auth 相关函数（verify credentials/password/update password）保持 legacy-only
+    - `mock-auth.ts` 的 `getMockAccount` 和 `getAllMerchants` 改为 async
+    - 更新 ~20 个消费者 API route 添加 `await`
+  - 验证：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` 全部页面通过 ✅
+  - 风险：无
 - [ ] P0b-16 `admin-store` 迁移
 - [ ] P0b-17 `community-store` 迁移
 - [ ] P0b-18 `application-store` 与 `price-store` 迁移

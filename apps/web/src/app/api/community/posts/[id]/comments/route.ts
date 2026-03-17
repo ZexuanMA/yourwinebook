@@ -25,13 +25,13 @@ export async function POST(
   let authorName: string;
 
   if (userId) {
-    const user = getUserById(userId);
+    const user = await getUserById(userId);
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 401 });
     authorId = user.id;
     authorType = "user";
     authorName = user.name;
   } else if (merchantSlug && merchantSlug !== "admin") {
-    const merchant = getMerchantBySlug(merchantSlug);
+    const merchant = await getMerchantBySlug(merchantSlug);
     if (!merchant) return NextResponse.json({ error: "Merchant not found" }, { status: 401 });
     authorId = merchant.slug;
     authorType = "merchant";

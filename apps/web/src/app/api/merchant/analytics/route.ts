@@ -8,7 +8,7 @@ export async function GET() {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const account = getMockAccount(slug);
+  const account = await getMockAccount(slug);
   if (!account || account.role !== "merchant") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
