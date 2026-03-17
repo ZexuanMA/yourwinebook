@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CheckCircle, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { getDisplayInitial } from "@/lib/display-name";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
 interface Account {
@@ -135,7 +136,7 @@ export default function AccountPage() {
       {/* Account overview */}
       <div className="bg-white border border-wine-border rounded-2xl p-6 flex items-center gap-5">
         <div className="w-16 h-16 bg-wine rounded-2xl flex items-center justify-center text-white text-2xl font-bold shrink-0">
-          {account.name[0]}
+          {getDisplayInitial(account.name)}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">

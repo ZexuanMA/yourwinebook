@@ -13,6 +13,7 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
+import { getDisplayInitial, normalizeDisplayName } from "@/lib/display-name";
 
 interface Post {
   id: string;
@@ -61,7 +62,17 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   useEffect(() => {
     fetch("/api/user/auth/me")
       .then((r) => (r.ok ? r.json() : null))
-      .then(setUser)
+      .then((data) => {
+        if (!data) {
+          setUser(null);
+          return;
+        }
+
+        setUser({
+          id: data.id,
+          name: normalizeDisplayName(data.name),
+        });
+      })
       .catch(() => null);
   }, []);
 
@@ -190,7 +201,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 post.authorType === "merchant" ? "bg-green" : "bg-wine"
               }`}
             >
-              {post.authorName[0]}
+              {getDisplayInitial(post.authorName)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
@@ -304,7 +315,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                       c.authorType === "merchant" ? "bg-green" : "bg-wine"
                     }`}
                   >
-                    {c.authorName[0]}
+                    {getDisplayInitial(c.authorName)}
                   </div>
                   <span className="text-sm font-semibold text-text">{c.authorName}</span>
                   {c.authorType === "merchant" && (
@@ -334,7 +345,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           {user ? (
             <form onSubmit={handleComment} className="mt-4 flex gap-3">
               <div className="w-8 h-8 bg-wine rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 mt-0.5">
-                {user.name[0]}
+                {getDisplayInitial(user.name)}
               </div>
               <div className="flex-1 relative">
                 <textarea

@@ -5,11 +5,25 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { Search, X, User, LogOut, Bookmark, Settings } from "lucide-react";
+import { getDisplayInitial, normalizeDisplayName } from "@/lib/display-name";
 
 interface UserProfile {
   id: string;
   name: string;
   email: string;
+}
+
+function normalizeUserProfile(value: unknown): UserProfile | null {
+  if (!value || typeof value !== "object") return null;
+
+  const user = value as Partial<UserProfile>;
+  if (typeof user.id !== "string" || typeof user.email !== "string") return null;
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: normalizeDisplayName(user.name, user.email),
+  };
 }
 
 export function Navbar() {
@@ -26,7 +40,7 @@ export function Navbar() {
   useEffect(() => {
     fetch("/api/user/auth/me")
       .then((r) => (r.ok ? r.json() : null))
-      .then(setUser)
+      .then((data) => setUser(normalizeUserProfile(data)))
       .catch(() => null);
   }, [pathname]);
 
@@ -110,7 +124,7 @@ export function Navbar() {
                 <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 cursor-pointer bg-transparent border-none">
                   <div className="w-8 h-8 bg-wine rounded-full flex items-center justify-center text-white text-xs font-bold hover:ring-2 hover:ring-gold/40 transition-all">
-                    {user.name[0]}
+                    {getDisplayInitial(user.name)}
                   </div>
                 </button>
                 {userMenuOpen && (

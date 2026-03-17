@@ -13,6 +13,7 @@ import {
   User,
   Filter,
 } from "lucide-react";
+import { getDisplayInitial, normalizeDisplayName } from "@/lib/display-name";
 
 interface Post {
   id: string;
@@ -63,7 +64,17 @@ export default function CommunityPage() {
   useEffect(() => {
     fetch("/api/user/auth/me")
       .then((r) => (r.ok ? r.json() : null))
-      .then(setUser)
+      .then((data) => {
+        if (!data) {
+          setUser(null);
+          return;
+        }
+
+        setUser({
+          id: data.id,
+          name: normalizeDisplayName(data.name),
+        });
+      })
       .catch(() => null);
   }, []);
 
@@ -218,7 +229,7 @@ export default function CommunityPage() {
                       post.authorType === "merchant" ? "bg-green" : "bg-wine"
                     }`}
                   >
-                    {post.authorName[0]}
+                    {getDisplayInitial(post.authorName)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

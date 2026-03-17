@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { wines } from "@/lib/mock-data";
+import { getDisplayInitial } from "@/lib/display-name";
 import { Search, CheckCircle, XCircle, Bookmark, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 
 type UserStatus = "active" | "suspended";
@@ -143,7 +144,7 @@ export default function AdminUsersPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-wine/10 border border-wine/20 rounded-xl flex items-center justify-center text-wine font-bold text-sm shrink-0">
-                            {u.name[0]}
+                            {getDisplayInitial(u.name)}
                           </div>
                           <div>
                             <p className="font-semibold text-text">{u.name}</p>

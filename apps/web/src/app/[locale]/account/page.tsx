@@ -5,6 +5,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { LogOut, Bookmark, User, Settings, Eye, EyeOff, CheckCircle, Store, MessageSquare, Heart, MessageCircle, Trash2 } from "lucide-react";
+import { getDisplayInitial, normalizeDisplayName } from "@/lib/display-name";
 import { merchants } from "@/lib/mock-data";
 import type { Wine } from "@/lib/mock-data";
 
@@ -69,8 +70,12 @@ export default function UserAccountPage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((u) => {
         if (!u) { router.push("/account/login"); return; }
-        setUser(u);
-        setName(u.name);
+        const nextUser = {
+          ...u,
+          name: normalizeDisplayName(u.name, u.email),
+        };
+        setUser(nextUser);
+        setName(nextUser.name);
       })
       .finally(() => setLoading(false));
     fetch("/api/wines?limit=100")
@@ -173,7 +178,7 @@ export default function UserAccountPage() {
         {/* Profile header */}
         <div className="bg-white border border-wine-border rounded-2xl p-6 mb-6 flex items-center gap-5">
           <div className="w-16 h-16 bg-wine rounded-2xl flex items-center justify-center text-white text-2xl font-bold shrink-0">
-            {user.name[0]}
+            {getDisplayInitial(user.name)}
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xl font-semibold text-text">{user.name}</h1>

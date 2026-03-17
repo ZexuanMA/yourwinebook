@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeDisplayName } from "@/lib/display-name";
 import { getMockUser } from "@/lib/mock-users";
 import { USE_SUPABASE_AUTH, supabaseGetUser } from "@/lib/supabase-auth";
 import { createSupabaseServer } from "@/lib/supabase-server";
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       id: authUser.id,
-      name: authUser.displayName,
+      name: normalizeDisplayName(authUser.displayName, authUser.email),
       email: authUser.email,
       status: authUser.status,
       bookmarks,
@@ -55,7 +56,10 @@ export async function GET(request: NextRequest) {
   // ── Legacy path ──
   const id = request.cookies.get("wb_user_session")?.value;
   if (!id) return NextResponse.json(null, { status: 401 });
-  const user = getMockUser(id);
+  const user = await getMockUser(id);
   if (!user) return NextResponse.json(null, { status: 401 });
-  return NextResponse.json(user);
+  return NextResponse.json({
+    ...user,
+    name: normalizeDisplayName(user.name, user.email),
+  });
 }

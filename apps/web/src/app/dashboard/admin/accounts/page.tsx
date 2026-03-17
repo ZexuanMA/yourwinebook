@@ -6,6 +6,7 @@ import {
   ExternalLink, ChevronDown, ChevronUp, Plus, X, Eye, MousePointerClick, Heart, Copy, Check,
 } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { getDisplayInitial } from "@/lib/display-name";
 import type { PerMerchantStats } from "@/lib/analytics-store";
 
 interface MerchantStatsWithFavorites extends PerMerchantStats {
@@ -315,7 +316,7 @@ export default function AdminAccountsPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 bg-wine rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0">
-                            {m.name[0]}
+                            {getDisplayInitial(m.name)}
                           </div>
                           <div>
                             <p className="font-semibold text-text">{m.name}</p>

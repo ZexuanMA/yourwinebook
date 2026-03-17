@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { CheckCircle, XCircle, Clock, MessageSquare, Phone, Globe, Search, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getDisplayInitial } from "@/lib/display-name";
 
 interface MerchantApplication {
   id: string; companyName: string; contactName: string; email: string;
@@ -146,7 +147,7 @@ export default function AdminApplicationsPage() {
                 {/* Card header */}
                 <div className="px-6 py-5 flex items-start gap-4">
                   <div className="w-10 h-10 bg-red-light rounded-xl flex items-center justify-center text-wine font-bold shrink-0">
-                    {app.companyName[0]}
+                    {getDisplayInitial(app.companyName)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">

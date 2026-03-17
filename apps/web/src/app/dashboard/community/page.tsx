@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
+import { getDisplayInitial } from "@/lib/display-name";
 import {
   Plus,
   Heart,
@@ -336,7 +337,7 @@ export default function DashboardCommunityPage() {
                       post.authorType === "merchant" ? "bg-green" : "bg-wine"
                     }`}
                   >
-                    {post.authorName[0]}
+                    {getDisplayInitial(post.authorName)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
@@ -419,7 +420,7 @@ export default function DashboardCommunityPage() {
                               c.authorType === "merchant" ? "bg-green" : "bg-wine"
                             }`}
                           >
-                            {c.authorName[0]}
+                            {getDisplayInitial(c.authorName)}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
