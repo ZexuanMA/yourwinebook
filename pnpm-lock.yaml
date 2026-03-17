@@ -13,6 +13,9 @@ importers:
       '@react-navigation/native':
         specifier: ^7.1.28
         version: 7.1.33(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
+      '@ywb/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       expo:
         specifier: ~55.0.6
         version: 55.0.6(@babel/core@7.29.0)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@55.0.6)(expo-router@55.0.5)(react-dom@19.2.0(react@19.2.0))(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)(typescript@5.9.3)
@@ -65,6 +68,9 @@ importers:
         specifier: 0.7.2
         version: 0.7.2(@babel/core@7.29.0)(react-native@0.83.2(@babel/core@7.29.0)(@types/react@19.2.14)(react@19.2.0))(react@19.2.0)
     devDependencies:
+      '@expo/metro-config':
+        specifier: ^55.0.9
+        version: 55.0.9(expo@55.0.6)(typescript@5.9.3)
       '@types/react':
         specifier: ~19.2.2
         version: 19.2.14
@@ -86,6 +92,9 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
+      '@ywb/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
@@ -149,6 +158,24 @@ importers:
         version: 4.2.1
       typescript:
         specifier: ^5
+        version: 5.9.3
+
+  packages/domain:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/query-keys:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/supabase-types:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
         version: 5.9.3
 
 packages:
