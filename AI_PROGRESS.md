@@ -632,7 +632,41 @@
   - 集成测试 → 39 通过, 0 失败 ✅
 - Sentry 集成未导致性能回退或构建异常
 - 结论：EAS 配置、Sentry 接入、集成测试均未影响线上功能
-- [ ] P0b-23 接入 PostHog
+- [x] P0b-23 接入 PostHog
+  - 完成时间：2026-03-18
+  - 决策：
+    - **Web**：`posthog-js` 集成
+      - `src/lib/posthog.ts`：初始化 + captureEvent / identifyUser / resetUser 封装
+      - `PostHogProvider` 组件在前台 layout 中初始化
+      - `capture_pageview: false`（由现有 PageTracker 处理），`autocapture: false`
+      - 通过 `NEXT_PUBLIC_POSTHOG_KEY` 控制启用
+    - **Mobile**：`posthog-react-native` 集成
+      - `lib/posthog.ts`：懒初始化单例 + 相同 API 封装
+      - 通过 `EXPO_PUBLIC_POSTHOG_KEY` 控制启用
+    - **共享事件名**：`@ywb/domain/analytics.ts` 新增
+      - `STORE_EVENTS`：找店漏斗 9 个事件
+      - `COMMUNITY_EVENTS`：社区漏斗 16 个事件
+      - `AUTH_EVENTS`：认证 3 个事件
+    - 两端均默认禁用（无 key 时），不影响现有功能
+  - 验证：
+    - `@ywb/domain` tsc --noEmit ✅
+    - `pnpm --filter web build` ✅
+    - `npx expo export --platform web` ✅
+  - 风险：无
+
+### Phase 0b 退出条件验证
+- [x] 上传链路可用（create-upload-intent + finalize-post + 媒体安全校验）
+- [x] 审核后台可隐藏内容、封禁账号（reports 队列 + 一键隐藏 + ban_user）
+- [x] 种子数据已导入（13 profiles, 32 wines, 8 posts, 13 comments, 22 merchant_prices 等）
+- [x] Web 认证层已迁移（admin-store / merchant-store / user-store / community-store / application-store / price-store 全部具备 USE_SUPABASE_AUTH 分支）
+- [x] analytics-store 决策完成（保留 SQLite，PostHog 承担行为分析）
+- [x] Web 数据层集成测试通过（41 项检查）
+- [x] EAS Build 配置完成（development / preview / production 三通道）
+- [x] Sentry 接入（Web + Mobile）
+- [x] PostHog 接入（Web + Mobile + 共享事件名）
+- [x] Feature flag 回退机制就位（所有 store 保留 legacy 路径）
+
+**Phase 0b 全部完成，进入 Phase 1A。**
 
 ---
 

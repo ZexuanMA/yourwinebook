@@ -6,6 +6,7 @@ import { routing } from "@/i18n/routing";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { PageTracker } from "@/components/analytics/PageTracker";
+import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 
 export const metadata: Metadata = {
   title: "Your Wine Book — Drink smarter. Discover more.",
@@ -29,10 +30,12 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <PageTracker />
-      <Navbar />
-      <main data-locale={locale}>{children}</main>
-      <Footer />
+      <PostHogProvider>
+        <PageTracker />
+        <Navbar />
+        <main data-locale={locale}>{children}</main>
+        <Footer />
+      </PostHogProvider>
     </NextIntlClientProvider>
   );
 }

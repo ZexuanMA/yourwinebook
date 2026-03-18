@@ -57,4 +57,4 @@ export type {
   MerchantAnalyticsSummary,
   PerMerchantStats,
 } from "./analytics";
-export { EVENT_TYPES } from "./analytics";
+export { EVENT_TYPES, STORE_EVENTS, COMMUNITY_EVENTS, AUTH_EVENTS } from "./analytics";
