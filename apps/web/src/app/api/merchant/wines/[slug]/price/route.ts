@@ -23,6 +23,6 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid price" }, { status: 400 });
   }
 
-  updatePrice(wineSlug, account.slug, price);
+  await updatePrice(wineSlug, account.slug, price);
   return NextResponse.json({ ok: true, wineSlug, merchantSlug: account.slug, price });
 }

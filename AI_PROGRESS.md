@@ -526,6 +526,18 @@
       - `pnpm --filter web exec tsc --noEmit` ✅
       - `pnpm --filter web build` 全部页面通过 ✅
     - 风险：无
+  - [x] P0b-18b `price-store` Supabase 适配
+    - 完成时间：2026-03-18
+    - 决策：
+      - 所有 5 个公开函数改为 async，添加 `USE_SUPABASE_AUTH` 分支
+      - Supabase 路径：`updatePrice` 解析 wineSlug/merchantSlug → UUID 后 upsert merchant_prices 并重算 is_best；`getMergedPrices` 直接查 merchant_prices JOIN merchants；`getAllMergedPrices` 查全表带 wines/merchants 关联；`getPriceOverride` 按 wine_id+merchant_id 查单条；`getUpdatedMinPrice` 复用 getMergedPrices
+      - `queries.ts` 中 `applyPriceUpdates` 改为 async，所有调用点添加 await
+      - 2 个 merchant API route 更新为 await 调用
+      - Legacy 路径（JSON 文件 overlay + mock-data 基础价格）完全保留
+    - 验证：
+      - `pnpm --filter web exec tsc --noEmit` ✅
+      - `pnpm --filter web build` 全部页面通过 ✅
+    - 风险：无
 - [ ] P0b-19 `analytics-store` 决策
 - [ ] P0b-20 Web 数据层迁移集成测试
 - [ ] P0b-21 配置 EAS Build 与内测通道

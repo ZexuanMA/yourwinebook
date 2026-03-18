@@ -15,12 +15,14 @@ export async function GET() {
   }
 
   // Return wines with updated minPrices + all merged price data
-  const winesWithPrices = wines.map((w) => {
-    const updated = getUpdatedMinPrice(w.slug);
-    return updated !== null ? { ...w, minPrice: updated } : w;
-  });
+  const winesWithPrices = await Promise.all(
+    wines.map(async (w) => {
+      const updated = await getUpdatedMinPrice(w.slug);
+      return updated !== null ? { ...w, minPrice: updated } : w;
+    })
+  );
 
-  const winePrices = getAllMergedPrices();
+  const winePrices = await getAllMergedPrices();
 
   return NextResponse.json({ wines: winesWithPrices, winePrices });
 }
