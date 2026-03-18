@@ -490,7 +490,15 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
     - `pnpm --filter web build` 全部页面通过 ✅
   - 风险：无
-- [ ] P0b-17 `community-store` 迁移
+- [ ] P0b-17 `community-store` 迁移（拆分为子任务）
+  - [x] P0b-17a Schema 迁移：为 posts 表添加 Web 社区字段
+    - 完成时间：2026-03-18
+    - 决策：
+      - 新增迁移 `004_community_web_columns.sql`
+      - 为 posts 表添加 `title TEXT`、`tags TEXT[]`、`rating SMALLINT(1-5)` 三个可选列
+      - GIN 索引支持 tags 数组过滤
+      - 更新 8 条种子帖子，填入对应的标题、标签、评分数据
+    - 风险：无（全部为可选列，不影响现有数据）
 - [ ] P0b-18 `application-store` 与 `price-store` 迁移
 - [ ] P0b-19 `analytics-store` 决策
 - [ ] P0b-20 Web 数据层迁移集成测试
