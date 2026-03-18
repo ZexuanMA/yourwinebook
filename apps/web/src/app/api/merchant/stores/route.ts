@@ -66,23 +66,26 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, address_zh, address_en, district_zh, district_en, phone } = body;
+  const { name, address_zh, address_en, district_zh, district_en, phone, hours } = body;
 
   if (!name || !address_zh) {
     return NextResponse.json({ error: "name and address_zh are required" }, { status: 400 });
   }
 
+  const row: Record<string, unknown> = {
+    merchant_id: merchant.id,
+    name,
+    address_zh,
+    address_en: address_en || null,
+    district_zh: district_zh || null,
+    district_en: district_en || null,
+    phone: phone || null,
+  };
+  if (hours !== undefined) row.hours = hours;
+
   const { data, error } = await sb
     .from("merchant_locations")
-    .insert({
-      merchant_id: merchant.id,
-      name,
-      address_zh,
-      address_en: address_en || null,
-      district_zh: district_zh || null,
-      district_en: district_en || null,
-      phone: phone || null,
-    })
+    .insert(row)
     .select()
     .single();
 

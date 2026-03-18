@@ -723,7 +723,21 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
     - `pnpm --filter web build` ✅（含 /dashboard/stores 路由）
   - 风险：无
-- [ ] P1A-02 B 端结构化营业时间编辑器
+- [x] P1A-02 B 端结构化营业时间编辑器
+  - 完成时间：2026-03-18
+  - 决策：
+    - 新增 `BusinessHoursEditor` 组件：7 天逐日编辑，支持 time input 設定開關門時間
+    - 每日可切换「營業 / 休息」狀態，休息日不存入 hours JSON
+    - 支持跨天營業識別（close < open 時顯示「跨日」提示）
+    - 新增 `HoursDisplay` 組件：自動合併連續相同營業時間（如「一-五 10:00-21:00」）
+    - 新增門店創建時可同時設置營業時間
+    - 門店列表每張卡片下方顯示營業時間摘要
+    - 每張卡片新增時鐘按鈕進入行內營業時間編輯模式
+    - API 路由 POST/PATCH 均已支持 `hours` JSONB 字段讀寫
+    - 新增 15 條 i18n 條目（星期名、開關門、休息、跨日等）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+  - 风险：无
 - [ ] P1A-03 B 端地图拖拽校准坐标
 - [ ] P1A-04 开发 `get_nearby_stores` RPC
 - [ ] P1A-05 C 端定位授权流程

@@ -56,6 +56,7 @@ export async function PATCH(
   if (body.district_zh !== undefined) update.district_zh = body.district_zh || null;
   if (body.district_en !== undefined) update.district_en = body.district_en || null;
   if (body.phone !== undefined) update.phone = body.phone || null;
+  if (body.hours !== undefined) update.hours = body.hours;
   if (body.is_active !== undefined) update.is_active = body.is_active;
 
   if (Object.keys(update).length === 0) {
