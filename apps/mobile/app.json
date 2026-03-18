@@ -38,14 +38,16 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
-      }
+        "projectId": "a573b88a-c637-4613-a7ab-3f82b8d5d7e2"
+      },
+      "router": {}
     },
     "updates": {
       "url": ""
     },
     "runtimeVersion": {
       "policy": "appVersion"
-    }
+    },
+    "owner": "zexuan"
   }
 }
