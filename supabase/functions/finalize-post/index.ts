@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
     }
   }
 
-  // ── Create post (transaction via service role) ──────────────
+  // ── Create post (sequential inserts with cleanup on failure) ─
   // 1. Insert post
   const { data: post, error: postErr } = await admin
     .from("posts")
@@ -181,72 +181,86 @@ Deno.serve(async (req) => {
     return json({ error: "Failed to create post" }, 500);
   }
 
-  // 2. Insert post_media
-  if (media.length > 0) {
-    // Get upload records for URL construction
-    const uploadIds = media.map((m) => m.upload_id);
-    const { data: uploads } = await admin
-      .from("media_uploads")
-      .select("id, bucket, path, mime_type")
-      .in("id", uploadIds);
+  // Safety net: if any unexpected error occurs after the post is created,
+  // clean up the orphaned post before returning an error response.
+  try {
+    // 2. Insert post_media
+    if (media.length > 0) {
+      // Get upload records for URL construction
+      const uploadIds = media.map((m) => m.upload_id);
+      const { data: uploads } = await admin
+        .from("media_uploads")
+        .select("id, bucket, path, mime_type")
+        .in("id", uploadIds);
 
-    if (uploads) {
-      const uploadMap = new Map(uploads.map((u) => [u.id, u]));
-      const mediaRows = media.map((m, idx) => {
-        const upload = uploadMap.get(m.upload_id);
-        if (!upload) return null;
-        return {
-          post_id: post.id,
-          url: `${SUPABASE_URL}/storage/v1/object/public/${upload.bucket}/${upload.path}`,
-          mime_type: upload.mime_type,
-          width: m.width ?? null,
-          height: m.height ?? null,
-          sort_order: idx,
-        };
-      }).filter(Boolean);
+      if (uploads) {
+        const uploadMap = new Map(uploads.map((u) => [u.id, u]));
+        const mediaRows = media.map((m, idx) => {
+          const upload = uploadMap.get(m.upload_id);
+          if (!upload) return null;
+          return {
+            post_id: post.id,
+            url: `${SUPABASE_URL}/storage/v1/object/public/${upload.bucket}/${upload.path}`,
+            mime_type: upload.mime_type,
+            width: m.width ?? null,
+            height: m.height ?? null,
+            sort_order: idx,
+          };
+        }).filter(Boolean);
 
-      if (mediaRows.length > 0) {
-        const { error: mediaErr } = await admin
-          .from("post_media")
-          .insert(mediaRows);
+        if (mediaRows.length > 0) {
+          const { error: mediaErr } = await admin
+            .from("post_media")
+            .insert(mediaRows);
 
-        if (mediaErr) {
-          console.error("Media insert error:", mediaErr);
-          // Clean up: delete the post we just created
-          await admin.from("posts").delete().eq("id", post.id);
-          return json({ error: "Failed to attach media to post" }, 500);
+          if (mediaErr) {
+            console.error("Media insert error:", mediaErr);
+            // Clean up: delete the post we just created
+            await admin.from("posts").delete().eq("id", post.id);
+            return json({ error: "Failed to attach media to post" }, 500);
+          }
+        }
+
+        // 3. Update media_uploads status to 'attached'
+        const { error: updateErr } = await admin
+          .from("media_uploads")
+          .update({ status: "attached" })
+          .in("id", uploadIds)
+          .eq("user_id", userId);
+
+        if (updateErr) {
+          console.error("Upload status update error:", updateErr);
+          // Non-fatal: post is created, media is attached, status update is cosmetic
         }
       }
+    }
 
-      // 3. Update media_uploads status to 'attached'
-      const { error: updateErr } = await admin
-        .from("media_uploads")
-        .update({ status: "attached" })
-        .in("id", uploadIds)
-        .eq("user_id", userId);
+    // 4. Insert post_products
+    if (product_ids.length > 0) {
+      const productRows = product_ids.map((wineId) => ({
+        post_id: post.id,
+        wine_id: wineId,
+      }));
 
-      if (updateErr) {
-        console.error("Upload status update error:", updateErr);
-        // Non-fatal: post is created, media is attached, status update is cosmetic
+      const { error: prodErr } = await admin
+        .from("post_products")
+        .insert(productRows);
+
+      if (prodErr) {
+        console.error("Product insert error:", prodErr);
+        // Non-fatal: post is created, product references are supplementary
       }
     }
-  }
-
-  // 4. Insert post_products
-  if (product_ids.length > 0) {
-    const productRows = product_ids.map((wineId) => ({
-      post_id: post.id,
-      wine_id: wineId,
-    }));
-
-    const { error: prodErr } = await admin
-      .from("post_products")
-      .insert(productRows);
-
-    if (prodErr) {
-      console.error("Product insert error:", prodErr);
-      // Non-fatal: post is created, product references are supplementary
+  } catch (unexpectedErr) {
+    // Unexpected throw (e.g. network failure, runtime error) after post was
+    // already inserted — remove the orphaned post to avoid partial data.
+    console.error("Unexpected error after post insert, cleaning up:", unexpectedErr);
+    try {
+      await admin.from("posts").delete().eq("id", post.id);
+    } catch (cleanupErr) {
+      console.error("Failed to clean up orphaned post:", post.id, cleanupErr);
     }
+    return json({ error: "Failed to create post" }, 500);
   }
 
   return json({

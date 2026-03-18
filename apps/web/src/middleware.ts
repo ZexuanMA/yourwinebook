@@ -52,7 +52,10 @@ export default async function middleware(request: NextRequest) {
     if (USE_SUPABASE_AUTH) {
       const { user, response } = await getSupabaseMiddleware(request);
       if (!user) {
-        return NextResponse.redirect(new URL("/login", request.url));
+        const loginRedirect = NextResponse.redirect(new URL("/login", request.url));
+        // Clean up stale wb_role cookie when Supabase session has expired
+        loginRedirect.cookies.delete("wb_role");
+        return loginRedirect;
       }
       // Role cookie is set at login for fast middleware checking
       const role = request.cookies.get("wb_role")?.value;

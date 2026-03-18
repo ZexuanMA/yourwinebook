@@ -164,6 +164,30 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "community.delete": { "zh-HK": "刪除", en: "Delete" },
   "community.confirmDelete": { "zh-HK": "確定要刪除這篇動態嗎？", en: "Delete this post?" },
 
+  // ── Stores ──
+  "nav.stores": { "zh-HK": "門店管理", en: "Store Management" },
+  "stores.title": { "zh-HK": "門店管理", en: "Store Management" },
+  "stores.subtitle": { "zh-HK": "管理你的門店地址、電話和營業資料", en: "Manage your store locations, phone, and business info" },
+  "stores.addStore": { "zh-HK": "新增門店", en: "Add Store" },
+  "stores.noStores": { "zh-HK": "尚未有門店", en: "No stores yet" },
+  "stores.noStoresHint": { "zh-HK": "點擊「新增門店」開始添加門店資料", en: "Click \"Add Store\" to start adding store info" },
+  "stores.name": { "zh-HK": "門店名稱", en: "Store Name" },
+  "stores.namePlaceholder": { "zh-HK": "如：中環旗艦店", en: "e.g. Central Flagship Store" },
+  "stores.addressZh": { "zh-HK": "地址（中文）", en: "Address (Chinese)" },
+  "stores.addressEn": { "zh-HK": "地址（英文）", en: "Address (English)" },
+  "stores.districtZh": { "zh-HK": "區域（中文）", en: "District (Chinese)" },
+  "stores.districtEn": { "zh-HK": "區域（英文）", en: "District (English)" },
+  "stores.phone": { "zh-HK": "電話", en: "Phone" },
+  "stores.active": { "zh-HK": "營業中", en: "Active" },
+  "stores.inactive": { "zh-HK": "已暫停", en: "Inactive" },
+  "stores.save": { "zh-HK": "保存", en: "Save" },
+  "stores.saving": { "zh-HK": "保存中…", en: "Saving…" },
+  "stores.saved": { "zh-HK": "已保存", en: "Saved" },
+  "stores.cancel": { "zh-HK": "取消", en: "Cancel" },
+  "stores.edit": { "zh-HK": "編輯", en: "Edit" },
+  "stores.storeCount": { "zh-HK": "家門店", en: "stores" },
+  "stores.requireSupabase": { "zh-HK": "門店管理需要連接 Supabase", en: "Store management requires Supabase connection" },
+
   // ── Common ──
   "common.total": { "zh-HK": "共", en: "Total" },
 };

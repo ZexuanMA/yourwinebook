@@ -19,6 +19,7 @@ import {
   Languages,
   MessageSquare,
   ShieldAlert,
+  MapPin,
 } from "lucide-react";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
@@ -33,6 +34,7 @@ const merchantNavKeys = [
   { href: "/dashboard",              key: "nav.overview",   icon: LayoutDashboard, exact: true  },
   { href: "/dashboard/wines",        key: "nav.wines",      icon: List,            exact: false },
   { href: "/dashboard/wines/new",    key: "nav.addWine",    icon: PlusCircle,      exact: true  },
+  { href: "/dashboard/stores",       key: "nav.stores",     icon: MapPin,          exact: false },
   { href: "/dashboard/community",    key: "nav.community",  icon: MessageSquare,   exact: true  },
   { href: "/dashboard/analytics",    key: "nav.analytics",  icon: BarChart2,       exact: true  },
   { href: "/dashboard/account",      key: "nav.account",    icon: Settings,        exact: true  },

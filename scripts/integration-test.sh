@@ -204,7 +204,27 @@ if [ "$TRACK_CODE" = "200" ]; then pass "Track event (HTTP 200)"; else fail "Tra
 
 # ──────────────────────────────────────
 echo ""
-echo "9. 页面渲染"
+echo "10. 管理员专属 API"
+echo "──────────────────────────────────────"
+ADMIN_COOKIES=$(mktemp)
+ADMIN_BODY=$(python3 -c "import json; print(json.dumps({'email':'Zexuan@admin.com','password':'ad7581jnP123!'}))")
+ADMIN_CODE=$(curl -s -o /dev/null -w "%{http_code}" -c "$ADMIN_COOKIES" \
+  -X POST "$BASE/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d "$ADMIN_BODY") || true
+if [ "$ADMIN_CODE" = "200" ]; then pass "Admin login (HTTP 200)"; else fail "Admin login: expected 200, got $ADMIN_CODE"; fi
+
+check_status "GET /api/admin/accounts" "$BASE/api/admin/accounts" "200" -b "$ADMIN_COOKIES"
+check_json "Admin accounts has merchants" "$BASE/api/admin/accounts" "'ok' if len(d) > 0 else 'empty'" "ok" -b "$ADMIN_COOKIES"
+check_status "GET /api/admin/applications" "$BASE/api/admin/applications" "200" -b "$ADMIN_COOKIES"
+check_status "GET /api/admin/users" "$BASE/api/admin/users" "200" -b "$ADMIN_COOKIES"
+check_json "Admin users list" "$BASE/api/admin/users" "'ok' if len(d) > 0 else 'empty'" "ok" -b "$ADMIN_COOKIES"
+check_status "GET /api/admin/analytics" "$BASE/api/admin/analytics" "200" -b "$ADMIN_COOKIES"
+check_status "Admin logout" "$BASE/api/auth/logout" "200" -X POST -b "$ADMIN_COOKIES"
+
+# ──────────────────────────────────────
+echo ""
+echo "11. 页面渲染"
 echo "──────────────────────────────────────"
 check_status "Homepage" "$BASE/zh-HK" "200"
 check_status "Search page" "$BASE/zh-HK/search" "200"
@@ -213,7 +233,7 @@ check_status "Dashboard → login redirect" "$BASE/dashboard" "307"
 check_status "Login page" "$BASE/login" "200"
 
 # Clean up
-rm -f "$MERCHANT_COOKIES" "$REG_COOKIES" 2>/dev/null || true
+rm -f "$MERCHANT_COOKIES" "$REG_COOKIES" "$ADMIN_COOKIES" 2>/dev/null || true
 
 # ──────────────────────────────────────
 echo ""

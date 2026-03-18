@@ -175,6 +175,21 @@ export async function getAllPosts(options?: {
   if (USE_SUPABASE_AUTH) {
     const supabase = await createSupabaseServer();
     if (supabase) {
+      // Pre-filter by wineSlug: query post_products → wines to get matching
+      // post IDs *before* the main posts query. This avoids fetching all posts
+      // and filtering post-query (O(N) scan).
+      let wineSlugPostIds: string[] | undefined;
+      if (options?.wineSlug) {
+        const { data: ppMatches } = await supabase
+          .from("post_products")
+          .select("post_id, wines!inner(slug)")
+          .eq("wines.slug", options.wineSlug);
+        wineSlugPostIds = ppMatches?.map((pp) => pp.post_id) ?? [];
+        if (wineSlugPostIds.length === 0) {
+          return { posts: [], total: 0 };
+        }
+      }
+
       // Build the query
       let query = supabase
         .from("posts")
@@ -184,6 +199,11 @@ export async function getAllPosts(options?: {
         )
         .eq("status", "visible")
         .order("created_at", { ascending: false });
+
+      // Filter by wineSlug (pre-resolved post IDs)
+      if (wineSlugPostIds) {
+        query = query.in("id", wineSlugPostIds);
+      }
 
       // Filter by author
       if (options?.authorId) {
@@ -273,20 +293,7 @@ export async function getAllPosts(options?: {
         }
       }
 
-      // Filter by wineSlug (post-query, since it's a join)
-      let filteredRows = rows;
-      if (options?.wineSlug) {
-        const matchingPostIds = new Set<string>();
-        if (ppRows) {
-          for (const pp of ppRows) {
-            const w = pp.wines as unknown as { slug: string } | null;
-            if (w?.slug === options.wineSlug) matchingPostIds.add(pp.post_id);
-          }
-        }
-        filteredRows = rows.filter((r) => matchingPostIds.has(r.id));
-      }
-
-      const posts = filteredRows.map((row) => {
+      const posts = rows.map((row) => {
         const role = (row.profiles as unknown as { display_name: string; role: string } | null)?.role ?? "user";
         const merchantSlug = role === "merchant_staff" ? staffMap.get(row.author_id) : undefined;
         const adapted: SupaPostRow = {
@@ -303,7 +310,7 @@ export async function getAllPosts(options?: {
         );
       });
 
-      return { posts, total: options?.wineSlug ? posts.length : (count ?? 0) };
+      return { posts, total: count ?? 0 };
     }
   }
 

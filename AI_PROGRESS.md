@@ -660,13 +660,50 @@
 - [x] 种子数据已导入（13 profiles, 32 wines, 8 posts, 13 comments, 22 merchant_prices 等）
 - [x] Web 认证层已迁移（admin-store / merchant-store / user-store / community-store / application-store / price-store 全部具备 USE_SUPABASE_AUTH 分支）
 - [x] analytics-store 决策完成（保留 SQLite，PostHog 承担行为分析）
-- [x] Web 数据层集成测试通过（41 项检查）
+- [x] Web 数据层集成测试通过（47 项检查，含管理员 API 覆盖）
 - [x] EAS Build 配置完成（development / preview / production 三通道）
 - [x] Sentry 接入（Web + Mobile）
 - [x] PostHog 接入（Web + Mobile + 共享事件名）
 - [x] Feature flag 回退机制就位（所有 store 保留 legacy 路径）
 
 **Phase 0b 全部完成，进入 Phase 1A。**
+
+### Phase 0b 残留风险修复（2026-03-18）
+
+- [x] 修复：`wb_role` cookie 与 Supabase session 联动过期
+  - 文件：`apps/web/src/middleware.ts`
+  - 操作：Supabase session 过期（`user === null`）时，redirect 前删除 `wb_role` cookie，防止角色判断残留
+  - 风险等级：Medium → Resolved
+
+- [x] 修复：`finalize-post` Edge Function 非事务性写入
+  - 文件：`supabase/functions/finalize-post/index.ts`
+  - 操作：在 post 创建后的多表 INSERT 区块外层包 try-catch，异常时自动删除孤立 post 记录
+  - 风险等级：Medium → Resolved
+
+- [x] 修复：管理员 API 集成测试覆盖缺口
+  - 文件：`scripts/integration-test.sh`
+  - 操作：新增「10. 管理员专属 API」测试组（8 项检查：login/accounts/applications/users/analytics/logout），总测试数从 41 → 47
+  - 风险等级：Medium → Resolved
+
+- [x] 修复：`community-store` wineSlug post-query 性能问题
+  - 文件：`apps/web/src/lib/community-store.ts`
+  - 操作：Supabase 路径下，wineSlug 过滤改为先查 `post_products JOIN wines` 获取 post_id 集合，再用 `.in("id", ids)` 约束主查询；删除原有的内存过滤逻辑；修正 total count
+  - 风险等级：Low → Resolved
+
+- [ ] 待处理：EAS Build 项目 ID 配置
+  - 需用户手动执行 `npx eas login` + `npx eas init`（需 Expo 账号）
+  - 当前为占位配置，不影响 Web 功能
+  - 风险等级：Blocking（仅限 Mobile 发布）
+
+- [ ] 待处理：Sentry source map 上传配置
+  - 需配置 `SENTRY_AUTH_TOKEN` / `SENTRY_ORG` / `SENTRY_PROJECT` 环境变量
+  - 当前 Sentry 可正常收集错误，仅影响 stack trace 可读性
+  - 风险等级：Low
+
+- [ ] 待处理：CI 首次实际执行验证
+  - GitHub Actions workflow 文件已就绪，但无 Git remote，从未触发
+  - 需要推送到 GitHub 后验证
+  - 风险等级：Low
 
 ---
 
