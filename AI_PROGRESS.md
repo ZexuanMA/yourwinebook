@@ -549,6 +549,20 @@
   - 验证：
     - 现有 Dashboard analytics 页面继续正常工作（依赖 SQLite，不受影响）✅
   - 风险：无
+
+### 部署检查点（P0b-18a/18b/19 完成后）
+- 部署时间：2026-03-18
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线，0 重启 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200，返回 32 支酒款 ✅
+  - `/api/wines/cloudy-bay-sauvignon-blanc-2023/prices` → 200，返回 6 条比价 ✅
+  - `/api/merchants` → 200 ✅
+  - `/api/search?q=wine` → 200 ✅
+  - `/dashboard` → 307 redirect to login（预期行为）✅
+- 结论：application-store/price-store 异步化和 analytics-store 决策均未影响线上功能
+
 - [ ] P0b-20 Web 数据层迁移集成测试
 - [ ] P0b-21 配置 EAS Build 与内测通道
 - [ ] P0b-22 接入 Sentry
