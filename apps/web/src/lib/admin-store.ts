@@ -77,7 +77,9 @@ export async function getAdminPublic(): Promise<{
 }
 
 export async function verifyAdminCredentials(email: string, password: string): Promise<boolean> {
-  // Supabase path handled by supabase-auth.ts signIn
+  // Supabase mode: auth is handled by supabase-auth.ts signIn; this function is legacy-only
+  if (USE_SUPABASE_AUTH) return false;
+
   const admin = readAdmin();
   if (admin.email !== email) return false;
   const ok = await verifyPassword(password, admin.password);
@@ -89,7 +91,9 @@ export async function verifyAdminCredentials(email: string, password: string): P
 }
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {
-  // Supabase path handled in verify-password route directly
+  // Supabase mode: password verification is handled by verify-password route via supabase-auth.ts
+  if (USE_SUPABASE_AUTH) return false;
+
   const admin = readAdmin();
   const ok = await verifyPassword(password, admin.password);
   if (ok && !isHashed(admin.password)) {
@@ -100,7 +104,9 @@ export async function verifyAdminPassword(password: string): Promise<boolean> {
 }
 
 export async function updateAdminPassword(newPassword: string): Promise<void> {
-  // Supabase path handled in verify-password route directly
+  // Supabase mode: password update is handled by verify-password route via supabaseChangePassword()
+  if (USE_SUPABASE_AUTH) return;
+
   const admin = readAdmin();
   admin.password = await hashPassword(newPassword);
   writeAdmin(admin);

@@ -479,7 +479,17 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
     - `pnpm --filter web build` 全部页面通过 ✅
   - 风险：无
-- [ ] P0b-16 `admin-store` 迁移
+- [x] P0b-16 `admin-store` 迁移
+  - 完成时间：2026-03-18
+  - 决策：
+    - `getAdminPublic()` 已在 P0b-13 具备 Supabase 分支（查 profiles.role='admin'），无需修改
+    - `verifyAdminCredentials()` / `verifyAdminPassword()` / `updateAdminPassword()` 添加 `USE_SUPABASE_AUTH` 守卫，Supabase 模式下直接返回（auth 由 supabase-auth.ts 统一处理）
+    - 修复 codex-review 3.2：后台登录 Supabase 路径未校验帐号状态，新增 `user.status !== 'active'` → 403 拦截
+    - Legacy 路径（JSON 文件读写）完全保留，`USE_SUPABASE_AUTH=false` 时行为不变
+  - 验证：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` 全部页面通过 ✅
+  - 风险：无
 - [ ] P0b-17 `community-store` 迁移
 - [ ] P0b-18 `application-store` 与 `price-store` 迁移
 - [ ] P0b-19 `analytics-store` 决策

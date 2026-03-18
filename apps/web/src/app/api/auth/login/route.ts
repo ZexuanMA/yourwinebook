@@ -26,6 +26,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Block suspended/banned/inactive accounts (codex-review 3.2)
+    if (user.status !== "active") {
+      return NextResponse.json(
+        { error: "此帳號已被停用" },
+        { status: 403 }
+      );
+    }
+
     const account = {
       slug: user.role === "admin" ? "admin" : user.merchantSlug || user.id,
       name: user.displayName,
