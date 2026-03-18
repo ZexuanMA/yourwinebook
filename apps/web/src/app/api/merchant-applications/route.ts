@@ -12,6 +12,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const app = createApplication(body);
+  const app = await createApplication(body);
   return NextResponse.json({ success: true, id: app.id }, { status: 201 });
 }

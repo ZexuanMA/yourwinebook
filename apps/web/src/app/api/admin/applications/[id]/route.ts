@@ -26,7 +26,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const app = updateApplicationStatus(id, status);
+  const app = await updateApplicationStatus(id, status);
   if (!app) return NextResponse.json({ error: "Application not found" }, { status: 404 });
 
   return NextResponse.json({ application: app });

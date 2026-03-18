@@ -16,6 +16,6 @@ export async function GET() {
   const admin = await requireAdmin();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const applications = getAllApplications();
+  const applications = await getAllApplications();
   return NextResponse.json({ applications });
 }

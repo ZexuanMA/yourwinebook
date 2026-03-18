@@ -513,7 +513,19 @@
       - `pnpm --filter web exec tsc --noEmit` ✅
       - `pnpm --filter web build` 全部页面通过 ✅
     - 风险：wineSlug 过滤为 post-query（先查 post_products 再过滤），大数据量可能影响性能（MVP 可接受）
-- [ ] P0b-18 `application-store` 与 `price-store` 迁移
+- [ ] P0b-18 `application-store` 与 `price-store` 迁移（拆分为子任务）
+  - [x] P0b-18a `application-store` Supabase 适配
+    - 完成时间：2026-03-18
+    - 决策：
+      - 所有 3 个公开函数改为 async，添加 `USE_SUPABASE_AUTH` 分支
+      - Supabase 路径：`getAllApplications` 查 `merchant_applications` 表按 created_at 倒序；`createApplication` 插入并返回完整记录；`updateApplicationStatus` 按 id 更新状态
+      - `rowToApplication()` 适配层将 snake_case DB 行转换为 camelCase 前端接口
+      - 3 个 API route 更新为 await 调用
+      - Legacy 路径（JSON 文件读写）完全保留
+    - 验证：
+      - `pnpm --filter web exec tsc --noEmit` ✅
+      - `pnpm --filter web build` 全部页面通过 ✅
+    - 风险：无
 - [ ] P0b-19 `analytics-store` 决策
 - [ ] P0b-20 Web 数据层迁移集成测试
 - [ ] P0b-21 配置 EAS Build 与内测通道
