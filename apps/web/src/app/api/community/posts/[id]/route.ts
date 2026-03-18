@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const post = getPostById(id);
+  const post = await getPostById(id);
   if (!post) return NextResponse.json({ error: "Post not found" }, { status: 404 });
   return NextResponse.json(post);
 }
@@ -23,7 +23,7 @@ export async function PATCH(
   if (!authorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const post = updatePost(id, authorId, body);
+  const post = await updatePost(id, authorId, body);
   if (!post) return NextResponse.json({ error: "Not found or not authorized" }, { status: 404 });
   return NextResponse.json(post);
 }
@@ -39,7 +39,7 @@ export async function DELETE(
 
   if (!authorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const ok = deletePost(id, authorId);
+  const ok = await deletePost(id, authorId);
   if (!ok) return NextResponse.json({ error: "Not found or not authorized" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

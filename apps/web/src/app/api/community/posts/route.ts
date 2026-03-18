@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const wineSlug = url.searchParams.get("wineSlug") ?? undefined;
   const tag = url.searchParams.get("tag") ?? undefined;
 
-  const { posts, total } = getAllPosts({ page, limit, authorId, authorType, wineSlug, tag });
+  const { posts, total } = await getAllPosts({ page, limit, authorId, authorType, wineSlug, tag });
   return NextResponse.json({ posts, total, page, limit, totalPages: Math.ceil(total / limit) });
 }
 
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Title and content are required" }, { status: 400 });
   }
 
-  const post = createPost({
+  const post = await createPost({
     authorId,
     authorType,
     authorName,

@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const comments = getComments(id);
+  const comments = await getComments(id);
   return NextResponse.json(comments);
 }
 
@@ -45,7 +45,7 @@ export async function POST(
     return NextResponse.json({ error: "Content is required" }, { status: 400 });
   }
 
-  const comment = addComment({
+  const comment = await addComment({
     postId: id,
     authorId,
     authorType,

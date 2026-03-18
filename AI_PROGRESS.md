@@ -499,6 +499,20 @@
       - GIN 索引支持 tags 数组过滤
       - 更新 8 条种子帖子，填入对应的标题、标签、评分数据
     - 风险：无（全部为可选列，不影响现有数据）
+  - [x] P0b-17b community-store 全函数 Supabase 适配 + API 路由异步化
+    - 完成时间：2026-03-18
+    - 决策：
+      - 所有 10 个公开函数改为 async，添加 `USE_SUPABASE_AUTH` 分支
+      - 适配层核心：Supabase 关系表 → CommunityPost/CommunityComment 接口转换
+      - authorId 映射：用户=UUID 直通，商户=slug↔profile_id 双向解析
+      - 批量查询优化：帖子列表使用 3 次批量查询（likes、wine refs、merchant staff）代替 N+1
+      - 酒款引用：post_products JOIN wines 映射到 wineSlug/wineName
+      - 删除操作：Supabase 模式使用 soft delete (status='deleted')
+      - 4 个 API route 更新为 await 调用
+    - 验证：
+      - `pnpm --filter web exec tsc --noEmit` ✅
+      - `pnpm --filter web build` 全部页面通过 ✅
+    - 风险：wineSlug 过滤为 post-query（先查 post_products 再过滤），大数据量可能影响性能（MVP 可接受）
 - [ ] P0b-18 `application-store` 与 `price-store` 迁移
 - [ ] P0b-19 `analytics-store` 决策
 - [ ] P0b-20 Web 数据层迁移集成测试

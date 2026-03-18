@@ -12,7 +12,7 @@ export async function POST(
 
   if (!actorId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const result = toggleLike(id, actorId);
+  const result = await toggleLike(id, actorId);
   if (!result) return NextResponse.json({ error: "Post not found" }, { status: 404 });
   return NextResponse.json(result);
 }
