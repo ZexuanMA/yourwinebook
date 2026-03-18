@@ -709,7 +709,20 @@
 
 ## Phase 1A — 找店 MVP 闭环
 
-- [ ] P1A-01 B 端门店基本信息编辑页
+- [x] P1A-01 B 端门店基本信息编辑页
+  - 完成时间：2026-03-18
+  - 决策：
+    - 新增 `/dashboard/stores` 页面（Client Component）
+    - 新增 `/api/merchant/stores` GET（列表）+ POST（创建）
+    - 新增 `/api/merchant/stores/[id]` PATCH（编辑 + 切换营业状态）
+    - 页面支持：门店列表展示、新增表单、行内编辑、启用/停用切换
+    - API 层通过 cookie 认证 + Supabase `merchant_locations` 表读写
+    - 无 Supabase 时显示「需要連接 Supabase」提示（门店功能為 Supabase-only）
+    - 侧边栏新增「門店管理」入口（MapPin 图标）+ 双语 i18n
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` ✅（含 /dashboard/stores 路由）
+  - 风险：无
 - [ ] P1A-02 B 端结构化营业时间编辑器
 - [ ] P1A-03 B 端地图拖拽校准坐标
 - [ ] P1A-04 开发 `get_nearby_stores` RPC
