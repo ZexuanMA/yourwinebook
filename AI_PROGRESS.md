@@ -621,6 +621,17 @@
     - `pnpm --filter web build` ✅
     - `npx expo export --platform web` ✅
   - 风险：Source map 上传需配置 `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT`
+
+### 部署检查点（P0b-20/21/22 完成后）
+- 部署时间：2026-03-18
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200 ✅
+  - 集成测试 → 39 通过, 0 失败 ✅
+- Sentry 集成未导致性能回退或构建异常
+- 结论：EAS 配置、Sentry 接入、集成测试均未影响线上功能
 - [ ] P0b-23 接入 PostHog
 
 ---
