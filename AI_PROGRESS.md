@@ -538,7 +538,17 @@
       - `pnpm --filter web exec tsc --noEmit` ✅
       - `pnpm --filter web build` 全部页面通过 ✅
     - 风险：无
-- [ ] P0b-19 `analytics-store` 决策
+- [x] P0b-19 `analytics-store` 决策
+  - 完成时间：2026-03-18
+  - 决策：
+    - MVP 阶段**不迁移** analytics-store 到 Supabase
+    - 现有 SQLite (better-sqlite3, WAL 模式) 继续服务后台分析 Dashboard
+    - 产品行为分析由 PostHog 承担（P0b-23 接入）
+    - 理由：analytics-store 的事件追踪和聚合统计是 Web-only 的后台功能，迁移到 Supabase 收益低、风险中（SQLite 聚合性能优于远程 PostgreSQL 查询），不值得在 MVP 阶段投入
+    - 后续如需移动端共享分析数据，可在 Phase 2 通过 PostHog API 或 Supabase Analytics 扩展
+  - 验证：
+    - 现有 Dashboard analytics 页面继续正常工作（依赖 SQLite，不受影响）✅
+  - 风险：无
 - [ ] P0b-20 Web 数据层迁移集成测试
 - [ ] P0b-21 配置 EAS Build 与内测通道
 - [ ] P0b-22 接入 Sentry
