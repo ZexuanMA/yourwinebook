@@ -584,7 +584,24 @@
   - 验证：
     - `bash scripts/integration-test.sh` → 41 通过, 0 失败 ✅
   - 风险：管理员专属 API（accounts/users/applications 管理）未能在本次测试中覆盖，因 admin 密码与 CLAUDE.md 文档不一致；这些 API 的功能在 P0b-16/P0b-18a 中已通过 typecheck+build 验证
-- [ ] P0b-21 配置 EAS Build 与内测通道
+- [x] P0b-21 配置 EAS Build 与内测通道
+  - 完成时间：2026-03-18
+  - 决策：
+    - `eas.json` 定义三个构建配置：
+      - `development`：开发客户端，内部分发，iOS 模拟器支持
+      - `preview`：内测通道，内部分发，用于 QA 验证
+      - `production`：正式发布，自动递增版本号
+    - `app.json` 新增 EAS 配置：
+      - `extra.eas.projectId`：占位，需在 EAS 项目创建后填入
+      - `updates.url`：占位，用于 EAS Update OTA 更新
+      - `runtimeVersion.policy: "appVersion"`：按 app 版本号管理运行时兼容性
+    - 每个环境独立配置 `EXPO_PUBLIC_SUPABASE_URL/KEY`
+    - submit 配置预留 iOS (Apple ID) 和 Android (Service Account) 占位
+    - EAS CLI v18.4.0 已可用
+  - 验证：
+    - `npx expo export --platform web` ✅（13 路由全部导出）
+    - `eas.json` 格式正确，EAS CLI 可读取 ✅
+  - 风险：实际 EAS build 需要配置 Expo 账号和项目 ID，当前为占位配置
 - [ ] P0b-22 接入 Sentry
 - [ ] P0b-23 接入 PostHog
 
