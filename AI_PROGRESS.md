@@ -602,7 +602,25 @@
     - `npx expo export --platform web` ✅（13 路由全部导出）
     - `eas.json` 格式正确，EAS CLI 可读取 ✅
   - 风险：实际 EAS build 需要配置 Expo 账号和项目 ID，当前为占位配置
-- [ ] P0b-22 接入 Sentry
+- [x] P0b-22 接入 Sentry
+  - 完成时间：2026-03-18
+  - 决策：
+    - **Web**：`@sentry/nextjs` 集成
+      - `sentry.client.config.ts`：客户端初始化，replaysOnErrorSampleRate=1.0
+      - `sentry.server.config.ts`：服务端初始化，tracesSampleRate=0.1
+      - `sentry.edge.config.ts`：Edge 运行时初始化
+      - `next.config.ts` 使用 `withSentryConfig` 包装
+      - `global-error.tsx`：全局错误边界，自动上报 Sentry
+      - 通过 `NEXT_PUBLIC_SENTRY_DSN` 控制启用，无 DSN 时 Sentry 不初始化
+    - **Mobile**：`@sentry/react-native` 集成
+      - `lib/sentry.ts`：初始化函数 + re-export
+      - Root layout 顶部调用 `initSentry()`
+      - 通过 `EXPO_PUBLIC_SENTRY_DSN` 控制启用
+    - 两端均默认禁用（无 DSN 环境变量时），不影响现有功能
+  - 验证：
+    - `pnpm --filter web build` ✅
+    - `npx expo export --platform web` ✅
+  - 风险：Source map 上传需配置 `SENTRY_AUTH_TOKEN`/`SENTRY_ORG`/`SENTRY_PROJECT`
 - [ ] P0b-23 接入 PostHog
 
 ---

@@ -4,8 +4,11 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import "../i18n";
+import { initSentry } from "../lib/sentry";
 import { QueryProvider } from "../providers/QueryProvider";
 import { AuthProvider } from "../providers/AuthProvider";
+
+initSentry();
 
 export { ErrorBoundary } from "expo-router";
 
