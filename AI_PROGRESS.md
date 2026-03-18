@@ -690,10 +690,10 @@
   - 操作：Supabase 路径下，wineSlug 过滤改为先查 `post_products JOIN wines` 获取 post_id 集合，再用 `.in("id", ids)` 约束主查询；删除原有的内存过滤逻辑；修正 total count
   - 风险等级：Low → Resolved
 
-- [ ] 待处理：EAS Build 项目 ID 配置
-  - 需用户手动执行 `npx eas login` + `npx eas init`（需 Expo 账号）
-  - 当前为占位配置，不影响 Web 功能
-  - 风险等级：Blocking（仅限 Mobile 发布）
+- [x] 修复：EAS Build 项目 ID 配置
+  - 操作：`eas init --force` 创建 @zexuan/your-wine-book 项目，projectId 写入 app.json
+  - 清理 eas.json 空占位（EAS CLI 不允许空字符串），Supabase env 待实际值就绪后添加
+  - 风险等级：Blocking → Resolved
 
 - [ ] 待处理：Sentry source map 上传配置
   - 需配置 `SENTRY_AUTH_TOKEN` / `SENTRY_ORG` / `SENTRY_PROJECT` 环境变量
