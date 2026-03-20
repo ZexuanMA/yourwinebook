@@ -995,7 +995,17 @@
     - `@ywb/supabase-types` tsc --noEmit ✅
     - `pnpm --filter web exec tsc --noEmit` ✅
   - 风险：无
-- [ ] P1B-02 C 端帖子卡片组件
+- [x] P1B-02 C 端帖子卡片组件
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `apps/mobile/components/PostCard.tsx`，导出 `PostCardData` 接口和 `PostCard` 组件
+    - `PostCardData` 与 `get_feed` RPC 返回完全对齐：id, content, title, tags, rating, is_official, like_count, comment_count, created_at, author_id, author_name, author_avatar, merchant_name, media[], products[], is_liked, is_bookmarked
+    - 组件结构：作者行（头像/昵称/官方徽章/相对时间）→ 标题 → 正文(4行截断) → 标签(最多3个) → 星级评分 → 图片网格(1-4张) → 关联酒款 → 点赞/评论底栏
+    - 辅助函数：`relativeTime()` 相对时间、`getInitial()` 头像占位、`renderMediaGrid()` 图片网格布局
+    - 品牌色系：酒红 #5B2E35、暖白背景、铜金 #B8956A 点缀
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-03 C 端图片预览组件
 - [ ] P1B-04 C 端单列 Feed 页面
 - [ ] P1B-05 C 端帖子详情页
