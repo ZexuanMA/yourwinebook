@@ -1173,6 +1173,16 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
+
+### 部署检查点 8（P1B-10 ~ P1B-12）
+
+- 时间：2026-03-20
+- git push：❌ 凭据缺失（已知问题）
+- Web 构建：✅ `pnpm --filter web build` 通过
+- Mobile 构建：✅ `npx expo export --platform web` 通过（13 页面）
+- 集成测试：✅ 47/47 全部通过
+- 结论：评论、收藏、举报功能全部就绪，可继续 P1B-13 拉黑/屏蔽
+
 - [ ] P1B-13 C 端拉黑/屏蔽用户
 - [ ] P1B-14 C 端个人中心页
 - [ ] P1B-15 C 端用户主页
