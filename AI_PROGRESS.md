@@ -1006,7 +1006,18 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-03 C 端图片预览组件
+- [x] P1B-03 C 端图片预览组件
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `apps/mobile/components/ImagePreview.tsx`，导出 `PreviewImage` 接口和 `ImagePreview` 组件
+    - 全屏 Modal 黑色背景，支持 FlatList 水平分页切换多图
+    - 每张图使用 ScrollView 的 `maximumZoomScale=3` 实现捏合放大
+    - 右上角关闭按钮，底部页码指示器（多图时显示 "1 / N"）
+    - `initialIndex` 支持从任意图打开，`onShow` 时自动滚到初始位置
+    - 不引入额外依赖，纯 RN 原生组件实现
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-04 C 端单列 Feed 页面
 - [ ] P1B-05 C 端帖子详情页
 - [ ] P1B-06 C 端发帖页面
