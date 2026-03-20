@@ -827,7 +827,19 @@
   - 自检：
     - `npx expo export --platform web` ✅
   - 风险：无
-- [ ] P1A-08 C 端营业状态计算逻辑
+- [x] P1A-08 C 端营业状态计算逻辑
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新增 `@ywb/domain/business-hours.ts`：纯函数营业状态计算
+    - 输入：hours JSONB + 当前时间 → 输出：open / closed / closing-soon
+    - 支持跨天营业（如 18:00-02:00），检查前一天跨日时段
+    - "closing-soon" = 距关门 ≤30 分钟
+    - 返回 opensAt/closesAt 供 UI 显示
+    - 导出 `getBusinessStatus()` + 类型（HoursMap, DayHours, BusinessStatus 等）
+    - 双端可直接引用
+  - 自检：
+    - `@ywb/domain` tsc --noEmit ✅
+  - 风险：无
 - [ ] P1A-09 C 端附近门店列表页
 - [ ] P1A-10 C 端门店详情页
 - [ ] P1A-11 C 端收藏/取消收藏门店

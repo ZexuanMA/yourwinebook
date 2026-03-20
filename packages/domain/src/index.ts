@@ -49,6 +49,10 @@ export type { AuthorType, CommunityPost, CommunityComment } from "./community";
 export type { BucketName, BucketConfig, MediaValidationError, FileToValidate } from "./media";
 export { BUCKET_CONFIGS, validateFiles, COMPRESSION_TARGETS, POST_LIMITS } from "./media";
 
+// Business Hours
+export type { DayHours, HoursMap, DayOfWeek, BusinessStatus } from "./business-hours";
+export { getBusinessStatus } from "./business-hours";
+
 // Districts
 export type { District } from "./districts";
 export { HK_DISTRICTS } from "./districts";
