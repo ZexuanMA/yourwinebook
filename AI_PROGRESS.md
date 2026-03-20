@@ -1132,7 +1132,22 @@
 - 集成测试：✅ 47/47 全部通过
 - 结论：上传进度、点赞回滚、评论 Edge Function 就绪，可继续 P1B-10 评论 UI
 
-- [ ] P1B-10 C 端评论列表与发评论
+- [x] P1B-10 C 端评论列表与发评论
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `apps/mobile/components/CommentSection.tsx`，可复用评论组件
+    - 查询 `comments` 表 + profiles 关联，按 `created_at` 升序排列
+    - 乐观插入：发评论时立即在列表末尾追加（半透明 pending 状态），成功后替换为服务端数据
+    - 失败回滚：catch 中移除乐观评论
+    - 客户端生成 `idempotency_key`（时间戳+随机字符串），防止重复提交
+    - 调用 `create-comment` Edge Function（P1B-09），返回含 author profile 的完整评论
+    - `onCommentCountChange` 回调通知详情页更新 `comment_count`
+    - 输入框：圆角气泡样式，多行支持，最大 1000 字，发送按钮（↑）
+    - 未登入用户显示登入提示
+    - 集成到帖子详情页，替换 "即將上線" 占位
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-11 C 端帖子收藏
 - [ ] P1B-12 C 端举报功能
 - [ ] P1B-13 C 端拉黑/屏蔽用户

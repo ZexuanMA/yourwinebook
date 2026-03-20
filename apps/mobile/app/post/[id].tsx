@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { getSupabase } from "../../lib/supabase";
 import { useAuth } from "../../providers/AuthProvider";
 import ImagePreview, { type PreviewImage } from "../../components/ImagePreview";
+import CommentSection from "../../components/CommentSection";
 import { COMMUNITY_EVENTS } from "@ywb/domain";
 import { captureEvent } from "../../lib/posthog";
 
@@ -355,13 +356,16 @@ export default function PostDetailScreen() {
         </Pressable>
       </View>
 
-      {/* Comments placeholder — P1B-10 */}
-      <View style={styles.commentsPlaceholder}>
-        <Text style={styles.commentsTitle}>
-          {t("feed.comment")} ({post.comment_count})
-        </Text>
-        <Text style={styles.comingSoonText}>{t("common.comingSoon")}</Text>
-      </View>
+      {/* Comments */}
+      <CommentSection
+        postId={post.id}
+        commentCount={post.comment_count}
+        onCommentCountChange={(delta) =>
+          setPost((prev) =>
+            prev ? { ...prev, comment_count: prev.comment_count + delta } : prev,
+          )
+        }
+      />
 
       <View style={{ height: 40 }} />
 
@@ -528,21 +532,5 @@ const styles = StyleSheet.create({
   },
   bookmarked: {
     color: "#B8956A",
-  },
-  commentsPlaceholder: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
-    gap: 8,
-  },
-  commentsTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: "#2C2C2C",
-  },
-  comingSoonText: {
-    fontSize: 13,
-    color: "#9CA3AF",
   },
 });
