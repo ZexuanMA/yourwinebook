@@ -894,7 +894,18 @@
     - 使用幂等 INSERT/DELETE 操作，无需额外去重
   - 自检：收藏功能已在 P1A-09/P1A-10 自检中通过
   - 风险：无
-- [ ] P1A-12 C 端外部导航唤起
+- [x] P1A-12 C 端外部导航唤起
+  - 完成时间：2026-03-20
+  - 决策：
+    - 导航功能已在 P1A-10 门店详情页中完整实现
+    - `handleNavigate()` 使用 Linking.openURL 唤起外部地图：
+      - iOS：`maps:0,0?q=label@lat,lng`（Apple Maps）
+      - Android：`geo:lat,lng?q=lat,lng(label)`（Google Maps）
+      - Web/fallback：`https://www.google.com/maps/search/?api=1&query=lat,lng`
+    - 仅在门店有坐标（lat/lng）时显示导航按钮
+    - 门店列表页的 StoreCard 也预留了 `onNavigate` 回调接口
+  - 自检：导航功能已在 P1A-10 自检中通过
+  - 风险：无
 - [ ] P1A-13 找店漏斗埋点
 - [ ] P1A-14 找店链路 QA 回归
 
