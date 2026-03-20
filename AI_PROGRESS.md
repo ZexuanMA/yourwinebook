@@ -1043,7 +1043,20 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-05 C 端帖子详情页
+- [x] P1B-05 C 端帖子详情页
+  - 完成时间：2026-03-20
+  - 决策：
+    - 重写 `apps/mobile/app/post/[id].tsx`，从深链跳转占位升级为完整详情页
+    - 直接查询 `posts` 表 + `profiles`/`merchants` 关联 + `post_media`/`post_products` 子查询
+    - 并行查询 `post_likes`/`post_bookmarks` 获取当前用户交互状态
+    - 正文无截断完整展示，标签全部显示，图片全尺寸纵列排列
+    - 图片点击打开 `ImagePreview` 全屏预览（集成 P1B-03）
+    - 乐观更新点赞/收藏，PostHog 埋点：`POST_DETAIL_VIEWED`、`POST_LIKED/UNLIKED`、`POST_BOOKMARKED/UNBOOKMARKED`
+    - 评论区占位，标注 "即將上線"（P1B-10 实现）
+    - 日期格式化：中文 "2026年3月20日 14:30"，英文 "Mar 20, 2026, 02:30 PM"
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-06 C 端发帖页面
 - [ ] P1B-07 C 端上传进度与重试
 - [ ] P1B-08 C 端点赞功能
