@@ -800,7 +800,20 @@
 - Git push 受阻：GitHub 凭据未配置（与 codex-review 10 节相同问题），本地 commit 已就绪
 - 结论：地图拖拽坐标、RPC 更新、定位授权均未影响线上功能
 
-- [ ] P1A-06 C 端手动选区降级
+- [x] P1A-06 C 端手动选区降级
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新增 `@ywb/domain/districts.ts`：10 个香港常用区域及中心坐标
+      - 覆盖：中環、尖沙咀、銅鑼灣、灣仔、西營盤、觀塘、旺角、沙田、屯門、荃灣
+      - 每个区域包含 slug、中英文名称、中心 lat/lng
+    - 导出 `HK_DISTRICTS` 常量和 `District` 类型，供双端共用
+    - 定位拒绝后 stores tab 可展示区域选择器（UI 在 P1A-09 集成）
+    - useLocation hook 的 `denied` 状态触发手动选区流程
+  - 自检：
+    - `@ywb/domain` tsc --noEmit ✅
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `npx expo export --platform web` ✅
+  - 风险：无
 - [ ] P1A-07 C 端门店卡片组件
 - [ ] P1A-08 C 端营业状态计算逻辑
 - [ ] P1A-09 C 端附近门店列表页

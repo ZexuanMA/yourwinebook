@@ -49,6 +49,10 @@ export type { AuthorType, CommunityPost, CommunityComment } from "./community";
 export type { BucketName, BucketConfig, MediaValidationError, FileToValidate } from "./media";
 export { BUCKET_CONFIGS, validateFiles, COMPRESSION_TARGETS, POST_LIMITS } from "./media";
 
+// Districts
+export type { District } from "./districts";
+export { HK_DISTRICTS } from "./districts";
+
 // Analytics
 export type {
   EventType,
