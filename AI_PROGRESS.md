@@ -786,6 +786,20 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 路由全部导出）
   - 风险：无
+### 部署检查点（P1A-03/04/05 完成后）
+- 部署时间：2026-03-20
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200 ✅
+  - `/api/merchants` → 200 ✅
+  - `/dashboard` → 307 redirect to login（预期行为）✅
+  - `/login` → 200 ✅
+  - 集成测试 → 47 通过, 0 失败 ✅
+- Git push 受阻：GitHub 凭据未配置（与 codex-review 10 节相同问题），本地 commit 已就绪
+- 结论：地图拖拽坐标、RPC 更新、定位授权均未影响线上功能
+
 - [ ] P1A-06 C 端手动选区降级
 - [ ] P1A-07 C 端门店卡片组件
 - [ ] P1A-08 C 端营业状态计算逻辑
