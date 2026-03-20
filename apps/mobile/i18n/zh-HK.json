@@ -62,7 +62,9 @@
     "placeholder": "分享你的品酒心得…",
     "addPhotos": "添加照片",
     "tagWine": "標記酒款",
-    "post": "發佈"
+    "post": "發佈",
+    "draftRestored": "已恢復上次的草稿",
+    "clearDraft": "清除草稿"
   },
   "profile": {
     "title": "我的",

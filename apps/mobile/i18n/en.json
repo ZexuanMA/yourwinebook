@@ -62,7 +62,9 @@
     "placeholder": "Share your wine experience…",
     "addPhotos": "Add Photos",
     "tagWine": "Tag Wine",
-    "post": "Publish"
+    "post": "Publish",
+    "draftRestored": "Draft restored",
+    "clearDraft": "Clear draft"
   },
   "profile": {
     "title": "Profile",

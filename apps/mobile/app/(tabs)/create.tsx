@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -29,6 +29,7 @@ import UploadProgressBar, {
   type UploadItem,
   type UploadItemStatus,
 } from "../../components/UploadProgressBar";
+import { loadDraft, clearDraft, useAutoSaveDraft } from "../../hooks/useDraft";
 
 const MAX_IMAGES = 9;
 const MAX_CONTENT = 2000;
@@ -46,6 +47,30 @@ export default function CreatePostScreen() {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Restore draft on mount
+  useEffect(() => {
+    loadDraft().then((draft) => {
+      if (draft) {
+        setTitle(draft.title);
+        setContent(draft.content);
+        setRating(draft.rating);
+        if (draft.imageUris.length > 0) {
+          setImages(draft.imageUris.map((uri) => ({ uri, width: 0, height: 0 })));
+        }
+        setDraftRestored(true);
+      }
+    });
+  }, []);
+
+  // Auto-save draft as user types
+  useAutoSaveDraft(
+    title,
+    content,
+    rating,
+    images.map((img) => img.uri),
+  );
 
   // Not logged in
   if (!user) {
@@ -148,12 +173,14 @@ export default function CreatePostScreen() {
         media_count: images.length,
       });
 
-      // Reset form
+      // Reset form & clear draft
       setContent("");
       setTitle("");
       setRating(null);
       setImages([]);
       setUploadItems([]);
+      setDraftRestored(false);
+      await clearDraft();
 
       // Navigate to feed
       router.replace("/(tabs)");
@@ -186,6 +213,25 @@ export default function CreatePostScreen() {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
+        {/* Draft restored banner */}
+        {draftRestored && (
+          <View style={styles.draftBanner}>
+            <Text style={styles.draftBannerText}>{t("create.draftRestored")}</Text>
+            <Pressable
+              onPress={() => {
+                setTitle("");
+                setContent("");
+                setRating(null);
+                setImages([]);
+                setDraftRestored(false);
+                clearDraft();
+              }}
+            >
+              <Text style={styles.draftClearText}>{t("create.clearDraft")}</Text>
+            </Pressable>
+          </View>
+        )}
+
         {/* Title (optional) */}
         <TextInput
           style={styles.titleInput}
@@ -320,6 +366,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#6B6560",
     textAlign: "center",
+  },
+  draftBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FEF9E7",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  draftBannerText: {
+    fontSize: 13,
+    color: "#92400E",
+  },
+  draftClearText: {
+    fontSize: 13,
+    color: "#5B2E35",
+    fontWeight: "600",
   },
   titleInput: {
     fontSize: 18,

@@ -1332,7 +1332,25 @@
 
 ## Phase 1C — 加固、灰度与上线准备
 
-- [ ] P1C-01 草稿箱功能
+- [x] P1C-01 草稿箱功能
+  - 完成时间：2026-03-20
+  - 决策：
+    - 安装 `@react-native-async-storage/async-storage` 作为本地持久化
+    - 新建 `hooks/useDraft.ts`：
+      - `loadDraft()`：从 AsyncStorage 读取草稿（7 天过期自动丢弃）
+      - `saveDraft()`：持久化标题、内容、评分、图片 URI
+      - `clearDraft()`：清除已保存草稿
+      - `useAutoSaveDraft()`：监听输入变化，debounce 1.5 秒后自动保存
+    - 创建页面集成：
+      - 页面加载时自动恢复草稿（标题、内容、评分、图片）
+      - 恢复成功后显示黄色提示条 "已恢复上次的草稿" + "清除草稿" 按钮
+      - 发帖成功后自动清除草稿
+      - 用户可手动清除草稿（重置所有字段）
+    - i18n：新增 `create.draftRestored` / `create.clearDraft` 翻译键
+  - 自检：
+    - `npx expo export --platform web` ✅（15 页面导出）
+    - 发帖中断后内容可恢复 ✅
+  - 风险：图片 URI 是本地路径，app 重启后可能失效（MVP 可接受）
 - [ ] P1C-02 弱网上传恢复
 - [ ] P1C-03 频率限制全面部署
 - [ ] P1C-04 过期上传清理
