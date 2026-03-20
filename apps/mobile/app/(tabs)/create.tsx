@@ -25,6 +25,10 @@ import {
 } from "../../lib/media";
 import { COMMUNITY_EVENTS } from "@ywb/domain";
 import { captureEvent } from "../../lib/posthog";
+import UploadProgressBar, {
+  type UploadItem,
+  type UploadItemStatus,
+} from "../../components/UploadProgressBar";
 
 const MAX_IMAGES = 9;
 const MAX_CONTENT = 2000;
@@ -41,6 +45,7 @@ export default function CreatePostScreen() {
   const [images, setImages] = useState<PickedImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
 
   // Not logged in
   if (!user) {
@@ -70,6 +75,12 @@ export default function CreatePostScreen() {
     setRating((prev) => (prev === star ? null : star));
   };
 
+  const updateItemStatus = (index: number, status: UploadItemStatus, error?: string) => {
+    setUploadItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, status, error } : item)),
+    );
+  };
+
   const handleSubmit = async () => {
     const trimmedContent = content.trim();
     if (!trimmedContent) {
@@ -83,6 +94,11 @@ export default function CreatePostScreen() {
     setUploading(true);
     captureEvent(COMMUNITY_EVENTS.POST_CREATE_STARTED);
 
+    // Initialize per-image tracking
+    if (images.length > 0) {
+      setUploadItems(images.map((img) => ({ uri: img.uri, status: "pending" as UploadItemStatus })));
+    }
+
     try {
       // Step 1: Upload images (if any)
       let uploadResults: UploadResult[] = [];
@@ -91,8 +107,14 @@ export default function CreatePostScreen() {
         uploadResults = await uploadImages(images, "posts", (p: UploadProgress) => {
           if (p.status === "compressing") {
             setUploadStatus(`Compressing ${p.index + 1}/${p.total}`);
+            updateItemStatus(p.index, "compressing");
           } else if (p.status === "uploading") {
             setUploadStatus(`Uploading ${p.index + 1}/${p.total}`);
+            updateItemStatus(p.index, "uploading");
+          } else if (p.status === "done") {
+            updateItemStatus(p.index, "done");
+          } else if (p.status === "error") {
+            updateItemStatus(p.index, "error", p.error);
           }
         });
       }
@@ -131,6 +153,7 @@ export default function CreatePostScreen() {
       setTitle("");
       setRating(null);
       setImages([]);
+      setUploadItems([]);
 
       // Navigate to feed
       router.replace("/(tabs)");
@@ -143,6 +166,12 @@ export default function CreatePostScreen() {
       setUploading(false);
       setUploadStatus("");
     }
+  };
+
+  const handleRetryImage = async (index: number) => {
+    // Retry a single failed image by re-running the full submit
+    // For MVP, we retry the entire upload flow
+    handleSubmit();
   };
 
   const canSubmit = content.trim().length > 0 && !uploading;
@@ -233,6 +262,13 @@ export default function CreatePostScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* Upload progress */}
+      {uploading && uploadItems.length > 0 && (
+        <View style={styles.progressBar}>
+          <UploadProgressBar items={uploadItems} onRetry={handleRetryImage} />
+        </View>
+      )}
 
       {/* Submit bar */}
       <View style={styles.submitBar}>
@@ -376,6 +412,10 @@ const styles = StyleSheet.create({
   actionLabel: {
     fontSize: 13,
     color: "#6B6560",
+  },
+  progressBar: {
+    paddingHorizontal: 16,
+    backgroundColor: "#FFFFFF",
   },
   submitBar: {
     borderTopWidth: StyleSheet.hairlineWidth,

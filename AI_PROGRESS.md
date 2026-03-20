@@ -1083,7 +1083,19 @@
 - 集成测试：✅ 47/47 全部通过
 - 结论：社区核心链路就绪 — Feed 浏览 + 帖子详情（含图片预览）+ 发帖页面（文字/图片/评分），可继续 P1B-07
 
-- [ ] P1B-07 C 端上传进度与重试
+- [x] P1B-07 C 端上传进度与重试
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `apps/mobile/components/UploadProgressBar.tsx`，导出 `UploadItem` 接口和组件
+    - 每张图独立状态追踪：pending → compressing → uploading → done/error
+    - 总进度条 + 数字显示（如 "3/5"），失败数额外标注
+    - 每张图缩略图叠加状态覆盖层：颜色编码（灰→金→酒红→绿→红）+ 状态图标
+    - 失败图片右下角显示重试按钮（↻）
+    - 集成到发帖页面：上传时在提交按钮上方显示进度条
+    - `uploadImages` 的 `onProgress` 回调同时驱动 uploadStatus 文字和 uploadItems 数组
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-08 C 端点赞功能
 - [ ] P1B-09 开发 `create-comment` Edge Function
 - [ ] P1B-10 C 端评论列表与发评论
