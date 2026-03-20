@@ -814,7 +814,19 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
     - `npx expo export --platform web` ✅
   - 风险：无
-- [ ] P1A-07 C 端门店卡片组件
+- [x] P1A-07 C 端门店卡片组件
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新增 `components/StoreCard.tsx`：React Native 门店卡片组件
+    - 显示内容：门店名称、商户名称、地址（自动语言切换）、区域、距离
+    - 营业状态徽章（绿色营业中 / 灰色已休息）
+    - 底部操作区：收藏/取消收藏按钮 + 导航按钮
+    - 距离格式化：<1km 显示米，≥1km 显示千米
+    - 收藏状态高亮（铜金色）
+    - 导出 `StoreCardData` 接口，与 `get_nearby_stores` RPC 返回字段对齐
+  - 自检：
+    - `npx expo export --platform web` ✅
+  - 风险：无
 - [ ] P1A-08 C 端营业状态计算逻辑
 - [ ] P1A-09 C 端附近门店列表页
 - [ ] P1A-10 C 端门店详情页
