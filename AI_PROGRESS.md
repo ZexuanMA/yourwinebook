@@ -858,6 +858,17 @@
   - 自检：
     - `npx expo export --platform web` ✅（stores tab 27KB，含完整逻辑）
   - 风险：无
+### 部署检查点（P1A-06/07/08/09 完成后）
+- 部署时间：2026-03-20
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200 ✅
+  - 集成测试 → 47 通过, 0 失败 ✅
+- Git push 受阻：GitHub 凭据未配置
+- 结论：区域数据、门店卡片、营业状态逻辑、附近门店列表页均未影响线上功能
+
 - [ ] P1A-10 C 端门店详情页
 - [ ] P1A-11 C 端收藏/取消收藏门店
 - [ ] P1A-12 C 端外部导航唤起
