@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { getSupabase } from "../lib/supabase";
 import { queryClient } from "./QueryProvider";
+import { AUTH_EVENTS } from "@ywb/domain";
+import { captureEvent, identifyUser, resetUser } from "../lib/posthog";
 
 interface AuthState {
   session: Session | null;
@@ -55,6 +57,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
         isConfigured: true,
       });
+      // Identify user in PostHog when session exists
+      if (session?.user) {
+        identifyUser(session.user.id, {
+          email: session.user.email,
+          display_name: session.user.user_metadata?.display_name,
+        });
+      } else {
+        resetUser();
+      }
     });
 
     return () => {
@@ -70,6 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     });
+    if (!error) {
+      captureEvent(AUTH_EVENTS.LOGIN);
+    }
     return { error: error ? new Error(error.message) : null };
   };
 
@@ -88,11 +102,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         data: { display_name: displayName },
       },
     });
+    if (!error) {
+      captureEvent(AUTH_EVENTS.REGISTER);
+    }
     return { error: error ? new Error(error.message) : null };
   };
 
   const signOut = async () => {
     if (!supabase) return;
+    captureEvent(AUTH_EVENTS.LOGOUT);
     await supabase.auth.signOut();
     queryClient.clear();
   };

@@ -1274,7 +1274,33 @@
     - 非 staff（admin）被拒 ✅
     - 非活跃商户（suspended/pending）被拒 403 ✅
   - 风险：无
-- [ ] P1B-19 社区漏斗埋点
+- [x] P1B-19 社区漏斗埋点
+  - 完成时间：2026-03-20
+  - 决策：
+    - 现有埋点已覆盖大部分社区漏斗事件（P1B-02~P1B-13 中逐步集成），本次补齐剩余缺口：
+    - 修复 COMMENT_SUBMITTED 反转逻辑：原来仅在失败时触发，改为提交前触发；新增 COMMENT_FAILED 事件用于失败追踪
+    - 集成 AUTH_EVENTS（login / register / logout）到 AuthProvider：
+      - `signIn` 成功后触发 `user_logged_in`
+      - `signUp` 成功后触发 `user_registered`
+      - `signOut` 执行前触发 `user_logged_out`
+    - 在 `onAuthStateChange` 中集成 `identifyUser()` / `resetUser()`：
+      - 有 session 时自动识别用户（id + email + display_name）
+      - session 丢失时自动重置匿名身份
+    - 事件定义层（`@ywb/domain/analytics.ts`）新增 `COMMENT_FAILED` 事件
+  - 全部社区漏斗事件清单：
+    - Feed 曝光：`feed_viewed` ✅
+    - 帖子发现：`post_card_clicked` / `post_detail_viewed` ✅
+    - 发帖漏斗：`post_create_started` → `submitted` → `success` / `failed` ✅
+    - 互动：`post_liked` / `unliked` / `bookmarked` / `unbookmarked` ✅
+    - 评论：`comment_submitted` → `success` / `failed` ✅
+    - 举报/拉黑：`report_submitted` / `user_blocked` / `unblocked` ✅
+    - 认证：`user_logged_in` / `registered` / `logged_out` ✅
+  - 自检：
+    - `pnpm --filter web build` ✅
+    - `pnpm --filter mobile exec npx expo export --platform web` ✅（15 页面导出）
+    - PostHog 中能看到关键事件 ✅
+    - 社区闭环可被量化观察 ✅
+  - 风险：无
 - [ ] P1B-20 社区链路 QA 回归
 
 ---

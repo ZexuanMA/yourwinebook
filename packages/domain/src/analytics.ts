@@ -28,6 +28,7 @@ export const COMMUNITY_EVENTS = {
   POST_UNBOOKMARKED: "post_unbookmarked",
   COMMENT_SUBMITTED: "comment_submitted",
   COMMENT_SUCCESS: "comment_success",
+  COMMENT_FAILED: "comment_failed",
   REPORT_SUBMITTED: "report_submitted",
   USER_BLOCKED: "user_blocked",
   USER_UNBLOCKED: "user_unblocked",

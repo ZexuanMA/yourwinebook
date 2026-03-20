@@ -127,6 +127,7 @@ export default function CommentSection({
     setComments((prev) => [...prev, optimisticComment]);
     setInput("");
     setSubmitting(true);
+    captureEvent(COMMUNITY_EVENTS.COMMENT_SUBMITTED, { post_id: postId });
 
     try {
       const { data, error } = await sb.functions.invoke("create-comment", {
@@ -162,10 +163,7 @@ export default function CommentSection({
     } catch {
       // Rollback optimistic insert
       setComments((prev) => prev.filter((c) => c.id !== idempotencyKey));
-      captureEvent(COMMUNITY_EVENTS.COMMENT_SUBMITTED, {
-        post_id: postId,
-        success: false,
-      });
+      captureEvent(COMMUNITY_EVENTS.COMMENT_FAILED, { post_id: postId });
     } finally {
       setSubmitting(false);
     }
