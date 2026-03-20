@@ -772,7 +772,20 @@
     - `pnpm --filter @ywb/supabase-types exec tsc --noEmit` ✅
     - `pnpm --filter web exec tsc --noEmit` ✅
   - 风险：无
-- [ ] P1A-05 C 端定位授权流程
+- [x] P1A-05 C 端定位授权流程
+  - 完成时间：2026-03-20
+  - 决策：
+    - 安装 `expo-location`
+    - 新增 `hooks/useLocation.ts`：统一定位 hook
+      - 5 种状态：idle / requesting / granted / denied / error
+      - mount 时自动检查已有权限（不弹授权框），有权限则直接获取位置
+      - `requestLocation()` 方法：弹出系统授权框 → 获取当前坐标
+      - 使用 `Accuracy.Balanced` 平衡精度与响应速度
+    - 新增 9 条定位相关 i18n 条目（授权提示、拒绝说明、重试、手动选区等）
+    - 定位授权 UI 将在 P1A-09 门店列表页中集成
+  - 自检：
+    - `npx expo export --platform web` ✅（13 路由全部导出）
+  - 风险：无
 - [ ] P1A-06 C 端手动选区降级
 - [ ] P1A-07 C 端门店卡片组件
 - [ ] P1A-08 C 端营业状态计算逻辑

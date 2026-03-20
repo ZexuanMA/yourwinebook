@@ -45,7 +45,16 @@
     "closed": "Closed",
     "navigate": "Navigate",
     "bookmark": "Bookmark",
-    "unbookmark": "Remove Bookmark"
+    "unbookmark": "Remove Bookmark",
+    "locationTitle": "Discover Nearby Stores",
+    "locationDesc": "Allow location access to find wine stores near you",
+    "locationButton": "Allow Location",
+    "locationDenied": "Location access denied",
+    "locationDeniedDesc": "You can manually select a district to browse stores",
+    "locationRetry": "Try Again",
+    "locationError": "Unable to get location",
+    "loading": "Getting location…",
+    "selectDistrict": "Select District"
   },
   "create": {
     "title": "Post",

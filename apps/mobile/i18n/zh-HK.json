@@ -45,7 +45,16 @@
     "closed": "已休息",
     "navigate": "導航",
     "bookmark": "收藏",
-    "unbookmark": "取消收藏"
+    "unbookmark": "取消收藏",
+    "locationTitle": "發現附近門店",
+    "locationDesc": "授權定位以查看你身邊的葡萄酒門店",
+    "locationButton": "授權定位",
+    "locationDenied": "定位授權被拒絕",
+    "locationDeniedDesc": "你可以手動選擇區域來查看門店",
+    "locationRetry": "重新授權",
+    "locationError": "無法獲取位置",
+    "loading": "正在定位…",
+    "selectDistrict": "選擇區域"
   },
   "create": {
     "title": "發帖",
