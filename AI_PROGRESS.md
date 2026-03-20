@@ -1207,7 +1207,19 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-15 C 端用户主页
+- [x] P1B-15 C 端用户主页
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `apps/mobile/app/user/[id].tsx`，用户公开主页
+    - 头像、显示名、三栏统计（帖子/粉丝/关注）
+    - 关注/取消关注按钮（乐观更新 + 回滚），仅非本人可见
+    - 拉黑/取消拉黑按钮，复用 `useBlockList` hook
+    - 用户帖子列表：查询 `posts` 表 + profiles/merchants 关联，PostCard 渲染
+    - PostHog 埋点：点击帖子触发 `POST_CARD_CLICKED`
+    - 导出到 Expo Router 的 `/user/[id]` 路由
+  - 自检：
+    - `npx expo export --platform web` ✅（14 页面全部导出）
+  - 风险：无
 - [ ] P1B-16 C 端关注/取消关注
 - [ ] P1B-17 C 端设置页
 - [ ] P1B-18 B 端官方发帖入口
