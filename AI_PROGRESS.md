@@ -840,7 +840,24 @@
   - 自检：
     - `@ywb/domain` tsc --noEmit ✅
   - 风险：无
-- [ ] P1A-09 C 端附近门店列表页
+- [x] P1A-09 C 端附近门店列表页
+  - 完成时间：2026-03-20
+  - 决策：
+    - 重写 `app/(tabs)/stores.tsx`：从 placeholder 升级为完整功能页
+    - 三阶段 UI 流程：
+      1. 定位授权页：授权按钮 + 手动选区入口
+      2. 区域选择页：10 个区域列表（来自 @ywb/domain HK_DISTRICTS）
+      3. 门店列表页：FlatList + StoreCard + 下拉刷新
+    - 定位拒绝时自动进入区域选择流程
+    - 调用 `get_nearby_stores` RPC 获取门店数据
+    - 使用 `getBusinessStatus()` 计算每家门店营业状态
+    - 收藏功能：登录用户可直接操作 store_bookmarks 表（乐观更新）
+    - 点击门店卡片跳转 `/store/[id]` 详情页
+    - 区域模式顶栏显示当前区域名 + 切换入口
+    - 空状态友好提示
+  - 自检：
+    - `npx expo export --platform web` ✅（stores tab 27KB，含完整逻辑）
+  - 风险：无
 - [ ] P1A-10 C 端门店详情页
 - [ ] P1A-11 C 端收藏/取消收藏门店
 - [ ] P1A-12 C 端外部导航唤起
