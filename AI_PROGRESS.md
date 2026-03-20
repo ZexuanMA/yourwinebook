@@ -1122,6 +1122,16 @@
     - `pnpm --filter web build` ✅
     - `npx expo export --platform web` ✅
   - 风险：无
+
+### 部署检查点 7（P1B-07 ~ P1B-09）
+
+- 时间：2026-03-20
+- git push：❌ 凭据缺失（已知问题）
+- Web 构建：✅ `pnpm --filter web build` 通过
+- Mobile 构建：✅ `npx expo export --platform web` 通过（13 页面）
+- 集成测试：✅ 47/47 全部通过
+- 结论：上传进度、点赞回滚、评论 Edge Function 就绪，可继续 P1B-10 评论 UI
+
 - [ ] P1B-10 C 端评论列表与发评论
 - [ ] P1B-11 C 端帖子收藏
 - [ ] P1B-12 C 端举报功能
