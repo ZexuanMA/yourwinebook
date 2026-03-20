@@ -201,6 +201,42 @@ export default function FeedScreen() {
     [user],
   );
 
+  const handleBookmark = useCallback(
+    async (post: PostCardData) => {
+      const sb = getSupabase();
+      if (!sb || !user) return;
+
+      const wasBookmarked = post.is_bookmarked;
+
+      // Optimistic update
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.id === post.id ? { ...p, is_bookmarked: !wasBookmarked } : p,
+        ),
+      );
+
+      try {
+        if (wasBookmarked) {
+          const { error } = await sb.from("post_bookmarks").delete().eq("post_id", post.id).eq("user_id", user.id);
+          if (error) throw error;
+          captureEvent(COMMUNITY_EVENTS.POST_UNBOOKMARKED, { post_id: post.id });
+        } else {
+          const { error } = await sb.from("post_bookmarks").insert({ post_id: post.id, user_id: user.id });
+          if (error) throw error;
+          captureEvent(COMMUNITY_EVENTS.POST_BOOKMARKED, { post_id: post.id });
+        }
+      } catch {
+        // Rollback
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === post.id ? { ...p, is_bookmarked: wasBookmarked } : p,
+          ),
+        );
+      }
+    },
+    [user],
+  );
+
   // Loading skeleton
   if (loading) {
     return <SkeletonList />;
@@ -231,6 +267,7 @@ export default function FeedScreen() {
             captureEvent(COMMUNITY_EVENTS.POST_CARD_CLICKED, { post_id: item.id });
             router.push(`/post/${item.id}`);
           }}
+          onBookmark={() => handleBookmark(item)}
         />
       )}
       refreshControl={

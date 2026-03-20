@@ -1148,7 +1148,16 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-11 C 端帖子收藏
+- [x] P1B-11 C 端帖子收藏
+  - 完成时间：2026-03-20
+  - 决策：
+    - PostCard 组件新增 `onBookmark` 回调和收藏图标（📑/🔖），铜金色高亮
+    - Feed 页新增 `handleBookmark`：乐观更新 `is_bookmarked` + 写入/删除 `post_bookmarks` + 失败回滚
+    - 帖子详情页已在 P1B-05/P1B-08 实现收藏（含回滚），本次复用
+    - PostHog 埋点：`POST_BOOKMARKED`/`POST_UNBOOKMARKED`
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-12 C 端举报功能
 - [ ] P1B-13 C 端拉黑/屏蔽用户
 - [ ] P1B-14 C 端个人中心页

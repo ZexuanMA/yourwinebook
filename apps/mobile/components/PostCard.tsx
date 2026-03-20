@@ -40,6 +40,7 @@ interface PostCardProps {
   onPress?: () => void;
   onLike?: () => void;
   onComment?: () => void;
+  onBookmark?: () => void;
 }
 
 function relativeTime(dateStr: string): string {
@@ -88,7 +89,7 @@ function renderMediaGrid(media: MediaItem[]) {
   return <View style={styles.imageGrid}>{rows}</View>;
 }
 
-export default function PostCard({ post, onPress, onLike, onComment }: PostCardProps) {
+export default function PostCard({ post, onPress, onLike, onComment, onBookmark }: PostCardProps) {
   const { t } = useTranslation();
 
   return (
@@ -165,6 +166,11 @@ export default function PostCard({ post, onPress, onLike, onComment }: PostCardP
         <Pressable style={styles.footerBtn} onPress={onComment} hitSlop={8}>
           <Text style={styles.footerText}>
             💬 {post.comment_count || ""}
+          </Text>
+        </Pressable>
+        <Pressable style={styles.footerBtn} onPress={onBookmark} hitSlop={8}>
+          <Text style={[styles.footerText, post.is_bookmarked && styles.bookmarked]}>
+            {post.is_bookmarked ? "🔖" : "📑"}
           </Text>
         </Pressable>
       </View>
@@ -320,5 +326,8 @@ const styles = StyleSheet.create({
   },
   liked: {
     color: "#E11D48",
+  },
+  bookmarked: {
+    color: "#B8956A",
   },
 });
