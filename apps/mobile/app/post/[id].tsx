@@ -14,6 +14,7 @@ import { getSupabase } from "../../lib/supabase";
 import { useAuth } from "../../providers/AuthProvider";
 import ImagePreview, { type PreviewImage } from "../../components/ImagePreview";
 import CommentSection from "../../components/CommentSection";
+import ReportModal from "../../components/ReportModal";
 import { COMMUNITY_EVENTS } from "@ywb/domain";
 import { captureEvent } from "../../lib/posthog";
 
@@ -79,6 +80,7 @@ export default function PostDetailScreen() {
   const [post, setPost] = useState<PostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [previewIndex, setPreviewIndex] = useState(-1);
+  const [reportVisible, setReportVisible] = useState(false);
 
   const fetchPost = useCallback(async () => {
     const sb = getSupabase();
@@ -354,6 +356,13 @@ export default function PostDetailScreen() {
             {post.is_bookmarked ? t("stores.unbookmark") : t("stores.bookmark")}
           </Text>
         </Pressable>
+
+        {user && user.id !== post.author_id && (
+          <Pressable style={styles.actionBtn} onPress={() => setReportVisible(true)} hitSlop={8}>
+            <Text style={styles.actionText}>⚠️</Text>
+            <Text style={styles.actionLabel}>{isZh ? "舉報" : "Report"}</Text>
+          </Pressable>
+        )}
       </View>
 
       {/* Comments */}
@@ -376,6 +385,16 @@ export default function PostDetailScreen() {
         visible={previewIndex >= 0}
         onClose={() => setPreviewIndex(-1)}
       />
+
+      {/* Report Modal */}
+      {post && (
+        <ReportModal
+          visible={reportVisible}
+          onClose={() => setReportVisible(false)}
+          targetType="post"
+          targetId={post.id}
+        />
+      )}
     </ScrollView>
   );
 }

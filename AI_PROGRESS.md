@@ -1158,7 +1158,21 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-12 C 端举报功能
+- [x] P1B-12 C 端举报功能
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `apps/mobile/components/ReportModal.tsx`，底部弹出式举报面板
+    - 支持三类目标：post / comment / user（通过 `targetType` + `targetId` 传入）
+    - 5 个预设原因：垃圾內容、騷擾、不當內容、虛假信息、其他
+    - 可选补充说明（最多 500 字）
+    - 写入 `reports` 表（含 reporter_id、target_type、target_id、reason、details）
+    - 成功后弹窗确认 + 自动关闭
+    - 帖子详情页新增 ⚠️ 举报按钮（仅非作者的登入用户可见）
+    - PostHog 埋点：`REPORT_SUBMITTED`
+    - 品牌一致的 radio button + 红色提交按钮
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-13 C 端拉黑/屏蔽用户
 - [ ] P1B-14 C 端个人中心页
 - [ ] P1B-15 C 端用户主页
