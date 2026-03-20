@@ -984,7 +984,17 @@
 
 ## Phase 1B — 社区 MVP 闭环
 
-- [ ] P1B-01 开发 `get_feed` RPC
+- [x] P1B-01 更新 `get_feed` RPC
+  - 完成时间：2026-03-20
+  - 决策：
+    - RPC 已在 001_init.sql 中创建，本次通过 006 迁移文件升级
+    - 新增返回字段：`title TEXT`、`tags TEXT[]`、`rating SMALLINT`（来自 004 迁移添加的列）
+    - 保持原有功能不变：游标分页、拉黑过滤、媒体聚合、产品聚合、点赞/收藏状态
+    - `@ywb/supabase-types` 同步更新 Returns 类型
+  - 自检：
+    - `@ywb/supabase-types` tsc --noEmit ✅
+    - `pnpm --filter web exec tsc --noEmit` ✅
+  - 风险：无
 - [ ] P1B-02 C 端帖子卡片组件
 - [ ] P1B-03 C 端图片预览组件
 - [ ] P1B-04 C 端单列 Feed 页面

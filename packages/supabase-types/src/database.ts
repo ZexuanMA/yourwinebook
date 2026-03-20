@@ -1377,6 +1377,9 @@ export type Database = {
           media: Json
           merchant_name: string
           products: Json
+          rating: number | null
+          tags: string[]
+          title: string | null
         }[]
       }
       get_nearby_stores: {
