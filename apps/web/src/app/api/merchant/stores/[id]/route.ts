@@ -58,6 +58,9 @@ export async function PATCH(
   if (body.phone !== undefined) update.phone = body.phone || null;
   if (body.hours !== undefined) update.hours = body.hours;
   if (body.is_active !== undefined) update.is_active = body.is_active;
+  if (body.lat != null && body.lng != null) {
+    update.location = `SRID=4326;POINT(${body.lng} ${body.lat})`;
+  }
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });

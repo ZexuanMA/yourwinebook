@@ -738,7 +738,27 @@
   - 自检：
     - `pnpm --filter web exec tsc --noEmit` ✅
   - 风险：无
-- [ ] P1A-03 B 端地图拖拽校准坐标
+- [x] P1A-03 B 端地图拖拽校准坐标
+  - 完成时间：2026-03-20
+  - 决策：
+    - 安装 `leaflet` + `react-leaflet` + `@types/leaflet`，使用 OpenStreetMap 瓦片（免费、无需 API key）
+    - 新增 `MapPicker` 组件（`components/dashboard/MapPicker.tsx`）：
+      - 使用 `next/dynamic` SSR-safe 动态导入（Leaflet 依赖 window/document）
+      - 地图默认中心为香港（22.3193, 114.1694），zoom=15
+      - 支持拖拽 marker 和点击地图两种方式设置坐标
+      - 实时显示当前纬度/经度
+    - GET API 增加 PostGIS geography → lat/lng 提取（解析 GeoJSON Point coordinates）
+    - POST API 接受 lat/lng 参数，写入 `SRID=4326;POINT(lng lat)` 格式
+    - PATCH API 同样接受 lat/lng 参数，支持坐标更新
+    - 门店列表页整合：
+      - 每张卡片显示坐标信息（有坐标显示数值，无坐标显示「未設置坐標」）
+      - 新增 Crosshair 按钮进入行内地图编辑模式
+      - 行内地图编辑器支持拖拽校准 + 保存/取消
+    - 新增 9 条 i18n 条目（坐标、校准、提示等）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` ✅（含 /dashboard/stores 路由）
+  - 风险：无
 - [ ] P1A-04 开发 `get_nearby_stores` RPC
 - [ ] P1A-05 C 端定位授权流程
 - [ ] P1A-06 C 端手动选区降级

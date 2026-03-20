@@ -43,7 +43,22 @@ export async function GET() {
     return NextResponse.json({ stores: [] });
   }
 
-  return NextResponse.json({ stores: stores ?? [] });
+  // Extract lat/lng from PostGIS geography column
+  const storesWithCoords = (stores ?? []).map((s) => {
+    let lat: number | null = null;
+    let lng: number | null = null;
+    if (s.location) {
+      // PostGIS returns GeoJSON: { type: "Point", coordinates: [lng, lat] }
+      const loc = typeof s.location === "string" ? JSON.parse(s.location) : s.location;
+      if (loc?.coordinates) {
+        lng = loc.coordinates[0];
+        lat = loc.coordinates[1];
+      }
+    }
+    return { ...s, lat, lng };
+  });
+
+  return NextResponse.json({ stores: storesWithCoords });
 }
 
 export async function POST(request: NextRequest) {
@@ -66,7 +81,7 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, address_zh, address_en, district_zh, district_en, phone, hours } = body;
+  const { name, address_zh, address_en, district_zh, district_en, phone, hours, lat, lng } = body;
 
   if (!name || !address_zh) {
     return NextResponse.json({ error: "name and address_zh are required" }, { status: 400 });
@@ -82,6 +97,9 @@ export async function POST(request: NextRequest) {
     phone: phone || null,
   };
   if (hours !== undefined) row.hours = hours;
+  if (lat != null && lng != null) {
+    row.location = `SRID=4326;POINT(${lng} ${lat})`;
+  }
 
   const { data, error } = await sb
     .from("merchant_locations")

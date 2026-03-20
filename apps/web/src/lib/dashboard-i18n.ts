@@ -201,6 +201,14 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "stores.hours.close": { "zh-HK": "關門", en: "Close" },
   "stores.hours.notSet": { "zh-HK": "未設置營業時間", en: "Business hours not set" },
   "stores.hours.edit": { "zh-HK": "編輯營業時間", en: "Edit Hours" },
+  "stores.coordinates": { "zh-HK": "門店坐標", en: "Store Coordinates" },
+  "stores.coordinates.hint": { "zh-HK": "拖動地圖上的標記以校準門店位置", en: "Drag the marker on the map to calibrate store location" },
+  "stores.coordinates.notSet": { "zh-HK": "未設置坐標", en: "Coordinates not set" },
+  "stores.coordinates.set": { "zh-HK": "設置坐標", en: "Set Coordinates" },
+  "stores.coordinates.edit": { "zh-HK": "校準坐標", en: "Calibrate" },
+  "stores.coordinates.lat": { "zh-HK": "緯度", en: "Latitude" },
+  "stores.coordinates.lng": { "zh-HK": "經度", en: "Longitude" },
+  "stores.coordinates.saved": { "zh-HK": "坐標已保存", en: "Coordinates saved" },
 
   // ── Common ──
   "common.total": { "zh-HK": "共", en: "Total" },

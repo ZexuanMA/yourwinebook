@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { MapPin, Plus, Edit2, Check, X, Store, Clock } from "lucide-react";
+import dynamic from "next/dynamic";
+import { MapPin, Plus, Edit2, Check, X, Store, Clock, Crosshair } from "lucide-react";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
+
+const MapPicker = dynamic(() => import("@/components/dashboard/MapPicker"), { ssr: false });
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 type Day = (typeof DAYS)[number];
@@ -24,6 +27,8 @@ interface StoreLocation {
   phone: string | null;
   hours: HoursMap | null;
   is_active: boolean;
+  lat: number | null;
+  lng: number | null;
 }
 
 /* ── Business Hours Editor ─────────────────────────────── */
@@ -161,6 +166,8 @@ export default function StoresPage() {
   const [addForm, setAddForm] = useState({ name: "", address_zh: "", address_en: "", district_zh: "", district_en: "", phone: "" });
   const [addHours, setAddHours] = useState<HoursMap>({});
   const [hoursEditingId, setHoursEditingId] = useState<string | null>(null);
+  const [mapEditingId, setMapEditingId] = useState<string | null>(null);
+  const [mapCoords, setMapCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const fetchStores = useCallback(async () => {
     try {
@@ -218,6 +225,26 @@ export default function StoresPage() {
         const { store } = await res.json();
         setStores((prev) => prev.map((s) => (s.id === id ? store : s)));
         setHoursEditingId(null);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSaveCoords = async (id: string) => {
+    if (!mapCoords) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/merchant/stores/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lat: mapCoords.lat, lng: mapCoords.lng }),
+      });
+      if (res.ok) {
+        const { store } = await res.json();
+        setStores((prev) => prev.map((s) => (s.id === id ? { ...s, lat: mapCoords.lat, lng: mapCoords.lng, ...store } : s)));
+        setMapEditingId(null);
+        setMapCoords(null);
       }
     } finally {
       setSaving(false);
@@ -371,6 +398,14 @@ export default function StoresPage() {
                     {store.district_zh && <p className="text-xs text-text-sub/60 mt-1">{store.district_zh}{store.district_en ? ` / ${store.district_en}` : ""}</p>}
                     {store.phone && <p className="text-xs text-text-sub/60 mt-1">📞 {store.phone}</p>}
                     <HoursDisplay hours={store.hours} t={t} />
+                    {store.lat != null && store.lng != null ? (
+                      <p className="text-xs text-text-sub/60 mt-1 flex items-center gap-1">
+                        <Crosshair className="h-3 w-3" />
+                        {store.lat.toFixed(4)}, {store.lng.toFixed(4)}
+                      </p>
+                    ) : (
+                      <p className="text-xs text-text-sub/40 mt-1">{t("stores.coordinates.notSet")}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 ml-4">
                     <button onClick={() => handleEdit(store)} className="p-2 text-text-sub hover:text-wine" title={t("stores.edit")}><Edit2 className="h-4 w-4" /></button>
@@ -383,6 +418,16 @@ export default function StoresPage() {
                       title={t("stores.hours.edit")}
                     >
                       <Clock className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMapEditingId(store.id);
+                        setMapCoords(store.lat != null && store.lng != null ? { lat: store.lat, lng: store.lng } : null);
+                      }}
+                      className="p-2 text-text-sub hover:text-wine"
+                      title={t("stores.coordinates.edit")}
+                    >
+                      <Crosshair className="h-4 w-4" />
                     </button>
                     <button onClick={() => handleToggleActive(store)} className={`text-xs px-3 py-1 rounded-lg border transition-colors ${store.is_active ? "border-gray-300 text-text-sub hover:border-red-300 hover:text-red-600" : "border-green-300 text-green-600 hover:bg-green-50"}`}>
                       {store.is_active ? t("stores.inactive") : t("stores.active")}
@@ -397,6 +442,28 @@ export default function StoresPage() {
                     <div className="flex justify-end gap-2 mt-3">
                       <button onClick={() => setHoursEditingId(null)} className="px-3 py-1.5 text-xs text-text-sub hover:text-text">{t("stores.cancel")}</button>
                       <button onClick={() => handleSaveHours(store.id)} disabled={saving} className="px-3 py-1.5 bg-wine text-white rounded-lg text-xs hover:bg-wine-dark disabled:opacity-50">
+                        {saving ? t("stores.saving") : t("stores.save")}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Inline Map Picker */}
+                {mapEditingId === store.id && (
+                  <div className="mt-4 pt-4 border-t border-bg-card">
+                    <label className="text-sm font-medium text-text flex items-center gap-1.5 mb-2">
+                      <Crosshair className="h-3.5 w-3.5" />
+                      {t("stores.coordinates")}
+                    </label>
+                    <MapPicker
+                      lat={store.lat}
+                      lng={store.lng}
+                      onChange={(lat, lng) => setMapCoords({ lat, lng })}
+                      t={t}
+                    />
+                    <div className="flex justify-end gap-2 mt-3">
+                      <button onClick={() => { setMapEditingId(null); setMapCoords(null); }} className="px-3 py-1.5 text-xs text-text-sub hover:text-text">{t("stores.cancel")}</button>
+                      <button onClick={() => handleSaveCoords(store.id)} disabled={saving || !mapCoords} className="px-3 py-1.5 bg-wine text-white rounded-lg text-xs hover:bg-wine-dark disabled:opacity-50">
                         {saving ? t("stores.saving") : t("stores.save")}
                       </button>
                     </div>
