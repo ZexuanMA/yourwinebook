@@ -35,6 +35,7 @@ interface CommentSectionProps {
   postId: string;
   commentCount: number;
   onCommentCountChange?: (delta: number) => void;
+  blockedIds?: Set<string>;
 }
 
 function relativeTime(dateStr: string): string {
@@ -57,6 +58,7 @@ export default function CommentSection({
   postId,
   commentCount,
   onCommentCountChange,
+  blockedIds,
 }: CommentSectionProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -177,13 +179,13 @@ export default function CommentSection({
 
       {loading ? (
         <ActivityIndicator size="small" color="#5B2E35" style={{ marginVertical: 16 }} />
-      ) : comments.length === 0 ? (
+      ) : comments.filter((c) => !blockedIds?.has(c.author_id)).length === 0 ? (
         <Text style={styles.emptyText}>
           {t("common.noResults")}
         </Text>
       ) : (
         <View style={styles.commentList}>
-          {comments.map((comment) => (
+          {comments.filter((c) => !blockedIds?.has(c.author_id)).map((comment) => (
             <View
               key={comment.id}
               style={[styles.commentRow, comment.isPending && styles.pendingComment]}

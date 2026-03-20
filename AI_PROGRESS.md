@@ -1183,7 +1183,18 @@
 - 集成测试：✅ 47/47 全部通过
 - 结论：评论、收藏、举报功能全部就绪，可继续 P1B-13 拉黑/屏蔽
 
-- [ ] P1B-13 C 端拉黑/屏蔽用户
+- [x] P1B-13 C 端拉黑/屏蔽用户
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `apps/mobile/hooks/useBlockList.ts`，管理拉黑列表
+    - 提供 `blockUser`/`unblockUser`（乐观更新 + 失败回滚）、`isBlocked` 查询、`blockedUsers` 列表
+    - 帖子详情页新增拉黑/取消拉黑按钮（🚫/🔓），仅非作者的登入用户可见
+    - CommentSection 新增 `blockedIds` prop，渲染前过滤被拉黑用户的评论
+    - Feed 层面：`get_feed` RPC 已内建拉黑过滤（`WHERE NOT EXISTS blocks`），无需额外处理
+    - PostHog 埋点：`USER_BLOCKED`/`USER_UNBLOCKED`
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-14 C 端个人中心页
 - [ ] P1B-15 C 端用户主页
 - [ ] P1B-16 C 端关注/取消关注

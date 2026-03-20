@@ -15,6 +15,7 @@ import { useAuth } from "../../providers/AuthProvider";
 import ImagePreview, { type PreviewImage } from "../../components/ImagePreview";
 import CommentSection from "../../components/CommentSection";
 import ReportModal from "../../components/ReportModal";
+import { useBlockList } from "../../hooks/useBlockList";
 import { COMMUNITY_EVENTS } from "@ywb/domain";
 import { captureEvent } from "../../lib/posthog";
 
@@ -81,6 +82,7 @@ export default function PostDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [previewIndex, setPreviewIndex] = useState(-1);
   const [reportVisible, setReportVisible] = useState(false);
+  const { blockedIds, isBlocked, blockUser, unblockUser } = useBlockList();
 
   const fetchPost = useCallback(async () => {
     const sb = getSupabase();
@@ -358,10 +360,30 @@ export default function PostDetailScreen() {
         </Pressable>
 
         {user && user.id !== post.author_id && (
-          <Pressable style={styles.actionBtn} onPress={() => setReportVisible(true)} hitSlop={8}>
-            <Text style={styles.actionText}>⚠️</Text>
-            <Text style={styles.actionLabel}>{isZh ? "舉報" : "Report"}</Text>
-          </Pressable>
+          <>
+            <Pressable
+              style={styles.actionBtn}
+              onPress={() =>
+                isBlocked(post.author_id)
+                  ? unblockUser(post.author_id)
+                  : blockUser(post.author_id)
+              }
+              hitSlop={8}
+            >
+              <Text style={styles.actionText}>
+                {isBlocked(post.author_id) ? "🔓" : "🚫"}
+              </Text>
+              <Text style={styles.actionLabel}>
+                {isBlocked(post.author_id)
+                  ? (isZh ? "取消拉黑" : "Unblock")
+                  : (isZh ? "拉黑" : "Block")}
+              </Text>
+            </Pressable>
+            <Pressable style={styles.actionBtn} onPress={() => setReportVisible(true)} hitSlop={8}>
+              <Text style={styles.actionText}>⚠️</Text>
+              <Text style={styles.actionLabel}>{isZh ? "舉報" : "Report"}</Text>
+            </Pressable>
+          </>
         )}
       </View>
 
@@ -369,6 +391,7 @@ export default function PostDetailScreen() {
       <CommentSection
         postId={post.id}
         commentCount={post.comment_count}
+        blockedIds={blockedIds}
         onCommentCountChange={(delta) =>
           setPost((prev) =>
             prev ? { ...prev, comment_count: prev.comment_count + delta } : prev,
