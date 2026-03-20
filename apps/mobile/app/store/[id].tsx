@@ -13,7 +13,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { getSupabase } from "../../lib/supabase";
 import { useAuth } from "../../providers/AuthProvider";
-import { getBusinessStatus, type HoursMap, type DayOfWeek } from "@ywb/domain";
+import { getBusinessStatus, type HoursMap, type DayOfWeek, STORE_EVENTS } from "@ywb/domain";
+import { captureEvent } from "../../lib/posthog";
 
 const DAYS: DayOfWeek[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 
@@ -95,6 +96,11 @@ export default function StoreDetailScreen() {
         merchant_slug: merchant?.slug ?? "",
       });
 
+      captureEvent(STORE_EVENTS.STORE_DETAIL_VIEWED, {
+        store_id: data.id,
+        merchant_slug: merchant?.slug,
+      });
+
       // Check bookmark
       if (user) {
         const { data: bm } = await sb
@@ -129,11 +135,19 @@ export default function StoreDetailScreen() {
         .from("store_bookmarks")
         .insert({ user_id: user.id, location_id: store.id });
     }
+    captureEvent(isBookmarked ? STORE_EVENTS.STORE_UNBOOKMARKED : STORE_EVENTS.STORE_BOOKMARKED, {
+      store_id: store.id,
+      merchant_slug: store.merchant_slug,
+    });
     setIsBookmarked(!isBookmarked);
   };
 
   const handleNavigate = () => {
     if (!store?.lat || !store?.lng) return;
+    captureEvent(STORE_EVENTS.STORE_NAVIGATE_CLICKED, {
+      store_id: store.id,
+      merchant_slug: store.merchant_slug,
+    });
     const label = encodeURIComponent(store.name);
     const url =
       Platform.OS === "ios"

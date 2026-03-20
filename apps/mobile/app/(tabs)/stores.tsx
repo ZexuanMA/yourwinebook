@@ -15,7 +15,8 @@ import { getSupabase } from "../../lib/supabase";
 import { useLocation } from "../../hooks/useLocation";
 import { useAuth } from "../../providers/AuthProvider";
 import StoreCard, { type StoreCardData } from "../../components/StoreCard";
-import { HK_DISTRICTS, type District, getBusinessStatus, type HoursMap } from "@ywb/domain";
+import { HK_DISTRICTS, type District, getBusinessStatus, type HoursMap, STORE_EVENTS } from "@ywb/domain";
+import { captureEvent } from "../../lib/posthog";
 
 type ViewMode = "location" | "district";
 
@@ -49,13 +50,24 @@ export default function StoresScreen() {
           console.error("[stores] RPC error:", error.message);
           return;
         }
-        setStores((data as StoreCardData[]) ?? []);
+        const storeList = (data as StoreCardData[]) ?? [];
+        setStores(storeList);
+        captureEvent(STORE_EVENTS.STORE_LIST_VIEWED, { count: storeList.length, mode: viewMode });
       } finally {
         setLoading(false);
       }
     },
     [user?.id]
   );
+
+  // Track location permission changes
+  useEffect(() => {
+    if (location.status === "granted") {
+      captureEvent(STORE_EVENTS.LOCATION_PERMISSION_GRANTED);
+    } else if (location.status === "denied") {
+      captureEvent(STORE_EVENTS.LOCATION_PERMISSION_DENIED);
+    }
+  }, [location.status]);
 
   // Auto-fetch when location available
   useEffect(() => {
@@ -82,6 +94,7 @@ export default function StoresScreen() {
   }, [viewMode, location, selectedDistrict, fetchStores]);
 
   const handleStorePress = (store: StoreCardData) => {
+    captureEvent(STORE_EVENTS.STORE_CARD_CLICKED, { store_id: store.id, merchant_slug: store.merchant_slug });
     router.push(`/store/${store.id}`);
   };
 
@@ -100,6 +113,11 @@ export default function StoresScreen() {
         .from("store_bookmarks")
         .insert({ user_id: user.id, location_id: store.id });
     }
+
+    captureEvent(store.is_bookmarked ? STORE_EVENTS.STORE_UNBOOKMARKED : STORE_EVENTS.STORE_BOOKMARKED, {
+      store_id: store.id,
+      merchant_slug: store.merchant_slug,
+    });
 
     // Optimistic toggle
     setStores((prev) =>
@@ -122,7 +140,10 @@ export default function StoresScreen() {
           <>
             <Text style={styles.heroTitle}>{t("stores.locationTitle")}</Text>
             <Text style={styles.heroDesc}>{t("stores.locationDesc")}</Text>
-            <Pressable style={styles.primaryBtn} onPress={location.requestLocation}>
+            <Pressable style={styles.primaryBtn} onPress={() => {
+              captureEvent(STORE_EVENTS.LOCATION_PERMISSION_REQUESTED);
+              location.requestLocation();
+            }}>
               <Text style={styles.primaryBtnText}>{t("stores.locationButton")}</Text>
             </Pressable>
             <Pressable

@@ -906,7 +906,24 @@
     - 门店列表页的 StoreCard 也预留了 `onNavigate` 回调接口
   - 自检：导航功能已在 P1A-10 自检中通过
   - 风险：无
-- [ ] P1A-13 找店漏斗埋点
+- [x] P1A-13 找店漏斗埋点
+  - 完成时间：2026-03-20
+  - 决策：
+    - 使用 `@ywb/domain` 中已定义的 `STORE_EVENTS` 事件名
+    - 门店列表页 (`stores.tsx`) 埋点：
+      - `location_permission_requested` — 用户点击授权定位按钮
+      - `location_permission_granted` / `denied` — 权限结果
+      - `store_list_viewed` — 门店列表加载完成（含 count + mode）
+      - `store_card_clicked` — 点击门店卡片（含 store_id + merchant_slug）
+      - `store_bookmarked` / `store_unbookmarked` — 收藏操作
+    - 门店详情页 (`store/[id].tsx`) 埋点：
+      - `store_detail_viewed` — 进入详情页
+      - `store_navigate_clicked` — 点击导航按钮
+      - `store_bookmarked` / `store_unbookmarked` — 详情页收藏操作
+    - 所有事件均通过 `captureEvent()` 发送到 PostHog（无 key 时静默跳过）
+  - 自检：
+    - `npx expo export --platform web` ✅
+  - 风险：无
 - [ ] P1A-14 找店链路 QA 回归
 
 ---
