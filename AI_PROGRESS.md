@@ -759,7 +759,19 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
     - `pnpm --filter web build` ✅（含 /dashboard/stores 路由）
   - 风险：无
-- [ ] P1A-04 开发 `get_nearby_stores` RPC
+- [x] P1A-04 更新 `get_nearby_stores` RPC
+  - 完成时间：2026-03-20
+  - 决策：
+    - RPC 已在 001_init.sql 中创建，本次通过 005 迁移文件升级
+    - 新增 `lat`/`lng` 返回字段（`ST_Y`/`ST_X` 从 GEOGRAPHY 提取），供 C 端地图标记
+    - 新增 `m.status = 'active'` 过滤，排除已停用/待审核商户的门店
+    - 新增 `ml.location IS NOT NULL` 过滤，排除未设置坐标的门店
+    - 计数查询（auto-expand 判断）同步添加 merchant status + location 过滤
+    - `@ywb/supabase-types` 同步更新 Returns 类型
+  - 自检：
+    - `pnpm --filter @ywb/supabase-types exec tsc --noEmit` ✅
+    - `pnpm --filter web exec tsc --noEmit` ✅
+  - 风险：无
 - [ ] P1A-05 C 端定位授权流程
 - [ ] P1A-06 C 端手动选区降级
 - [ ] P1A-07 C 端门店卡片组件

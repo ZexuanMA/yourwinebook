@@ -1396,6 +1396,8 @@ export type Database = {
           hours: Json
           id: string
           is_bookmarked: boolean
+          lat: number
+          lng: number
           merchant_id: string
           merchant_name: string
           merchant_slug: string
