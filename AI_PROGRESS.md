@@ -1028,7 +1028,21 @@
 - 集成测试：✅ 47/47 全部通过
 - 结论：社区 Feed 基础组件（StoreCard、PostCard、ImagePreview）全部就绪，可继续 P1B-04 单列 Feed 页面
 
-- [ ] P1B-04 C 端单列 Feed 页面
+- [x] P1B-04 C 端单列 Feed 页面
+  - 完成时间：2026-03-20
+  - 决策：
+    - 重写 `apps/mobile/app/(tabs)/index.tsx`，从占位符升级为完整 Feed 页面
+    - 调用 `get_feed` RPC，支持游标分页（`p_cursor_ts` + `p_cursor_id`），每页 15 条
+    - 下拉刷新：`RefreshControl`，品牌色 #5B2E35
+    - 无限滚动：`onEndReached` + `onEndReachedThreshold=0.3`，底部加载指示器
+    - 骨架屏：3 个 `PostSkeleton` 组件模拟帖子布局
+    - 空状态：emoji + i18n 文案
+    - 乐观更新点赞：UI 先变，再异步写入 `post_likes` 表
+    - PostHog 埋点：`FEED_VIEWED`（首次加载）、`POST_CARD_CLICKED`（点击帖子/评论）、`POST_LIKED`/`POST_UNLIKED`
+    - RPC 返回映射到 `PostCardData` 接口，与 P1B-02 组件完全对接
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-05 C 端帖子详情页
 - [ ] P1B-06 C 端发帖页面
 - [ ] P1B-07 C 端上传进度与重试
