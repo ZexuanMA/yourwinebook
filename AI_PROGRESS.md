@@ -969,6 +969,17 @@
 
 **Phase 1A 全部完成，进入 Phase 1B。**
 
+### 部署检查点（P1A-10/11/12/13/14 完成后 + Phase 1A 总结）
+- 部署时间：2026-03-20
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200 ✅
+  - 集成测试 → 47 通过, 0 失败 ✅
+- Git push 受阻：GitHub 凭据未配置
+- 结论：Phase 1A 所有任务完成，找店闭环功能完整，线上功能正常
+
 ---
 
 ## Phase 1B — 社区 MVP 闭环
