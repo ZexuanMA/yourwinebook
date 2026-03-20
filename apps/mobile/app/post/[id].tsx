@@ -164,22 +164,40 @@ export default function PostDetailScreen() {
     const sb = getSupabase();
     if (!sb || !user || !post) return;
 
+    const wasLiked = post.is_liked;
+
+    // Optimistic update
     setPost((prev) =>
       prev
         ? {
             ...prev,
-            is_liked: !prev.is_liked,
-            like_count: prev.is_liked ? prev.like_count - 1 : prev.like_count + 1,
+            is_liked: !wasLiked,
+            like_count: wasLiked ? prev.like_count - 1 : prev.like_count + 1,
           }
         : prev,
     );
 
-    if (post.is_liked) {
-      await sb.from("post_likes").delete().eq("post_id", post.id).eq("user_id", user.id);
-      captureEvent(COMMUNITY_EVENTS.POST_UNLIKED, { post_id: post.id });
-    } else {
-      await sb.from("post_likes").insert({ post_id: post.id, user_id: user.id });
-      captureEvent(COMMUNITY_EVENTS.POST_LIKED, { post_id: post.id });
+    try {
+      if (wasLiked) {
+        const { error } = await sb.from("post_likes").delete().eq("post_id", post.id).eq("user_id", user.id);
+        if (error) throw error;
+        captureEvent(COMMUNITY_EVENTS.POST_UNLIKED, { post_id: post.id });
+      } else {
+        const { error } = await sb.from("post_likes").insert({ post_id: post.id, user_id: user.id });
+        if (error) throw error;
+        captureEvent(COMMUNITY_EVENTS.POST_LIKED, { post_id: post.id });
+      }
+    } catch {
+      // Rollback on failure
+      setPost((prev) =>
+        prev
+          ? {
+              ...prev,
+              is_liked: wasLiked,
+              like_count: wasLiked ? prev.like_count + 1 : prev.like_count - 1,
+            }
+          : prev,
+      );
     }
   };
 
@@ -187,14 +205,24 @@ export default function PostDetailScreen() {
     const sb = getSupabase();
     if (!sb || !user || !post) return;
 
-    setPost((prev) => (prev ? { ...prev, is_bookmarked: !prev.is_bookmarked } : prev));
+    const wasBookmarked = post.is_bookmarked;
 
-    if (post.is_bookmarked) {
-      await sb.from("post_bookmarks").delete().eq("post_id", post.id).eq("user_id", user.id);
-      captureEvent(COMMUNITY_EVENTS.POST_UNBOOKMARKED, { post_id: post.id });
-    } else {
-      await sb.from("post_bookmarks").insert({ post_id: post.id, user_id: user.id });
-      captureEvent(COMMUNITY_EVENTS.POST_BOOKMARKED, { post_id: post.id });
+    // Optimistic update
+    setPost((prev) => (prev ? { ...prev, is_bookmarked: !wasBookmarked } : prev));
+
+    try {
+      if (wasBookmarked) {
+        const { error } = await sb.from("post_bookmarks").delete().eq("post_id", post.id).eq("user_id", user.id);
+        if (error) throw error;
+        captureEvent(COMMUNITY_EVENTS.POST_UNBOOKMARKED, { post_id: post.id });
+      } else {
+        const { error } = await sb.from("post_bookmarks").insert({ post_id: post.id, user_id: user.id });
+        if (error) throw error;
+        captureEvent(COMMUNITY_EVENTS.POST_BOOKMARKED, { post_id: post.id });
+      }
+    } catch {
+      // Rollback on failure
+      setPost((prev) => (prev ? { ...prev, is_bookmarked: wasBookmarked } : prev));
     }
   };
 

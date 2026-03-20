@@ -158,25 +158,44 @@ export default function FeedScreen() {
       const sb = getSupabase();
       if (!sb || !user) return;
 
+      const wasLiked = post.is_liked;
+
       // Optimistic update
       setPosts((prev) =>
         prev.map((p) =>
           p.id === post.id
             ? {
                 ...p,
-                is_liked: !p.is_liked,
-                like_count: p.is_liked ? p.like_count - 1 : p.like_count + 1,
+                is_liked: !wasLiked,
+                like_count: wasLiked ? p.like_count - 1 : p.like_count + 1,
               }
             : p,
         ),
       );
 
-      if (post.is_liked) {
-        await sb.from("post_likes").delete().eq("post_id", post.id).eq("user_id", user.id);
-        captureEvent(COMMUNITY_EVENTS.POST_UNLIKED, { post_id: post.id });
-      } else {
-        await sb.from("post_likes").insert({ post_id: post.id, user_id: user.id });
-        captureEvent(COMMUNITY_EVENTS.POST_LIKED, { post_id: post.id });
+      try {
+        if (wasLiked) {
+          const { error } = await sb.from("post_likes").delete().eq("post_id", post.id).eq("user_id", user.id);
+          if (error) throw error;
+          captureEvent(COMMUNITY_EVENTS.POST_UNLIKED, { post_id: post.id });
+        } else {
+          const { error } = await sb.from("post_likes").insert({ post_id: post.id, user_id: user.id });
+          if (error) throw error;
+          captureEvent(COMMUNITY_EVENTS.POST_LIKED, { post_id: post.id });
+        }
+      } catch {
+        // Rollback on failure
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === post.id
+              ? {
+                  ...p,
+                  is_liked: wasLiked,
+                  like_count: wasLiked ? p.like_count + 1 : p.like_count - 1,
+                }
+              : p,
+          ),
+        );
       }
     },
     [user],

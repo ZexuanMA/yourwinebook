@@ -1096,7 +1096,17 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-08 C 端点赞功能
+- [x] P1B-08 C 端点赞功能
+  - 完成时间：2026-03-20
+  - 决策：
+    - Feed 页和详情页的点赞均已在 P1B-04/P1B-05 实现乐观更新
+    - 本次增强：添加弱网回滚机制 — 捕获 Supabase 写入错误后恢复原始 `is_liked` 和 `like_count`
+    - 详情页收藏同样添加回滚（`is_bookmarked` 失败后恢复）
+    - 先缓存 `wasLiked`/`wasBookmarked` 快照，catch 块中用快照还原
+    - PostHog 埋点仅在写入成功后触发，避免误报
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-09 开发 `create-comment` Edge Function
 - [ ] P1B-10 C 端评论列表与发评论
 - [ ] P1B-11 C 端帖子收藏
