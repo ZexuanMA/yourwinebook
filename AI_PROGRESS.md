@@ -1073,6 +1073,16 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
+
+### 部署检查点 6（P1B-04 ~ P1B-06）
+
+- 时间：2026-03-20
+- git push：❌ 凭据缺失（已知问题）
+- Web 构建：✅ `pnpm --filter web build` 通过
+- Mobile 构建：✅ `npx expo export --platform web` 通过（13 页面）
+- 集成测试：✅ 47/47 全部通过
+- 结论：社区核心链路就绪 — Feed 浏览 + 帖子详情（含图片预览）+ 发帖页面（文字/图片/评分），可继续 P1B-07
+
 - [ ] P1B-07 C 端上传进度与重试
 - [ ] P1B-08 C 端点赞功能
 - [ ] P1B-09 开发 `create-comment` Edge Function
