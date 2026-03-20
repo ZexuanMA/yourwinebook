@@ -11,6 +11,9 @@ interface MediaItem {
 
 interface RequestBody {
   content: string;
+  title?: string;
+  tags?: string[];
+  rating?: number;
   media?: MediaItem[];
   product_ids?: string[];
   is_official?: boolean;
@@ -66,7 +69,7 @@ Deno.serve(async (req) => {
     return json({ error: "Invalid JSON body" }, 400);
   }
 
-  const { content, media = [], product_ids = [], is_official = false } = body;
+  const { content, title, tags = [], rating, media = [], product_ids = [], is_official = false } = body;
 
   // ── Validate content ────────────────────────────────────────
   if (!content || typeof content !== "string" || content.trim().length === 0) {
@@ -74,6 +77,15 @@ Deno.serve(async (req) => {
   }
   if (content.length > 2000) {
     return json({ error: "Content must be 2000 characters or less" }, 400);
+  }
+  if (title && title.length > 100) {
+    return json({ error: "Title must be 100 characters or less" }, 400);
+  }
+  if (tags.length > 5) {
+    return json({ error: "Maximum 5 tags per post" }, 400);
+  }
+  if (rating != null && (rating < 1 || rating > 5 || !Number.isInteger(rating))) {
+    return json({ error: "Rating must be an integer between 1 and 5" }, 400);
   }
 
   // ── Validate media count ────────────────────────────────────
@@ -170,6 +182,9 @@ Deno.serve(async (req) => {
     .insert({
       author_id: userId,
       content: content.trim(),
+      title: title?.trim() || null,
+      tags,
+      rating: rating ?? null,
       is_official,
       merchant_id: merchantId,
     })

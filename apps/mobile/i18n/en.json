@@ -57,7 +57,8 @@
     "selectDistrict": "Select District"
   },
   "create": {
-    "title": "Post",
+    "title": "Title",
+    "tabTitle": "Post",
     "placeholder": "Share your wine experience…",
     "addPhotos": "Add Photos",
     "tagWine": "Tag Wine",

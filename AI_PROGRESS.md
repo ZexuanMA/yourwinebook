@@ -1057,7 +1057,22 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-06 C 端发帖页面
+- [x] P1B-06 C 端发帖页面
+  - 完成时间：2026-03-20
+  - 决策：
+    - 重写 `apps/mobile/app/(tabs)/create.tsx`，从占位符升级为完整发帖页面
+    - 表单：标题（可选，100 字限制）、正文（必填，2000 字限制含计数器）、星级评分（可选，点击切换）、图片选择（最多 9 张，横向缩略图滚动，可删除）
+    - 未登入状态展示提示，不显示表单
+    - 上传流程：pickImages → compressImage → uploadImages → finalize-post Edge Function
+    - 上传进度文字反馈：Compressing X/N → Uploading X/N → Finalizing...
+    - 升级 `finalize-post` Edge Function 接受 `title`、`tags`、`rating` 字段，含长度/范围校验
+    - PostHog 埋点：`POST_CREATE_STARTED` → `POST_CREATE_SUBMITTED` → `POST_CREATE_SUCCESS`/`POST_CREATE_FAILED`
+    - 发帖成功后清空表单并跳转 Feed
+    - KeyboardAvoidingView 适配 iOS 键盘
+    - i18n：新增 `create.tabTitle` 区分 tab 标签与页面内标题字段
+  - 自检：
+    - `npx expo export --platform web` ✅（13 页面全部导出）
+  - 风险：无
 - [ ] P1B-07 C 端上传进度与重试
 - [ ] P1B-08 C 端点赞功能
 - [ ] P1B-09 开发 `create-comment` Edge Function

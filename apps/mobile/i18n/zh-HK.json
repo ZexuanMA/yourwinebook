@@ -57,7 +57,8 @@
     "selectDistrict": "選擇區域"
   },
   "create": {
-    "title": "發帖",
+    "title": "標題",
+    "tabTitle": "發帖",
     "placeholder": "分享你的品酒心得…",
     "addPhotos": "添加照片",
     "tagWine": "標記酒款",
