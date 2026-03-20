@@ -1254,7 +1254,26 @@
   - 自检：
     - `npx expo export --platform web` ✅（15 页面全部导出）
   - 风险：无
-- [ ] P1B-18 B 端官方发帖入口
+- [x] P1B-18 B 端官方发帖入口
+  - 完成时间：2026-03-20
+  - 决策：
+    - API 层 (`/api/community/posts` POST)：
+      - 优先检查 `wb_session`（商户 cookie），再检查 `wb_user_session`（用户 cookie）
+      - 新增 staff 权限校验：校验商户状态必须为 `active`，非活跃商户返回 403
+      - Admin 无法发帖，只能管理——返回 401
+    - 数据层：`community-store.ts` 的 `createPost` 已自动设置 `is_official: true`（Supabase 模式）和 `authorType: "merchant"`（Legacy 模式），无需额外修改
+    - UI 层 (`dashboard/community/page.tsx`)：
+      - 新增 `ShieldCheck` 官方身份标识
+      - 发帖表单顶部新增官方身份 banner，显示商户名称 + "官方" 标签 + 提示"以官方身份发布"
+      - 帖子列表中商户帖子旁显示 "官方" 标签（绿色，含盾牌图标）
+      - "发布新动态"按钮仅对 `role === "merchant"` 显示，Admin 不可见
+    - i18n：新增 `community.officialBadge`、`community.officialPostHint`、`community.merchantInactive` 三个翻译键
+  - 自检：
+    - `pnpm --filter web build` ✅（全部页面通过）
+    - 合法 staff（active 商户）可发帖 ✅
+    - 非 staff（admin）被拒 ✅
+    - 非活跃商户（suspended/pending）被拒 403 ✅
+  - 风险：无
 - [ ] P1B-19 社区漏斗埋点
 - [ ] P1B-20 社区链路 QA 回归
 

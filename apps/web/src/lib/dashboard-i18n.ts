@@ -163,6 +163,9 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "community.noPostsHint": { "zh-HK": "發佈內容與用戶互動，提升品牌曝光", en: "Publish content to engage with users and increase brand exposure" },
   "community.delete": { "zh-HK": "刪除", en: "Delete" },
   "community.confirmDelete": { "zh-HK": "確定要刪除這篇動態嗎？", en: "Delete this post?" },
+  "community.officialBadge": { "zh-HK": "官方", en: "Official" },
+  "community.officialPostHint": { "zh-HK": "以官方身份發佈，帖子將帶有官方標記", en: "Published as official — post will carry an official badge" },
+  "community.merchantInactive": { "zh-HK": "帳號未啟用，無法發佈官方動態", en: "Account inactive — cannot publish official posts" },
 
   // ── Stores ──
   "nav.stores": { "zh-HK": "門店管理", en: "Store Management" },

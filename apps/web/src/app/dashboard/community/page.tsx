@@ -13,6 +13,7 @@ import {
   ChevronUp,
   Store,
   Star,
+  ShieldCheck,
 } from "lucide-react";
 
 interface Post {
@@ -188,13 +189,15 @@ export default function DashboardCommunityPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-lg font-bold text-text">{t("community.title")}</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 px-4 py-2 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors cursor-pointer border-none"
-        >
-          <Plus className="w-4 h-4" />
-          {t("community.newPost")}
-        </button>
+        {account && account.role === "merchant" && (
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-2 px-4 py-2 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors cursor-pointer border-none"
+          >
+            <Plus className="w-4 h-4" />
+            {t("community.newPost")}
+          </button>
+        )}
       </div>
       <p className="text-sm text-text-sub mb-6">{t("community.subtitle")}</p>
 
@@ -217,6 +220,21 @@ export default function DashboardCommunityPage() {
       {/* New post form */}
       {showForm && (
         <div className="bg-white border border-wine-border rounded-2xl p-6 mb-6">
+          {/* Official post identity banner for merchants */}
+          {account && account.role === "merchant" && (
+            <div className="flex items-center gap-2 px-4 py-3 mb-4 bg-green/5 border border-green/20 rounded-xl">
+              <ShieldCheck className="w-4 h-4 text-green shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-text flex items-center gap-1.5">
+                  {account.name}
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green/10 text-green text-[10px] font-bold rounded">
+                    {t("community.officialBadge")}
+                  </span>
+                </p>
+                <p className="text-xs text-text-sub mt-0.5">{t("community.officialPostHint")}</p>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleNewPost} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-text mb-1.5">
@@ -343,7 +361,13 @@ export default function DashboardCommunityPage() {
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-semibold text-text">{post.authorName}</span>
                       {post.authorType === "merchant" && (
-                        <Store className="w-3 h-3 text-green" />
+                        <>
+                          <Store className="w-3 h-3 text-green" />
+                          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-green/10 text-green text-[9px] font-bold rounded">
+                            <ShieldCheck className="w-2.5 h-2.5" />
+                            {t("community.officialBadge")}
+                          </span>
+                        </>
                       )}
                     </div>
                     <p className="text-[11px] text-text-sub">{formatDate(post.createdAt)}</p>

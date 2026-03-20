@@ -25,20 +25,30 @@ export async function POST(request: NextRequest) {
   let authorType: "user" | "merchant";
   let authorName: string;
 
-  if (userId) {
+  if (merchantSlug && merchantSlug !== "admin") {
+    // B-side official post: validate merchant staff permission
+    const merchant = await getMerchantBySlug(merchantSlug);
+    if (!merchant) {
+      return NextResponse.json({ error: "Merchant not found" }, { status: 401 });
+    }
+    if (merchant.status !== "active") {
+      return NextResponse.json(
+        { error: "Merchant account is not active. Only active merchants can publish official posts." },
+        { status: 403 }
+      );
+    }
+    authorId = merchant.slug;
+    authorType = "merchant";
+    authorName = merchant.name;
+  } else if (userId) {
     const user = await getUserById(userId);
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 401 });
     authorId = user.id;
     authorType = "user";
     authorName = user.name;
-  } else if (merchantSlug && merchantSlug !== "admin") {
-    const merchant = await getMerchantBySlug(merchantSlug);
-    if (!merchant) return NextResponse.json({ error: "Merchant not found" }, { status: 401 });
-    authorId = merchant.slug;
-    authorType = "merchant";
-    authorName = merchant.name;
   } else {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Admin or unauthenticated — reject
+    return NextResponse.json({ error: "Unauthorized. Only merchant staff or users can post." }, { status: 401 });
   }
 
   const body = await request.json();
