@@ -170,17 +170,71 @@ check_status "No auth → 401 on price update" "$BASE/api/merchant/wines/cloudy-
 
 # ──────────────────────────────────────
 echo ""
-echo "6. 社区 (community-store)"
+echo "6. 社区 (community-store) — QA 回归"
 echo "──────────────────────────────────────"
+
+# 6a. Feed & pagination
 check_status "GET community posts" "$BASE/api/community/posts" "200"
 check_json "Posts exist" "$BASE/api/community/posts" "'ok' if len(d.get('posts',[])) > 0 else 'empty'" "ok"
+check_json "Pagination metadata" "$BASE/api/community/posts?limit=2" "'ok' if d.get('totalPages',0) > 0 else 'no'" "ok"
 
 # Get first post id
 FIRST_POST=$(curl -s "$BASE/api/community/posts" | python3 -c "import sys,json; d=json.load(sys.stdin); posts=d.get('posts',[]); print(posts[0]['id'] if posts else '')" 2>/dev/null) || FIRST_POST=""
 if [ -n "$FIRST_POST" ]; then
   check_status "GET post detail" "$BASE/api/community/posts/$FIRST_POST" "200"
   check_status "GET post comments" "$BASE/api/community/posts/$FIRST_POST/comments" "200"
+
+  # 6b. Like/unlike toggle
+  LIKE_CODE=$(curl -s -o /dev/null -w "%{http_code}" -b "$MERCHANT_COOKIES" \
+    -X POST "$BASE/api/community/posts/$FIRST_POST/like" \
+    -H "Content-Type: application/json") || true
+  if [ "$LIKE_CODE" = "200" ]; then pass "Toggle like on post (HTTP 200)"; else fail "Toggle like: expected 200, got $LIKE_CODE"; fi
 fi
+
+# 6c. Merchant official post creation (staff permission)
+MPOST_RESULT=$(curl -s -b "$MERCHANT_COOKIES" \
+  -X POST "$BASE/api/community/posts" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"QA Test Official Post","content":"Integration test for official posting flow","tags":["推薦"]}') || true
+MPOST_ID=$(echo "$MPOST_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null) || MPOST_ID=""
+if [ -n "$MPOST_ID" ]; then
+  pass "Merchant creates official post → id=$MPOST_ID"
+  # Verify authorType is merchant
+  MPOST_TYPE=$(echo "$MPOST_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('authorType',''))" 2>/dev/null) || MPOST_TYPE=""
+  if [ "$MPOST_TYPE" = "merchant" ]; then pass "Official post authorType=merchant"; else fail "Official post authorType: expected 'merchant', got '$MPOST_TYPE'"; fi
+
+  # 6d. Comment on official post
+  COMMENT_RESULT=$(curl -s -b "$MERCHANT_COOKIES" \
+    -X POST "$BASE/api/community/posts/$MPOST_ID/comments" \
+    -H "Content-Type: application/json" \
+    -d '{"content":"Official reply from merchant"}') || true
+  COMMENT_ID=$(echo "$COMMENT_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id',''))" 2>/dev/null) || COMMENT_ID=""
+  if [ -n "$COMMENT_ID" ]; then pass "Merchant comments on post → id=$COMMENT_ID"; else fail "Merchant comment: no id returned"; fi
+
+  # 6e. Delete test post (cleanup)
+  DEL_CODE=$(curl -s -o /dev/null -w "%{http_code}" -b "$MERCHANT_COOKIES" \
+    -X DELETE "$BASE/api/community/posts/$MPOST_ID") || true
+  if [ "$DEL_CODE" = "200" ]; then pass "Delete test post (HTTP 200)"; else fail "Delete test post: expected 200, got $DEL_CODE"; fi
+else
+  fail "Merchant official post creation failed"
+fi
+
+# 6f. Unauthorized post → 401
+check_status "No auth → 401 on create post" "$BASE/api/community/posts" "401" \
+  -X POST -H "Content-Type: application/json" -d '{"title":"Hacked","content":"Should fail"}'
+
+# 6g. Admin cannot post (admin session → 401)
+ADMIN_TMP=$(mktemp)
+curl -s -o /dev/null -c "$ADMIN_TMP" \
+  -X POST "$BASE/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d "$(python3 -c "import json; print(json.dumps({'email':'Zexuan@admin.com','password':'ad7581jnP123!'}))")" 2>/dev/null
+ADMIN_POST_CODE=$(curl -s -o /dev/null -w "%{http_code}" -b "$ADMIN_TMP" \
+  -X POST "$BASE/api/community/posts" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Admin post","content":"Should be rejected"}') || true
+if [ "$ADMIN_POST_CODE" = "401" ]; then pass "Admin rejected from posting (HTTP 401)"; else fail "Admin post: expected 401, got $ADMIN_POST_CODE"; fi
+rm -f "$ADMIN_TMP" 2>/dev/null || true
 
 # ──────────────────────────────────────
 echo ""
