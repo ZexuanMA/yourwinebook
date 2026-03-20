@@ -869,7 +869,20 @@
 - Git push 受阻：GitHub 凭据未配置
 - 结论：区域数据、门店卡片、营业状态逻辑、附近门店列表页均未影响线上功能
 
-- [ ] P1A-10 C 端门店详情页
+- [x] P1A-10 C 端门店详情页
+  - 完成时间：2026-03-20
+  - 决策：
+    - 重写 `app/store/[id].tsx`：从 redirect placeholder 升级为完整详情页
+    - 查询 `merchant_locations` JOIN `merchants` 获取门店 + 商户信息
+    - 解析 PostGIS geography → lat/lng
+    - 显示内容：门店名称、商户名称、营业状态（含 closing-soon / opensAt）
+    - 地址区域 + 电话（可点击拨打）+ 7 天营业时间表
+    - 操作按钮：导航（iOS Maps / Android Google Maps / Web fallback）+ 收藏切换
+    - 收藏状态通过 store_bookmarks 表查询和操作
+    - 使用 `getBusinessStatus()` 计算实时营业状态
+  - 自检：
+    - `npx expo export --platform web` ✅
+  - 风险：无
 - [ ] P1A-11 C 端收藏/取消收藏门店
 - [ ] P1A-12 C 端外部导航唤起
 - [ ] P1A-13 找店漏斗埋点
