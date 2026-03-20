@@ -1107,7 +1107,21 @@
   - 自检：
     - `npx expo export --platform web` ✅（13 页面全部导出）
   - 风险：无
-- [ ] P1B-09 开发 `create-comment` Edge Function
+- [x] P1B-09 开发 `create-comment` Edge Function
+  - 完成时间：2026-03-20
+  - 决策：
+    - 新建 `supabase/functions/create-comment/index.ts`
+    - 认证：从 Authorization header 获取用户身份
+    - 幂等：通过 `idempotency_key` + `author_id` 查重，重复请求返回已有评论（`deduplicated: true`）
+    - 频率限制：内存 Map 追踪每用户每分钟最多 10 条评论，超频返回 429
+    - 校验：content 必填且 ≤1000 字，post 必须存在且 visible
+    - 写入：插入 `comments` 表后，通过 `increment_comment_count` RPC 原子递增 `posts.comment_count`
+    - 新建迁移 `007_increment_comment_count.sql`：SQL 函数实现原子计数递增
+    - 返回包含 author profile 信息的完整评论数据
+  - 自检：
+    - `pnpm --filter web build` ✅
+    - `npx expo export --platform web` ✅
+  - 风险：无
 - [ ] P1B-10 C 端评论列表与发评论
 - [ ] P1B-11 C 端帖子收藏
 - [ ] P1B-12 C 端举报功能
