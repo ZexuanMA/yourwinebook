@@ -1474,6 +1474,20 @@
   - 自检：
     - `npx expo export --platform web` ✅（15 页面导出）
   - 风险：实际 OTA 发布需 EAS 账号权限
+
+### 部署检查点 12（P1C-04 ~ P1C-06）
+
+- 时间：2026-03-21
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200 ✅
+  - `/dashboard/admin/invites` → 307 redirect to login（预期行为）✅
+  - 集成测试 → 55 通过, 0 失败 ✅
+- Git push：❌ 凭据缺失（已知问题）
+- 结论：过期上传清理、邀请码机制、灰度分发配置均未影响线上功能
+
 - [ ] P1C-07 埋点校验
 - [ ] P1C-08 Sentry 告警规则
 - [ ] P1C-09 性能基线测量
