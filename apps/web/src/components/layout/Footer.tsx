@@ -10,7 +10,7 @@ export function Footer() {
         <div className="font-en font-bold text-base text-wine mb-4">
           Your Wine Book
         </div>
-        <ul className="flex justify-center gap-8 list-none text-[13px] text-text-sub mb-5">
+        <ul className="flex justify-center gap-8 list-none text-[13px] text-text-sub mb-4">
           <li>
             <Link href="/search" className="hover:text-wine transition-colors">
               {t("explore")}
@@ -32,6 +32,19 @@ export function Footer() {
             </Link>
           </li>
         </ul>
+        <ul className="flex justify-center gap-6 list-none text-[12px] text-text-sub/70 mb-4">
+          <li>
+            <Link href="/privacy" className="hover:text-wine transition-colors">
+              {t("privacy")}
+            </Link>
+          </li>
+          <li>
+            <Link href="/terms" className="hover:text-wine transition-colors">
+              {t("terms")}
+            </Link>
+          </li>
+        </ul>
+        <p className="text-xs text-text-sub/60 mb-3">{t("ageNotice")}</p>
         <p className="text-xs text-text-sub font-en">{t("copyright")}</p>
       </div>
     </footer>

@@ -101,6 +101,12 @@ export default function RegisterPage() {
                 placeholder="XXXXXXXX" maxLength={8} className={`${inputCls} uppercase tracking-widest font-mono`} />
             </div>
             {error && <p className="text-sm text-wine bg-red-light px-4 py-2.5 rounded-xl">⚠ {error}</p>}
+            <p className="text-xs text-text-sub leading-5">
+              點擊「創建帳號」即表示你已年滿 18 歲，並同意我們的{" "}
+              <Link href="/terms" className="text-wine underline">使用條款</Link>
+              {" "}和{" "}
+              <Link href="/privacy" className="text-wine underline">私隱政策</Link>。
+            </p>
             <button type="submit" disabled={loading}
               className="w-full py-3 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors disabled:opacity-50 cursor-pointer mt-1">
               {loading ? "注冊中…" : "創建帳號"}

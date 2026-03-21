@@ -62,7 +62,10 @@
     "merchants": "Merchants",
     "about": "About",
     "join": "Join",
-    "copyright": "© 2026 Your Wine Book. All rights reserved."
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "copyright": "© 2026 Your Wine Book. All rights reserved.",
+    "ageNotice": "This platform contains information about alcoholic beverages and is intended for persons aged 18 or above."
   },
   "search": {
     "pageTitle": "Explore Wines",
@@ -176,5 +179,43 @@
     "formWineCount": "Number of Wines",
     "formMessage": "Notes",
     "formSubmit": "Submit Application"
+  },
+  "privacy": {
+    "pageTitle": "Privacy Policy",
+    "lastUpdated": "Last updated: March 2026",
+    "collectTitle": "Information We Collect",
+    "collectDesc": "When you create an account, we collect your email address and display name. As you use our services, we may collect your browsing history, bookmarked wines, search queries, and device information (operating system, browser type). If you use the store locator feature, we collect your location data with your permission.",
+    "useTitle": "How We Use Your Information",
+    "useDesc": "We use the information we collect to:\n- Provide, maintain, and improve our services\n- Recommend wines and stores that suit your preferences\n- Send notifications related to your account\n- Analyse platform usage to improve user experience\n- Prevent abuse and maintain platform security",
+    "shareTitle": "Information Sharing",
+    "shareDesc": "We do not sell your personal information. We may share your information in the following circumstances:\n- Anonymised statistics with partner merchants (e.g. wine view counts)\n- As required by law or in response to legal process\n- With your explicit consent",
+    "cookieTitle": "Cookies and Tracking",
+    "cookieDesc": "We use cookies to maintain your login session and preferences. We may use analytics tools (such as PostHog) to understand how the platform is used, which may use cookies or similar technologies. You can manage cookies through your browser settings.",
+    "retentionTitle": "Data Retention",
+    "retentionDesc": "We retain your information while your account is active. If you request account deletion, we will remove your personal data within a reasonable timeframe, though we may retain anonymised statistical data.",
+    "rightsTitle": "Your Rights",
+    "rightsDesc": "You have the right to:\n- Access the personal information we hold about you\n- Request correction of inaccurate information\n- Request deletion of your account and associated data\n- Withdraw consent for location data collection\n\nTo exercise these rights, please contact us using the details below.",
+    "contactTitle": "Contact Us",
+    "contactDesc": "If you have any questions about our privacy policy, please email privacy@yourwinebook.com."
+  },
+  "terms": {
+    "pageTitle": "Terms of Use",
+    "lastUpdated": "Last updated: March 2026",
+    "acceptTitle": "Acceptance of Terms",
+    "acceptDesc": "By using Your Wine Book (the \"Platform\"), you agree to be bound by these Terms of Use. If you do not agree to any of these terms, please do not use the Platform.",
+    "eligibilityTitle": "Eligibility",
+    "eligibilityDesc": "This Platform provides information and price comparison services for alcoholic beverages. Under Hong Kong law, you must be at least 18 years old to use this Platform. By creating an account, you confirm that you are at least 18 years of age. This Platform does not directly sell alcoholic beverages.",
+    "accountTitle": "Account Responsibility",
+    "accountDesc": "You are responsible for safeguarding your account credentials. Do not share your password with others. You are responsible for all activities conducted through your account. If you discover unauthorised use of your account, please notify us immediately.",
+    "contentTitle": "User Content",
+    "contentDesc": "Content you post in the community (posts, comments, etc.) must comply with the following rules:\n- Must not contain illegal, defamatory, harassing, or discriminatory content\n- Must not contain false or misleading information\n- Must not infringe on others' intellectual property rights\n- Must not promote underage drinking\n\nWe reserve the right to remove content that violates these rules and to suspend accounts.",
+    "pricingTitle": "Pricing Information",
+    "pricingDesc": "Wine prices displayed on this Platform are sourced from our partner merchants and are for reference only. Actual prices are subject to the merchant's official pricing. While we strive to ensure pricing accuracy, we make no guarantees regarding the accuracy, timeliness, or completeness of pricing information.",
+    "ipTitle": "Intellectual Property",
+    "ipDesc": "The design, text, icons, and branding elements of this Platform are protected by intellectual property laws. You may not copy, modify, or distribute the Platform's content without written permission. Wine names, winery names, and other trademarks belong to their respective owners.",
+    "disclaimerTitle": "Disclaimer",
+    "disclaimerDesc": "This Platform is provided \"as is\" without any express or implied warranties. We are not liable for any direct, indirect, or incidental damages arising from the use of this Platform. Please drink responsibly and never drink and drive.",
+    "contactTitle": "Contact Us",
+    "contactDesc": "If you have any questions about these Terms of Use, please email legal@yourwinebook.com."
   }
 }
