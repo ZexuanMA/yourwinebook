@@ -1414,7 +1414,23 @@
 - Git push：❌ 凭据缺失（已知问题）
 - 结论：弱网上传恢复和频率限制全面部署均未影响线上功能，所有 API 路由正常运行
 
-- [ ] P1C-04 过期上传清理
+- [x] P1C-04 过期上传清理
+  - 完成时间：2026-03-21
+  - 决策：
+    - 新建 `supabase/functions/cleanup-uploads/index.ts` Edge Function
+      - 查找过期超过 1 小时的 pending 状态 media_uploads 记录（最多 100 条/次）
+      - 按 bucket 分组批量删除 Storage 文件
+      - 删除对应 DB 记录
+      - 通过 `CLEANUP_SECRET` Bearer token 认证（防未授权调用）
+    - 新建 `scripts/cleanup-uploads.sh`：cron 调用脚本
+      - 可配置为每小时执行：`0 * * * * /root/wine-app/scripts/cleanup-uploads.sh`
+      - 自动加载 .env.local 获取 SUPABASE_URL
+      - 无 Supabase 配置时静默跳过
+    - 利用已有索引 `idx_media_uploads_expires` 高效查询过期记录
+  - 自检：
+    - Edge Function 代码结构完整 ✅
+    - 脚本可执行 ✅
+  - 风险：需部署 Edge Function 到 Supabase 后才能实际运行
 - [ ] P1C-05 邀请码机制
 - [ ] P1C-06 灰度分发配置
 - [ ] P1C-07 埋点校验
