@@ -1523,6 +1523,24 @@
     - `pnpm --filter web build` ✅
     - `npx expo export --platform web` ✅
   - 风险：Sentry DSN 未配置时三端均优雅跳过初始化，无运行时影响
-- [ ] P1C-09 性能基线测量
+- [x] P1C-09 性能基线测量
+  - 完成时间：2026-03-21
+  - 决策：
+    - 新建 `scripts/perf-baseline.sh`：自动化性能基线测量脚本
+    - 测量 6 大维度：Web 构建体积、Mobile bundle 体积、API 响应时间、页面传输大小、数据存储大小、Mobile 手动测试协议
+    - 生产实测结果（2026-03-21）：
+      - Web 静态资源：7.7MB，最大 chunk 408KB（Recharts 图表库）
+      - Mobile Web Export：11MB 总计，JS 3.6MB
+      - API 响应时间（5 次平均）：
+        - 首页 99ms / wines API 57ms / merchants API 54ms
+        - 带筛选查询 53ms / 搜索 44ms / 场景 44ms / 登录页 56ms
+      - 页面 HTML 传输：首页 51.9KB / 搜索页 25.7KB
+      - 所有 API 端点 <100ms，无性能瓶颈
+    - Mobile 性能目标（待真机验证）：
+      - 冷启动 <3s / 热启动 <1s / Feed 滚动 60fps / 发帖 <5s
+  - 自检：
+    - `bash scripts/perf-baseline.sh` → 全部指标采集成功 ✅
+    - 所有 API 响应时间 <100ms ✅
+  - 风险：无
 - [ ] P1C-10 合规文本
 - [ ] P1C-11 最终回归测试
