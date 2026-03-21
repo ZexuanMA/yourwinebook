@@ -1399,6 +1399,21 @@
   - 自检：
     - `pnpm --filter web build` ✅
   - 风险：内存限流在多进程部署时不共享（单进程 PM2 场景下无影响）
+
+### 部署检查点 11（P1C-02 ~ P1C-03）
+
+- 时间：2026-03-21
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200 ✅
+  - `/api/merchants` → 200 ✅
+  - `/login` → 200 ✅
+  - 集成测试 → 55 通过, 0 失败 ✅
+- Git push：❌ 凭据缺失（已知问题）
+- 结论：弱网上传恢复和频率限制全面部署均未影响线上功能，所有 API 路由正常运行
+
 - [ ] P1C-04 过期上传清理
 - [ ] P1C-05 邀请码机制
 - [ ] P1C-06 灰度分发配置
