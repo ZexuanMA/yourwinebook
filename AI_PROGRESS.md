@@ -1557,4 +1557,21 @@
   - 自检：
     - `pnpm --filter web build` ✅（含 /[locale]/privacy 和 /[locale]/terms 路由）
   - 风险：无
+
+### 部署检查点 13（P1C-08 ~ P1C-10）
+
+- 时间：2026-03-21
+- `npm run deploy`（build + pm2 restart wine-prod）✅
+- PM2 wine-prod 进程在线 ✅
+- 线上验证：
+  - `https://yourwinebook.com/zh-HK` → 200 ✅
+  - `/api/wines` → 200 ✅
+  - `/api/merchants` → 200 ✅
+  - `/zh-HK/privacy` → 200 ✅（新增私隐政策页面）
+  - `/zh-HK/terms` → 200 ✅（新增使用条款页面）
+  - `/login` → 200 ✅
+  - 集成测试 → 55 通过, 0 失败 ✅
+- Git push：❌ 凭据缺失（已知问题）
+- 结论：Sentry 告警规则、性能基线测量、合规文本均已部署，新增法律页面可正常访问
+
 - [ ] P1C-11 最终回归测试
