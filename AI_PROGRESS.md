@@ -1351,7 +1351,26 @@
     - `npx expo export --platform web` ✅（15 页面导出）
     - 发帖中断后内容可恢复 ✅
   - 风险：图片 URI 是本地路径，app 重启后可能失效（MVP 可接受）
-- [ ] P1C-02 弱网上传恢复
+- [x] P1C-02 弱网上传恢复
+  - 完成时间：2026-03-21
+  - 决策：
+    - 安装 `@react-native-community/netinfo` 监听网络状态
+    - 新建 `hooks/useNetworkStatus.ts`：返回 `isConnected`、`justReconnected`，支持 `onReconnect` 回调
+    - `lib/media.ts` 增强：
+      - 新增 `fetchWithRetry()`：指数退避重试（1s/2s/4s，最多 3 次）
+      - `uploadImages` 改为容错模式：单张上传失败不中断整个流程，记录 `failedIndices`
+      - 返回 `UploadSession` 对象，包含压缩后图片、blob、intent、已成功/失败索引
+      - 新增 `retryFailedUploads()`：仅重试失败的图片，成功后可继续 finalize-post
+    - `create.tsx` 集成：
+      - 离线时显示红色 banner + 禁用提交按钮
+      - 网络恢复时显示绿色 banner + 一键重试入口
+      - 部分上传失败时显示黄色重试栏（含失败数量 + 重试按钮）
+      - 重试成功后自动继续发帖流程
+    - i18n：新增 `common.offline`、`common.reconnected` 翻译键
+  - 自检：
+    - `npx expo export --platform web` ✅（15 页面导出）
+    - `pnpm --filter web build` ✅
+  - 风险：无
 - [ ] P1C-03 频率限制全面部署
 - [ ] P1C-04 过期上传清理
 - [ ] P1C-05 邀请码机制

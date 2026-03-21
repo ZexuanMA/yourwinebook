@@ -19,9 +19,11 @@ import { useAuth } from "../../providers/AuthProvider";
 import {
   pickImages,
   uploadImages,
+  retryFailedUploads,
   type PickedImage,
   type UploadResult,
   type UploadProgress,
+  type UploadSession,
 } from "../../lib/media";
 import { COMMUNITY_EVENTS } from "@ywb/domain";
 import { captureEvent } from "../../lib/posthog";
@@ -30,6 +32,7 @@ import UploadProgressBar, {
   type UploadItemStatus,
 } from "../../components/UploadProgressBar";
 import { loadDraft, clearDraft, useAutoSaveDraft } from "../../hooks/useDraft";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 
 const MAX_IMAGES = 9;
 const MAX_CONTENT = 2000;
@@ -48,6 +51,9 @@ export default function CreatePostScreen() {
   const [uploadStatus, setUploadStatus] = useState("");
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
   const [draftRestored, setDraftRestored] = useState(false);
+  const [lastUploadSession, setLastUploadSession] = useState<UploadSession | null>(null);
+
+  const { isConnected, justReconnected } = useNetworkStatus();
 
   // Restore draft on mount
   useEffect(() => {
@@ -129,7 +135,7 @@ export default function CreatePostScreen() {
       let uploadResults: UploadResult[] = [];
       if (images.length > 0) {
         setUploadStatus(`0/${images.length}`);
-        uploadResults = await uploadImages(images, "posts", (p: UploadProgress) => {
+        const uploadOut = await uploadImages(images, "posts", (p: UploadProgress) => {
           if (p.status === "compressing") {
             setUploadStatus(`Compressing ${p.index + 1}/${p.total}`);
             updateItemStatus(p.index, "compressing");
@@ -142,6 +148,20 @@ export default function CreatePostScreen() {
             updateItemStatus(p.index, "error", p.error);
           }
         });
+        uploadResults = uploadOut.results;
+
+        // If some uploads failed, save session for retry
+        if (uploadOut.session.failedIndices.length > 0) {
+          setLastUploadSession(uploadOut.session);
+          const failCount = uploadOut.session.failedIndices.length;
+          Alert.alert(
+            t("common.error"),
+            `${failCount} image(s) failed to upload. Tap retry to try again.`
+          );
+          setUploading(false);
+          setUploadStatus("");
+          return;
+        }
       }
 
       // Step 2: Finalize post via Edge Function
@@ -180,6 +200,7 @@ export default function CreatePostScreen() {
       setImages([]);
       setUploadItems([]);
       setDraftRestored(false);
+      setLastUploadSession(null);
       await clearDraft();
 
       // Navigate to feed
@@ -195,10 +216,84 @@ export default function CreatePostScreen() {
     }
   };
 
-  const handleRetryImage = async (index: number) => {
-    // Retry a single failed image by re-running the full submit
-    // For MVP, we retry the entire upload flow
-    handleSubmit();
+  const handleRetryUpload = async () => {
+    if (!lastUploadSession || lastUploadSession.failedIndices.length === 0) return;
+
+    const sb = getSupabase();
+    if (!sb) return;
+
+    setUploading(true);
+    setUploadStatus("Retrying...");
+
+    try {
+      const retryOut = await retryFailedUploads(lastUploadSession, (p: UploadProgress) => {
+        if (p.status === "uploading") {
+          setUploadStatus(`Retrying ${p.index + 1}/${p.total}`);
+          updateItemStatus(p.index, "uploading");
+        } else if (p.status === "done") {
+          updateItemStatus(p.index, "done");
+        } else if (p.status === "error") {
+          updateItemStatus(p.index, "error", p.error);
+        }
+      });
+
+      if (retryOut.session.failedIndices.length > 0) {
+        setLastUploadSession(retryOut.session);
+        Alert.alert(
+          t("common.error"),
+          `${retryOut.session.failedIndices.length} image(s) still failed.`
+        );
+        setUploading(false);
+        setUploadStatus("");
+        return;
+      }
+
+      // All uploads now successful — finalize post
+      setLastUploadSession(null);
+      setUploadStatus("Finalizing...");
+      captureEvent(COMMUNITY_EVENTS.POST_CREATE_SUBMITTED);
+
+      const trimmedContent = content.trim();
+      const { data, error } = await sb.functions.invoke("finalize-post", {
+        body: {
+          content: trimmedContent,
+          title: title.trim() || undefined,
+          tags: [],
+          rating: rating ?? undefined,
+          media: retryOut.results.map((r) => ({
+            upload_id: r.intent.id,
+            width: r.image.width,
+            height: r.image.height,
+          })),
+          product_ids: [],
+          is_official: false,
+        },
+      });
+
+      if (error) throw new Error(error.message ?? "Failed to create post");
+
+      captureEvent(COMMUNITY_EVENTS.POST_CREATE_SUCCESS, {
+        post_id: data?.post?.id,
+        media_count: images.length,
+      });
+
+      setContent("");
+      setTitle("");
+      setRating(null);
+      setImages([]);
+      setUploadItems([]);
+      setDraftRestored(false);
+      await clearDraft();
+      router.replace("/(tabs)");
+    } catch (err) {
+      captureEvent(COMMUNITY_EVENTS.POST_CREATE_FAILED, {
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
+      Alert.alert(t("common.error"), err instanceof Error ? err.message : "Retry failed");
+    } finally {
+      setUploading(false);
+      setUploadStatus("");
+    }
   };
 
   const canSubmit = content.trim().length > 0 && !uploading;
@@ -309,10 +404,43 @@ export default function CreatePostScreen() {
         </View>
       </ScrollView>
 
+      {/* Offline banner */}
+      {!isConnected && (
+        <View style={styles.offlineBanner}>
+          <Text style={styles.offlineBannerText}>{t("common.offline")}</Text>
+        </View>
+      )}
+
+      {/* Reconnected banner */}
+      {justReconnected && lastUploadSession && lastUploadSession.failedIndices.length > 0 && (
+        <View style={styles.reconnectBanner}>
+          <Text style={styles.reconnectText}>{t("common.reconnected")}</Text>
+          <Pressable onPress={handleRetryUpload}>
+            <Text style={styles.reconnectRetryText}>{t("common.retry")}</Text>
+          </Pressable>
+        </View>
+      )}
+
       {/* Upload progress */}
       {uploading && uploadItems.length > 0 && (
         <View style={styles.progressBar}>
-          <UploadProgressBar items={uploadItems} onRetry={handleRetryImage} />
+          <UploadProgressBar items={uploadItems} onRetry={handleRetryUpload} />
+        </View>
+      )}
+
+      {/* Retry bar (when uploads partially failed) */}
+      {!uploading && lastUploadSession && lastUploadSession.failedIndices.length > 0 && (
+        <View style={styles.retryBar}>
+          <Text style={styles.retryText}>
+            {lastUploadSession.failedIndices.length} image(s) failed
+          </Text>
+          <Pressable
+            style={[styles.retryBtn, !isConnected && styles.submitBtnDisabled]}
+            onPress={handleRetryUpload}
+            disabled={!isConnected}
+          >
+            <Text style={styles.retryBtnText}>{t("common.retry")}</Text>
+          </Pressable>
         </View>
       )}
 
@@ -325,11 +453,11 @@ export default function CreatePostScreen() {
           </View>
         ) : (
           <Pressable
-            style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
+            style={[styles.submitBtn, (!canSubmit || !isConnected) && styles.submitBtnDisabled]}
             onPress={handleSubmit}
-            disabled={!canSubmit}
+            disabled={!canSubmit || !isConnected}
           >
-            <Text style={[styles.submitBtnText, !canSubmit && styles.submitBtnTextDisabled]}>
+            <Text style={[styles.submitBtnText, (!canSubmit || !isConnected) && styles.submitBtnTextDisabled]}>
               {t("create.post")}
             </Text>
           </Pressable>
@@ -515,5 +643,58 @@ const styles = StyleSheet.create({
   uploadingText: {
     fontSize: 14,
     color: "#5B2E35",
+  },
+  offlineBanner: {
+    backgroundColor: "#FEE2E2",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignItems: "center",
+  },
+  offlineBannerText: {
+    fontSize: 13,
+    color: "#991B1B",
+    fontWeight: "500",
+  },
+  reconnectBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#ECFDF5",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  reconnectText: {
+    fontSize: 13,
+    color: "#065F46",
+  },
+  reconnectRetryText: {
+    fontSize: 13,
+    color: "#5B2E35",
+    fontWeight: "600",
+  },
+  retryBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: "#FEF9E7",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#E5E5E5",
+  },
+  retryText: {
+    fontSize: 13,
+    color: "#92400E",
+  },
+  retryBtn: {
+    backgroundColor: "#5B2E35",
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  retryBtnText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });

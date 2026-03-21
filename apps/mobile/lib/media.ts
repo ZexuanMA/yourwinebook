@@ -142,20 +142,60 @@ export async function compressImage(
   };
 }
 
+// ── Retry helper ─────────────────────────────────────────────
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries = 3
+): Promise<Response> {
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok) return res;
+      // Non-retryable HTTP errors (4xx)
+      if (res.status >= 400 && res.status < 500) {
+        throw new Error(`Upload failed: ${res.status}`);
+      }
+      throw new Error(`Upload failed: ${res.status}`);
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error("Upload failed");
+      if (attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+      }
+    }
+  }
+  throw lastError!;
+}
+
 // ── Upload SDK ────────────────────────────────────────────────
 
+/** Tracks state for resumable uploads */
+export interface UploadSession {
+  compressed: PickedImage[];
+  blobs: Blob[];
+  intents: UploadIntent[];
+  results: UploadResult[];
+  /** Indices of images that failed and can be retried */
+  failedIndices: number[];
+}
+
 /**
- * Full upload flow:
+ * Full upload flow with per-image retry:
  * 1. Compress images
  * 2. Request upload intents from Edge Function
- * 3. Upload files to signed URLs
+ * 3. Upload files to signed URLs (with automatic retry on failure)
  * 4. Return intents for use in finalize-post
+ *
+ * On partial failure, returns a session that can be resumed via `retryFailedUploads`.
  */
 export async function uploadImages(
   images: PickedImage[],
   bucket: BucketName,
   onProgress?: (progress: UploadProgress) => void
-): Promise<UploadResult[]> {
+): Promise<{ results: UploadResult[]; session: UploadSession }> {
   const supabase = getSupabase();
   if (!supabase) {
     throw new Error("Supabase not configured");
@@ -216,39 +256,85 @@ export async function uploadImages(
 
   const intents: UploadIntent[] = data.intents;
 
-  // Step 5: Upload files to signed URLs
-  const results: UploadResult[] = [];
+  // Step 5: Upload files to signed URLs with per-image retry
+  const uploadSession: UploadSession = {
+    compressed,
+    blobs,
+    intents,
+    results: [],
+    failedIndices: [],
+  };
+
   for (let i = 0; i < intents.length; i++) {
     onProgress?.({ index: i, total, status: "uploading" });
 
-    const intent = intents[i];
-    const blob = blobs[i];
-
     try {
-      const uploadResponse = await fetch(intent.upload_url, {
+      const uploadResponse = await fetchWithRetry(intents[i].upload_url, {
         method: "PUT",
-        headers: {
-          "Content-Type": compressed[i].mimeType,
-        },
-        body: blob,
+        headers: { "Content-Type": compressed[i].mimeType },
+        body: blobs[i],
       });
 
-      if (!uploadResponse.ok) {
-        throw new Error(`Upload failed: ${uploadResponse.status}`);
-      }
-
-      results.push({ intent, image: compressed[i] });
+      uploadSession.results.push({ intent: intents[i], image: compressed[i] });
       onProgress?.({ index: i, total, status: "done" });
     } catch (err) {
+      uploadSession.failedIndices.push(i);
       onProgress?.({
         index: i,
         total,
         status: "error",
         error: err instanceof Error ? err.message : "Upload failed",
       });
-      throw err;
+      // Continue to next image instead of aborting
     }
   }
 
-  return results;
+  // If all failed, throw
+  if (uploadSession.results.length === 0 && images.length > 0) {
+    throw new Error("All uploads failed");
+  }
+
+  return { results: uploadSession.results, session: uploadSession };
+}
+
+/**
+ * Retry failed uploads from a previous session.
+ * Returns updated results and session.
+ */
+export async function retryFailedUploads(
+  uploadSession: UploadSession,
+  onProgress?: (progress: UploadProgress) => void
+): Promise<{ results: UploadResult[]; session: UploadSession }> {
+  const failedIndices = [...uploadSession.failedIndices];
+  const total = uploadSession.intents.length;
+  const newFailedIndices: number[] = [];
+
+  for (const i of failedIndices) {
+    onProgress?.({ index: i, total, status: "uploading" });
+
+    try {
+      await fetchWithRetry(uploadSession.intents[i].upload_url, {
+        method: "PUT",
+        headers: { "Content-Type": uploadSession.compressed[i].mimeType },
+        body: uploadSession.blobs[i],
+      });
+
+      uploadSession.results.push({
+        intent: uploadSession.intents[i],
+        image: uploadSession.compressed[i],
+      });
+      onProgress?.({ index: i, total, status: "done" });
+    } catch (err) {
+      newFailedIndices.push(i);
+      onProgress?.({
+        index: i,
+        total,
+        status: "error",
+        error: err instanceof Error ? err.message : "Upload failed",
+      });
+    }
+  }
+
+  uploadSession.failedIndices = newFailedIndices;
+  return { results: uploadSession.results, session: uploadSession };
 }

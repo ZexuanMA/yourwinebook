@@ -17,7 +17,9 @@
     "search": "Search",
     "noResults": "No results found",
     "seeAll": "See all",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "offline": "You are offline. Please check your connection.",
+    "reconnected": "Back online!"
   },
   "auth": {
     "signIn": "Sign In",

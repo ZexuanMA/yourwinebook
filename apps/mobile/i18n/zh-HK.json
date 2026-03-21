@@ -17,7 +17,9 @@
     "search": "搜尋",
     "noResults": "沒有找到結果",
     "seeAll": "查看全部",
-    "comingSoon": "即將上線"
+    "comingSoon": "即將上線",
+    "offline": "目前處於離線狀態，請檢查網路連線。",
+    "reconnected": "已恢復連線！"
   },
   "auth": {
     "signIn": "登入",
