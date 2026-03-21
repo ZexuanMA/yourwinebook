@@ -14,7 +14,12 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.yourwinebook.app"
+      "bundleIdentifier": "com.yourwinebook.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Your Wine Book needs your location to find nearby wine stores.",
+        "NSPhotoLibraryUsageDescription": "Your Wine Book needs access to your photos to add images to posts.",
+        "NSCameraUsageDescription": "Your Wine Book needs access to your camera to take photos for posts."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +28,11 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "com.yourwinebook.app"
+      "package": "com.yourwinebook.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -31,7 +40,25 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@sentry/react-native",
+      "expo-localization",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Your Wine Book needs your location to find nearby wine stores.",
+          "locationWhenInUsePermission": "Your Wine Book needs your location to find nearby wine stores."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Your Wine Book needs access to your photos to add images to posts.",
+          "cameraPermission": "Your Wine Book needs access to your camera to take photos for posts."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
