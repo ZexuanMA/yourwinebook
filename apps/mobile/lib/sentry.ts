@@ -10,6 +10,9 @@ export function initSentry() {
     tracesSampleRate: 0.1,
     environment: __DEV__ ? "development" : "production",
     enableAutoSessionTracking: true,
+    initialScope: {
+      tags: { platform: "mobile" },
+    },
   });
 }
 

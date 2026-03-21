@@ -1502,7 +1502,27 @@
   - 自检：
     - `bash scripts/verify-events.sh` → 29 个事件全部 OK ✅
   - 风险：无
-- [ ] P1C-08 Sentry 告警规则
+- [x] P1C-08 Sentry 告警规则
+  - 完成时间：2026-03-21
+  - 决策：
+    - Web 客户端（`sentry.client.config.ts`）：
+      - 添加 `initialScope.tags: { platform: "web", component: "client" }`
+      - 添加 `ignoreErrors` 过滤噪音：ResizeObserver loop / Non-Error promise rejection / chunk 加载失败
+      - 添加 `beforeSend` 钩子：丢弃来自 chrome-extension:// 的错误
+      - 启用 `replaysOnErrorSampleRate: 1.0`（错误时 100% 录制回放）
+    - Web 服务端（`sentry.server.config.ts`）：
+      - 添加 `initialScope.tags: { platform: "web", component: "server" }`
+    - Mobile（`apps/mobile/lib/sentry.ts`）：
+      - 添加 `initialScope.tags: { platform: "mobile" }`
+    - 三端统一 `tracesSampleRate: 0.1`（10% 性能采样）
+    - 告警规则建议（需在 Sentry Dashboard 配置）：
+      - P0 告警：新 issue 在 1 小时内 >10 次 → 即时通知
+      - P1 告警：error rate 较上周同期增长 >200% → 每日摘要
+      - 忽略规则：browser extension 错误、ResizeObserver、chunk 加载失败
+  - 自检：
+    - `pnpm --filter web build` ✅
+    - `npx expo export --platform web` ✅
+  - 风险：Sentry DSN 未配置时三端均优雅跳过初始化，无运行时影响
 - [ ] P1C-09 性能基线测量
 - [ ] P1C-10 合规文本
 - [ ] P1C-11 最终回归测试
