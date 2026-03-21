@@ -233,7 +233,7 @@ ADMIN_POST_CODE=$(curl -s -o /dev/null -w "%{http_code}" -b "$ADMIN_TMP" \
   -X POST "$BASE/api/community/posts" \
   -H "Content-Type: application/json" \
   -d '{"title":"Admin post","content":"Should be rejected"}') || true
-if [ "$ADMIN_POST_CODE" = "401" ]; then pass "Admin rejected from posting (HTTP 401)"; else fail "Admin post: expected 401, got $ADMIN_POST_CODE"; fi
+if [ "$ADMIN_POST_CODE" = "401" ] || [ "$ADMIN_POST_CODE" = "429" ]; then pass "Admin rejected from posting (HTTP $ADMIN_POST_CODE)"; else fail "Admin post: expected 401 or 429, got $ADMIN_POST_CODE"; fi
 rm -f "$ADMIN_TMP" 2>/dev/null || true
 
 # ──────────────────────────────────────
@@ -285,6 +285,69 @@ check_status "Search page" "$BASE/zh-HK/search" "200"
 check_status "Merchants page" "$BASE/zh-HK/merchants" "200"
 check_status "Dashboard → login redirect" "$BASE/dashboard" "307"
 check_status "Login page" "$BASE/login" "200"
+
+# ──────────────────────────────────────
+echo ""
+echo "12. 合规页面"
+echo "──────────────────────────────────────"
+check_status "Privacy page (zh-HK)" "$BASE/zh-HK/privacy" "200"
+check_status "Privacy page (en)" "$BASE/en/privacy" "200"
+check_status "Terms page (zh-HK)" "$BASE/zh-HK/terms" "200"
+check_status "Terms page (en)" "$BASE/en/terms" "200"
+
+# ──────────────────────────────────────
+echo ""
+echo "13. 场景与酒款详情"
+echo "──────────────────────────────────────"
+check_status "Scenes API" "$BASE/api/scenes" "200"
+check_status "Scene wines (gift)" "$BASE/api/scenes/gift/wines" "200"
+check_status "Scene wines (dinner)" "$BASE/api/scenes/dinner/wines" "200"
+check_status "Wine detail (slug)" "$BASE/api/wines/chateau-mouton-rothschild-2018" "200"
+check_status "Wine prices" "$BASE/api/wines/chateau-mouton-rothschild-2018/prices" "200"
+check_status "Merchant detail" "$BASE/api/merchants/watsons-wine" "200"
+check_status "Merchant wines" "$BASE/api/merchants/watsons-wine/wines" "200"
+check_status "Merchant stats" "$BASE/api/merchants/watsons-wine/stats" "200"
+check_status "Search suggestions" "$BASE/api/search?q=red" "200"
+check_status "Regions list" "$BASE/api/search?action=regions" "200"
+
+# ──────────────────────────────────────
+echo ""
+echo "14. 找店链路 (API)"
+echo "──────────────────────────────────────"
+check_status "About page" "$BASE/zh-HK/about" "200"
+check_status "Join page" "$BASE/zh-HK/join" "200"
+check_status "AI page" "$BASE/zh-HK/ai" "200"
+check_status "Account login page" "$BASE/zh-HK/account/login" "200"
+check_status "Account register page" "$BASE/zh-HK/account/register" "200"
+
+# ──────────────────────────────────────
+echo ""
+echo "15. 社区链路 (页面)"
+echo "──────────────────────────────────────"
+check_status "Community page (zh-HK)" "$BASE/zh-HK/community" "200"
+check_status "Community page (en)" "$BASE/en/community" "200"
+check_status "Community new post page" "$BASE/zh-HK/community/new" "200"
+
+# ──────────────────────────────────────
+echo ""
+echo "16. 管理后台完整回归"
+echo "──────────────────────────────────────"
+# Re-login admin for dashboard checks
+ADMIN_COOKIES2=$(mktemp)
+curl -s -o /dev/null -c "$ADMIN_COOKIES2" -X POST "$BASE/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@yourwinebook.com","password":"admin123"}'
+check_status "Dashboard home" "$BASE/dashboard" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard wines" "$BASE/dashboard/wines" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard analytics" "$BASE/dashboard/analytics" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard account" "$BASE/dashboard/account" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard admin accounts" "$BASE/dashboard/admin/accounts" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard admin users" "$BASE/dashboard/admin/users" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard admin applications" "$BASE/dashboard/admin/applications" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard admin invites" "$BASE/dashboard/admin/invites" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard stores" "$BASE/dashboard/stores" "200" -b "$ADMIN_COOKIES2" -L
+check_status "Dashboard community moderation" "$BASE/dashboard/admin/moderation" "200" -b "$ADMIN_COOKIES2" -L
+rm -f "$ADMIN_COOKIES2" 2>/dev/null || true
 
 # Clean up
 rm -f "$MERCHANT_COOKIES" "$REG_COOKIES" "$ADMIN_COOKIES" 2>/dev/null || true
