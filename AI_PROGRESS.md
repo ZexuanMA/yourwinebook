@@ -1488,7 +1488,20 @@
 - Git push：❌ 凭据缺失（已知问题）
 - 结论：过期上传清理、邀请码机制、灰度分发配置均未影响线上功能
 
-- [ ] P1C-07 埋点校验
+- [x] P1C-07 埋点校验
+  - 完成时间：2026-03-21
+  - 决策：
+    - 新建 `scripts/verify-events.sh`：自动化埋点校验脚本
+    - 校验结果：29 个已定义事件全部在代码中正确引用
+      - 找店漏斗 9 个事件：全部 OK
+      - 社区漏斗 17 个事件：全部 OK
+      - 认证事件 3 个：全部 OK
+    - 所有事件使用 `@ywb/domain/analytics.ts` 中的常量引用，无硬编码字符串
+    - PostHog 端需配置 `EXPO_PUBLIC_POSTHOG_KEY` / `NEXT_PUBLIC_POSTHOG_KEY` 后即可在 dashboard 查看
+    - identifyUser/resetUser 已在 AuthProvider 中集成
+  - 自检：
+    - `bash scripts/verify-events.sh` → 29 个事件全部 OK ✅
+  - 风险：无
 - [ ] P1C-08 Sentry 告警规则
 - [ ] P1C-09 性能基线测量
 - [ ] P1C-10 合规文本
