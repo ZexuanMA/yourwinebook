@@ -1454,7 +1454,26 @@
   - 自检：
     - `pnpm --filter web build` ✅（含 /dashboard/admin/invites 路由）
   - 风险：需部署 Supabase 迁移后才能实际使用
-- [ ] P1C-06 灰度分发配置
+- [x] P1C-06 灰度分发配置
+  - 完成时间：2026-03-21
+  - 决策：
+    - 增强 `eas.json`：
+      - 三个构建通道：development / preview / production
+      - 每个通道独立 `APP_VARIANT` 环境变量
+      - submit 配置预留 iOS/Android 商店信息
+    - 新建 `hooks/useOTAUpdate.ts`：EAS Update OTA 更新检查器
+      - 非开发模式自动检查更新
+      - 有更新时先下载，完成后弹窗询问是否重启
+      - 用户可选择稍后重启
+      - 开发模式（`__DEV__`）和 Expo Go 自动跳过
+    - Root layout 集成：启动时自动检查 OTA 更新
+    - 灰度策略：通过 EAS channel 控制分发范围
+      - `preview` 通道 → 内部测试（internal distribution）
+      - `production` 通道 → 正式发布
+      - OTA 更新按 channel 隔离，preview 更新不影响 production 用户
+  - 自检：
+    - `npx expo export --platform web` ✅（15 页面导出）
+  - 风险：实际 OTA 发布需 EAS 账号权限
 - [ ] P1C-07 埋点校验
 - [ ] P1C-08 Sentry 告警规则
 - [ ] P1C-09 性能基线测量

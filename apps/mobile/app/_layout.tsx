@@ -7,6 +7,7 @@ import "../i18n";
 import { initSentry } from "../lib/sentry";
 import { QueryProvider } from "../providers/QueryProvider";
 import { AuthProvider } from "../providers/AuthProvider";
+import { useOTAUpdate } from "../hooks/useOTAUpdate";
 
 initSentry();
 
@@ -32,6 +33,9 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  // Check for OTA updates on app start
+  useOTAUpdate();
 
   if (!loaded) {
     return null;
