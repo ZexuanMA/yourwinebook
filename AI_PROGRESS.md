@@ -1371,7 +1371,34 @@
     - `npx expo export --platform web` ✅（15 页面导出）
     - `pnpm --filter web build` ✅
   - 风险：无
-- [ ] P1C-03 频率限制全面部署
+- [x] P1C-03 频率限制全面部署
+  - 完成时间：2026-03-21
+  - 决策：
+    - 新建 `lib/rate-limit.ts`：通用内存滑动窗口限流器
+      - `checkRateLimit(key, config)` — 检查是否允许请求
+      - `getClientIp(request)` — 从 X-Forwarded-For 提取 IP
+      - 自动清理过期条目（每 5 分钟）
+    - 7 个预设配置：
+      - AUTH: 10 次/15 分钟（登入）
+      - REGISTER: 5 次/小时（注册）
+      - POST_CREATE: 5 次/10 分钟（发帖）
+      - COMMENT: 20 次/5 分钟（评论）
+      - LIKE: 60 次/分钟（点赞）
+      - APPLICATION: 3 次/小时（酒商申请）
+      - TRACK: 120 次/分钟（埋点，超限静默丢弃不返回 429）
+    - 已集成到 8 个 API 路由：
+      - `/api/user/auth/login` — AUTH_RATE_LIMIT
+      - `/api/user/auth/register` — REGISTER_RATE_LIMIT
+      - `/api/auth/login` — AUTH_RATE_LIMIT
+      - `/api/community/posts` POST — POST_CREATE_RATE_LIMIT
+      - `/api/community/posts/[id]/comments` POST — COMMENT_RATE_LIMIT
+      - `/api/community/posts/[id]/like` POST — LIKE_RATE_LIMIT
+      - `/api/merchant-applications` POST — APPLICATION_RATE_LIMIT
+      - `/api/track` POST — TRACK_RATE_LIMIT
+    - Edge Function 端已有独立限流（create-upload-intent: 30/小时，create-comment: 10/分钟）
+  - 自检：
+    - `pnpm --filter web build` ✅
+  - 风险：内存限流在多进程部署时不共享（单进程 PM2 场景下无影响）
 - [ ] P1C-04 过期上传清理
 - [ ] P1C-05 邀请码机制
 - [ ] P1C-06 灰度分发配置

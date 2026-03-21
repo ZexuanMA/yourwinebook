@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAllPosts, createPost } from "@/lib/community-store";
 import { getUserById } from "@/lib/user-store";
 import { getMerchantBySlug } from "@/lib/merchant-store";
+import { checkRateLimit, getClientIp, POST_CREATE_RATE_LIMIT } from "@/lib/rate-limit";
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl;
@@ -17,6 +18,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`post-create:${ip}`, POST_CREATE_RATE_LIMIT);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many posts. Please wait." }, { status: 429 });
+  }
+
   // Check user or merchant session
   const userId = request.cookies.get("wb_user_session")?.value;
   const merchantSlug = request.cookies.get("wb_session")?.value;

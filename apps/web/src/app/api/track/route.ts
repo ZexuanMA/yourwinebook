@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { trackEvent, TrackEvent } from "@/lib/analytics-store";
+import { checkRateLimit, getClientIp, TRACK_RATE_LIMIT } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`track:${ip}`, TRACK_RATE_LIMIT);
+  if (!rl.allowed) {
+    return NextResponse.json({ ok: true }); // Silently drop, don't expose 429
+  }
+
   try {
     const body = await request.json() as Partial<TrackEvent>;
     if (!body.type || !body.sessionId) {

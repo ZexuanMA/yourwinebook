@@ -4,8 +4,15 @@ import {
   USE_SUPABASE_AUTH,
   supabaseSignIn,
 } from "@/lib/supabase-auth";
+import { checkRateLimit, getClientIp, AUTH_RATE_LIMIT } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`admin-login:${ip}`, AUTH_RATE_LIMIT);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
+  }
+
   const { email, password } = await request.json();
 
   // ── Supabase Auth path ──

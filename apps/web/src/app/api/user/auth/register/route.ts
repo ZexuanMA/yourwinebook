@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerUser } from "@/lib/user-store";
 import { USE_SUPABASE_AUTH, supabaseSignUp } from "@/lib/supabase-auth";
+import { checkRateLimit, getClientIp, REGISTER_RATE_LIMIT } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  const rl = checkRateLimit(`register:${ip}`, REGISTER_RATE_LIMIT);
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
+  }
+
   const { name, email, password } = await request.json();
 
   if (!name || !email || !password) {
