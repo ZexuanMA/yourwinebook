@@ -7,7 +7,7 @@ import { Eye, EyeOff, CheckCircle } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "", inviteCode: "" });
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/user/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password, inviteCode: form.inviteCode || undefined }),
       });
       if (!res.ok) { setError((await res.json()).error ?? "注冊失敗"); return; }
       router.push("/account");
@@ -94,6 +94,11 @@ export default function RegisterPage() {
                   <CheckCircle className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />
                 )}
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-text mb-1.5">邀請碼 <span className="text-text-sub font-normal">(如有)</span></label>
+              <input type="text" value={form.inviteCode} onChange={(e) => set("inviteCode", e.target.value.toUpperCase())}
+                placeholder="XXXXXXXX" maxLength={8} className={`${inputCls} uppercase tracking-widest font-mono`} />
             </div>
             {error && <p className="text-sm text-wine bg-red-light px-4 py-2.5 rounded-xl">⚠ {error}</p>}
             <button type="submit" disabled={loading}

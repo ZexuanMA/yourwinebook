@@ -1431,7 +1431,29 @@
     - Edge Function 代码结构完整 ✅
     - 脚本可执行 ✅
   - 风险：需部署 Edge Function 到 Supabase 后才能实际运行
-- [ ] P1C-05 邀请码机制
+- [x] P1C-05 邀请码机制
+  - 完成时间：2026-03-21
+  - 决策：
+    - 新增 `008_invite_codes.sql` 迁移：invite_codes 表（code/created_by/used_by/expires_at）+ RLS
+    - Admin API（`/api/admin/invite-codes`）：
+      - GET — 列出所有邀请码（最新 100 条）
+      - POST — 批量生成邀请码（最多 20 个/次，默认 30 天过期）
+      - 8 位大写字母数字码（排除易混淆字符 0OI1L）
+    - 验证 API（`/api/invite-code?code=XXXX`）：检查码是否有效、未使用、未过期
+    - 注册 API 更新：
+      - `REQUIRE_INVITE_CODE=true` 环境变量控制是否强制邀请码
+      - 注册成功后自动标记码为已使用（写入 used_by + used_at）
+      - 未启用邀请码时，注册流程不受影响
+    - 注册页面新增邀请码输入字段（大写字母+数字，mono 字体）
+    - Admin Dashboard 新增「邀請碼」管理页面：
+      - 统计卡（总数/可用/已使用）
+      - 批量生成（1/3/5/10/20）
+      - 可用码列表（点击复制）
+      - 已使用码列表（删除线 + 使用日期）
+    - 侧边栏新增「邀請碼」入口（Ticket 图标）
+  - 自检：
+    - `pnpm --filter web build` ✅（含 /dashboard/admin/invites 路由）
+  - 风险：需部署 Supabase 迁移后才能实际使用
 - [ ] P1C-06 灰度分发配置
 - [ ] P1C-07 埋点校验
 - [ ] P1C-08 Sentry 告警规则
