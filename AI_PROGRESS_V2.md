@@ -314,6 +314,28 @@
     - `api/admin-auth.test.ts` — 3 个测试：无 session 401 / 商户 session 401 / admin session 200
   - 自检：
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 部署检查点：
+    - `npm run build` ✅ 生产构建通过
+    - `git push` ❌ Git token 已过期，无法推送远程。需要用户更新 GitHub token 后重试。
+    - 本地验证全部通过，代码已就绪待推送。
+
+- [x] P2C-04 Playwright E2E 测试
+  - 完成时间：2026-03-25
+  - 决策：
+    - 安装 @playwright/test + Chromium headless
+    - playwright.config.ts 支持 PLAYWRIGHT_BASE_URL 环境变量指定测试目标
+    - 默认启动 dev server 在 3001，也可指向生产 3000
+    - 6 个 E2E 测试文件覆盖 17 个场景
+  - 输出物：
+    - `apps/web/playwright.config.ts`
+    - `apps/web/e2e/homepage.spec.ts` — 6 个测试：标题/搜索框/场景卡/酒款/语言切换/AI 入口
+    - `apps/web/e2e/search.spec.ts` — 3 个测试：页面加载/输入框/酒款卡片
+    - `apps/web/e2e/wine-detail.spec.ts` — 1 个测试：搜索→酒款详情导航
+    - `apps/web/e2e/merchants.spec.ts` — 2 个测试：列表加载/详情导航
+    - `apps/web/e2e/scenes.spec.ts` — 2 个测试：页面加载/4 个场景全部 200
+    - `apps/web/e2e/dashboard-login.spec.ts` — 3 个测试：页面加载/错误凭证/成功登入跳转
+  - 自检：
+    - `PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test` → 17 tests passed ✅
 
 ---
 
