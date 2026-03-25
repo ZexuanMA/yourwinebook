@@ -7,11 +7,13 @@
 ## 一、快速啟動
 
 ```bash
-npm run dev          # 開發模式 → http://localhost:3000/zh-HK
+npm run dev          # 開發模式 → http://localhost:3001/zh-HK
 npm run build        # 生產構建
-npm run start        # 生產服務
+npm run deploy       # 生產部署（build + pm2 restart wine-prod）
 npm run lint         # ESLint 檢查
 ```
+
+> 生產由 PM2 托管在 port 3000，開發固定在 3001，互不干擾。不要 `pm2 delete wine-prod`，只 `restart`。
 
 無需配置任何環境變量即可運行（默認使用 mock 數據）。
 
@@ -475,9 +477,14 @@ import "../globals.css";
 ├── /merchants                  酒商列表
 ├── /merchants/[slug]           酒商詳情
 ├── /scenes/[slug]              場景推薦
-├── /ai                         AI 選酒助手（Demo）
+├── /ai                         AI 選酒助手（V2 升級目標）
 ├── /about                      關於我們
 ├── /join                       酒商入駐申請
+├── /privacy                    私隱政策
+├── /terms                      使用條款
+├── /community                  社區帖子列表
+├── /community/new              發新帖
+├── /community/[id]             帖子詳情
 ├── /account                    用戶個人主頁
 ├── /account/login              用戶登入
 └── /account/register           用戶注冊
@@ -486,23 +493,52 @@ import "../globals.css";
 ├── /login                      酒商/管理員登入
 ├── /dashboard                  後台首頁
 ├── /dashboard/wines            酒款管理
-├── /dashboard/wines/new        新增酒款
+├── /dashboard/wines/new        新增酒款（目前 Demo 模式）
+├── /dashboard/stores           門店管理
 ├── /dashboard/analytics        流量分析
 ├── /dashboard/account          帳號設置
+├── /dashboard/community        社區管理（酒商官方發帖）
 ├── /dashboard/admin/accounts   酒商帳號管理（管理員）
 ├── /dashboard/admin/users      用戶管理（管理員）
-└── /dashboard/admin/applications 入駐申請（管理員）
+├── /dashboard/admin/applications 入駐申請（管理員）
+├── /dashboard/admin/invites    邀請碼管理（管理員）
+└── /dashboard/admin/moderation 審核管理（管理員）
 ```
 
 ---
 
 ## 十三、開發階段記錄
 
+### 早期階段（Web 原型）
+
 | 階段 | 內容 | 狀態 |
 |------|------|------|
 | Phase 1 | 靜態 HTML → Next.js 遷移，7 個頁面 + 雙語 | 已完成 |
 | Phase 2 | Supabase 數據層 + Mock fallback，32 酒款/6 酒商 | 已完成 |
 | Phase 3 | 搜索 + 多維篩選 + 排序 + 分頁 | 已完成 |
-| Phase 4 | AI 酒顧問（Claude API + tool use） | 待開發 |
 | Phase 5A | 酒商後台（登入 + 酒款管理 + 帳號管理 + Admin + 分析） | 已完成 |
-| Phase 5B | CSV 批量導入、用戶系統完善 | 部分完成 |
+
+### MVP 階段（Monorepo + Mobile + Supabase 底座）
+
+> 詳細記錄見 `past_md/codex-MVP.md`（規劃）和 `past_md/AI_PROGRESS.md`（進度）
+
+| 階段 | 內容 | 狀態 |
+|------|------|------|
+| Phase 0a | Monorepo + Expo + 共享包 + Schema + RLS | 已完成 |
+| Phase 0b | 上傳鏈路 + 審核後台 + 種子數據 + Web 數據層遷移 | 已完成 |
+| Phase 1A | 找店 MVP 閉環（定位→門店→收藏→導航） | 已完成 |
+| Phase 1B | 社區 MVP 閉環（Feed→發帖→互動→舉報） | 已完成 |
+| Phase 1C | 加固、灰度、觀測、合規（87/87 測試通過） | 已完成 |
+
+### V2 升級階段（當前）
+
+> 執行文檔：`codex-V2.md`
+
+| 階段 | 內容 | 狀態 |
+|------|------|------|
+| Phase 2A | AI 選酒助手（Claude API + tool use） | 待開發 |
+| Phase 2B | Mobile 補完（Profile + 登入 + 酒款標注） | 待開發 |
+| Phase 2C | 測試與質量基建（Vitest + Playwright + CI） | 待開發 |
+| Phase 2D | 後台酒款管理閉環（CRUD + CSV 導入） | 待開發 |
+| Phase 2E | UX 與錯誤處理（404 + Error + 響應式） | 待開發 |
+| Phase 2F | 增長與留存（推送通知 + 關注 Feed + SEO） | 待開發 |
