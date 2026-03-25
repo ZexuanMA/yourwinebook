@@ -33,6 +33,8 @@ import UploadProgressBar, {
 } from "../../components/UploadProgressBar";
 import { loadDraft, clearDraft, useAutoSaveDraft } from "../../hooks/useDraft";
 import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import WineSearchPicker from "../../components/WineSearchPicker";
+import TagInput from "../../components/TagInput";
 
 const MAX_IMAGES = 9;
 const MAX_CONTENT = 2000;
@@ -50,6 +52,8 @@ export default function CreatePostScreen() {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [uploadItems, setUploadItems] = useState<UploadItem[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [selectedWines, setSelectedWines] = useState<{ slug: string; name: string; emoji: string }[]>([]);
   const [draftRestored, setDraftRestored] = useState(false);
   const [lastUploadSession, setLastUploadSession] = useState<UploadSession | null>(null);
 
@@ -172,14 +176,14 @@ export default function CreatePostScreen() {
         body: {
           content: trimmedContent,
           title: title.trim() || undefined,
-          tags: [], // TODO: tag input UI
+          tags,
           rating: rating ?? undefined,
           media: uploadResults.map((r) => ({
             upload_id: r.intent.id,
             width: r.image.width,
             height: r.image.height,
           })),
-          product_ids: [], // TODO: wine search UI
+          product_ids: selectedWines.map((w) => w.slug),
           is_official: false, // TODO: official toggle for merchant staff
         },
       });
@@ -197,6 +201,8 @@ export default function CreatePostScreen() {
       setContent("");
       setTitle("");
       setRating(null);
+      setTags([]);
+      setSelectedWines([]);
       setImages([]);
       setUploadItems([]);
       setDraftRestored(false);
@@ -280,6 +286,8 @@ export default function CreatePostScreen() {
       setContent("");
       setTitle("");
       setRating(null);
+      setTags([]);
+      setSelectedWines([]);
       setImages([]);
       setUploadItems([]);
       setDraftRestored(false);
@@ -364,6 +372,24 @@ export default function CreatePostScreen() {
               </Pressable>
             ))}
           </View>
+        </View>
+
+        {/* Tags */}
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionLabel}>{t("create.tagWine")}</Text>
+          <TagInput selected={tags} onChange={setTags} maxTags={5} />
+        </View>
+
+        {/* Wine tagging */}
+        <View style={styles.sectionWrap}>
+          <Text style={styles.sectionLabel}>
+            {i18n.language.startsWith("zh") ? "關聯酒款" : "Tag Wines"}
+          </Text>
+          <WineSearchPicker
+            selected={selectedWines}
+            onChange={setSelectedWines}
+            maxItems={10}
+          />
         </View>
 
         {/* Image thumbnails */}
@@ -556,6 +582,18 @@ const styles = StyleSheet.create({
   starText: {
     fontSize: 24,
     color: "#B8956A",
+  },
+  sectionWrap: {
+    marginBottom: 16,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#E5E5E5",
+  },
+  sectionLabel: {
+    fontSize: 14,
+    color: "#6B6560",
+    marginBottom: 8,
+    fontWeight: "500",
   },
   imageScroll: {
     marginBottom: 12,

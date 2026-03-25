@@ -90,7 +90,7 @@ export default function ProfileScreen() {
         <Text style={styles.centerEmoji}>👤</Text>
         <Text style={styles.centerTitle}>{t("auth.notLoggedIn")}</Text>
         <Text style={styles.centerSubtitle}>{t("auth.loginPrompt")}</Text>
-        <Pressable style={styles.loginBtn} onPress={() => router.push("/invite/login")}>
+        <Pressable style={styles.loginBtn} onPress={() => router.push("/auth/login")}>
           <Text style={styles.loginBtnText}>{t("auth.signIn")}</Text>
         </Pressable>
       </View>
@@ -125,6 +125,13 @@ export default function ProfileScreen() {
         <Text style={styles.displayName}>{profile?.display_name ?? ""}</Text>
         <Text style={styles.email}>{profile?.email ?? ""}</Text>
 
+        <Pressable
+          style={styles.editProfileBtn}
+          onPress={() => router.push("/edit-profile")}
+        >
+          <Text style={styles.editProfileBtnText}>{t("profile.editProfile")}</Text>
+        </Pressable>
+
         {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
@@ -149,22 +156,22 @@ export default function ProfileScreen() {
         <MenuItem
           label={t("profile.myPosts")}
           icon="📝"
-          onPress={() => {/* TODO: P1B-15 user page */}}
+          onPress={() => router.push("/my-posts")}
         />
         <MenuItem
           label={t("profile.bookmarks")}
           icon="🔖"
-          onPress={() => {/* TODO: bookmarks list */}}
+          onPress={() => router.push("/bookmarks")}
         />
         <MenuItem
           label={isZh ? "黑名單" : "Blocked Users"}
           icon="🚫"
-          onPress={() => {/* TODO: block list management */}}
+          onPress={() => router.push("/settings")}
         />
         <MenuItem
           label={t("profile.settings")}
           icon="⚙️"
-          onPress={() => {/* TODO: P1B-17 settings */}}
+          onPress={() => router.push("/settings")}
         />
       </View>
 
@@ -267,6 +274,19 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#9CA3AF",
     marginTop: 2,
+  },
+  editProfileBtn: {
+    marginTop: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#5B2E35",
+    borderRadius: 8,
+  },
+  editProfileBtnText: {
+    fontSize: 13,
+    color: "#5B2E35",
+    fontWeight: "500",
   },
   statsRow: {
     flexDirection: "row",
