@@ -337,6 +337,17 @@
   - 自检：
     - `PLAYWRIGHT_BASE_URL=http://localhost:3000 npx playwright test` → 17 tests passed ✅
 
+- [x] P2C-05 CI 集成测试步骤
+  - 完成时间：2026-03-25
+  - 决策：
+    - 新增 `test` job：运行 Vitest 单元 + API 集成测试
+    - `build-web` job 新增 `needs: [lint-and-typecheck, test]`，测试不通过则不构建
+    - E2E 测试暂不加入 CI（需要 dev server + Playwright deps），留作本地/staging 手动运行
+  - 输出物：
+    - 更新后的 `.github/workflows/ci.yml`
+  - 自检：
+    - CI 流水线：lint → test → build（test 失败阻止 build）✅
+
 ---
 
 ## Phase 2D — 后台酒款管理闭环
