@@ -269,6 +269,16 @@
   - 自检：
     - `pnpm --filter web test` → 6 files, 60 tests passed ✅
 
+- [x] P2C-02b 数据层 + Domain 包单元测试
+  - 完成时间：2026-03-25
+  - 输出物：
+    - `queries.test.ts` — 21 个测试：getWinesPaginated（筛选/排序/分页）/ getWineBySlug / getFeaturedWines / getSimilarWines / getMerchants / getScenes / getRegions / getSearchSuggestions / getPartners
+    - `domain/media.test.ts` — 15 个测试：validateFiles 全场景 + BUCKET_CONFIGS + POST_LIMITS + COMPRESSION_TARGETS
+    - `domain/business-hours.test.ts` — 10 个测试：getBusinessStatus 正常/关闭/即将关闭/跨日/无数据
+    - `domain/districts.test.ts` — 5 个测试：数据完整性 + 坐标范围 + slug 唯一性
+  - 自检：
+    - `pnpm --filter web test` → 10 files, 111 tests passed ✅
+
 ---
 
 ## Phase 2D — 后台酒款管理闭环
