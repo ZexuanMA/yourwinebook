@@ -244,7 +244,21 @@
 
 ## Phase 2C — 测试与质量基建
 
-（待开发）
+- [x] P2C-01 Vitest 基础设施
+  - 完成时间：2026-03-25
+  - 决策：
+    - 沿用已有配置：`vitest.config.ts` + `setup.ts` + path alias `@/`
+    - 已安装 vitest 4.1.1 + @testing-library/react + jsdom
+    - 已有 3 个测试文件（utils / password / display-name），27 个测试全部通过
+    - package.json 已配置 `test` / `test:watch` / `test:coverage` 脚本
+    - 覆盖率使用 v8 provider，reporter 为 text + lcov
+  - 输出物：
+    - `apps/web/vitest.config.ts`（已存在）
+    - `apps/web/src/__tests__/setup.ts`（已存在）
+    - 3 个测试文件：utils.test.ts / password.test.ts / display-name.test.ts
+  - 自检：
+    - `pnpm --filter web test` → 3 files, 27 tests passed ✅
+  - 风险：无
 
 ---
 
