@@ -279,6 +279,26 @@
   - 自检：
     - `pnpm --filter web test` → 10 files, 111 tests passed ✅
 
+- [x] P2C-02c 数据完整性 + AI 工具 + 分析数据测试
+  - 完成时间：2026-03-25
+  - 输出物：
+    - `ai-tools.test.ts` — 10 个测试：5 个 tool 定义验证 + system prompt 中英文 + 常量默认值
+    - `mock-data.test.ts` — 16 个测试：wines/merchants/scenes/winePrices/partners 数据完整性、slug 唯一性、类型一致性
+    - `mock-analytics.test.ts` — 8 个测试：dailyStats 30 天 / topPages / topWines / summaryStats / trafficSources + deviceBreakdown 百分比求和
+    - `domain/analytics.test.ts` — 4 个测试：STORE_EVENTS / COMMUNITY_EVENTS / AUTH_EVENTS / EVENT_TYPES
+    - `domain/wine-types.test.ts` — 5 个测试：WINE_TYPES / MERCHANT_STATUSES / APPLICATION_STATUSES / USER_STATUSES / LOCALES
+  - 自检：
+    - `pnpm --filter web test` → 15 files, 158 tests passed ✅
+
+### P2C-02 总结
+
+| 指标 | 结果 |
+|------|------|
+| 测试文件 | 15 个（3 个已有 + 12 个新增） |
+| 测试用例 | 158 个（27 个已有 + 131 个新增） |
+| 覆盖范围 | locale-helpers / dashboard-i18n / rate-limit / queries / mock-data / mock-analytics / ai-tools / password / display-name / utils + domain (media / business-hours / districts / analytics / wine-types) |
+| 全部通过 | ✅ |
+
 ---
 
 ## Phase 2D — 后台酒款管理闭环
