@@ -299,6 +299,22 @@
 | 覆盖范围 | locale-helpers / dashboard-i18n / rate-limit / queries / mock-data / mock-analytics / ai-tools / password / display-name / utils + domain (media / business-hours / districts / analytics / wine-types) |
 | 全部通过 | ✅ |
 
+- [x] P2C-03 API 路由集成测试
+  - 完成时间：2026-03-25
+  - 决策：
+    - 直接导入 route handler 函数，用 NextRequest 构造请求对象
+    - Mock supabase 返回 null 强制走 mock 数据路径
+    - Mock next/headers cookies 模拟不同登入状态
+  - 输出物：
+    - `api/wines.test.ts` — 6 个测试：列表/筛选/排序/分页
+    - `api/merchants.test.ts` — 2 个测试：列表 + 字段完整性
+    - `api/scenes.test.ts` — 2 个测试：列表 + 字段完整性
+    - `api/search.test.ts` — 4 个测试：regions / suggestions / 短查询 / 空查询
+    - `api/auth.test.ts` — 5 个测试：错误凭证 401 / 商户登入 200+cookie / me 无 session 401 / me 有 session 200 / me 无效 session 401
+    - `api/admin-auth.test.ts` — 3 个测试：无 session 401 / 商户 session 401 / admin session 200
+  - 自检：
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+
 ---
 
 ## Phase 2D — 后台酒款管理闭环
