@@ -260,6 +260,15 @@
     - `pnpm --filter web test` → 3 files, 27 tests passed ✅
   - 风险：无
 
+- [x] P2C-02a 纯函数单元测试（locale-helpers / dashboard-i18n / rate-limit）
+  - 完成时间：2026-03-25
+  - 输出物：
+    - `locale-helpers.test.ts` — 16 个测试：toWineCard / getMerchantLocale / getSceneLocale / getTastingNotes / getRegionStory / getFullRegion / formatMerchantPrices
+    - `dashboard-i18n.test.ts` — 8 个测试：t() / tf() 的语言切换、fallback、参数替换
+    - `rate-limit.test.ts` — 8 个测试：限流允许/拒绝/窗口过期/多 key 隔离 + getClientIp
+  - 自检：
+    - `pnpm --filter web test` → 6 files, 60 tests passed ✅
+
 ---
 
 ## Phase 2D — 后台酒款管理闭环
