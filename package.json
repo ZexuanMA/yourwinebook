@@ -6,7 +6,9 @@
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
     "lint": "pnpm --filter web lint",
+    "test": "pnpm --filter web test",
     "deploy": "pnpm --filter web build && pm2 restart wine-prod",
+    "deploy:staging": "pnpm --filter web build && pm2 startOrRestart ecosystem.staging.config.js",
     "start": "echo 'Use pm2 restart wine-prod instead' && exit 1"
   },
   "pnpm": {

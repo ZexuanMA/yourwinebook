@@ -348,6 +348,37 @@
   - 自检：
     - CI 流水线：lint → test → build（test 失败阻止 build）✅
 
+- [x] P2C-06 Staging 环境
+  - 完成时间：2026-03-25
+  - 决策：
+    - 新增 `ecosystem.staging.config.js`：PM2 进程 `wine-staging`，端口 3002
+    - 新增 `npm run deploy:staging` 脚本：build + pm2 startOrRestart
+    - 新增 `nginx/staging.conf`：staging.yourwinebook.com → localhost:3002
+    - DNS + SSL 需要用户手动配置（A 记录 + certbot）
+  - 输出物：
+    - `ecosystem.staging.config.js`
+    - `nginx/staging.conf`
+    - 更新后的 `package.json`（新增 deploy:staging 脚本）
+  - 自检：
+    - `pm2 startOrRestart ecosystem.staging.config.js` → wine-staging online ✅
+    - `curl http://localhost:3002/zh-HK` → 200 ✅
+  - 待用户操作：
+    - DNS 添加 A 记录 staging.yourwinebook.com
+    - `sudo cp nginx/staging.conf /etc/nginx/sites-enabled/staging`
+    - `sudo certbot --nginx -d staging.yourwinebook.com`
+    - `sudo nginx -t && sudo nginx -s reload`
+
+### Phase 2C 总结
+
+| 指标 | 结果 |
+|------|------|
+| Vitest 测试文件 | 21 个 |
+| Vitest 测试用例 | 180 个 |
+| Playwright E2E 场景 | 17 个 |
+| CI pipeline | lint → test → build（红灯阻止构建） |
+| Staging 环境 | PM2 wine-staging:3002 在线运行 |
+| 全部通过 | ✅ |
+
 ---
 
 ## Phase 2D — 后台酒款管理闭环
