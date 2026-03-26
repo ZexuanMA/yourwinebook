@@ -708,3 +708,25 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
   - 风险：无
+
+- [x] P2F-05 SEO 基础优化
+  - 完成时间：2026-03-26
+  - 决策：
+    - **robots.txt**：允许 `/`，禁止 `/api/`、`/dashboard/`、`/login`
+    - **sitemap.xml**：动态生成，覆盖双语（zh-HK + en）：
+      - 静态页 11 个 × 2 语言 = 22 条
+      - 动态酒款页（wine-store 获取所有 slug）
+      - 动态酒商页（queries.ts 获取 6 家酒商 slug）
+      - 动态场景页（4 个场景 slug）
+    - **酒商详情页 OG 增强**：重构为 Server Component + generateMetadata + MerchantDetailClient
+    - **全局 layout metadata 增强**：title template + OG defaults + Twitter card
+  - 输出物：
+    - `src/app/robots.ts`（新建）
+    - `src/app/sitemap.ts`（新建）
+    - `merchants/[slug]/page.tsx`（重写）
+    - `merchants/[slug]/MerchantDetailClient.tsx`（新建）
+    - `[locale]/layout.tsx`（metadata 增强）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 风险：无

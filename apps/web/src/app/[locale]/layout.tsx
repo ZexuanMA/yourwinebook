@@ -9,8 +9,20 @@ import { PageTracker } from "@/components/analytics/PageTracker";
 import { PostHogProvider } from "@/components/analytics/PostHogProvider";
 
 export const metadata: Metadata = {
-  title: "Your Wine Book — Drink smarter. Discover more.",
+  title: {
+    default: "Your Wine Book — Drink smarter. Discover more.",
+    template: "%s",
+  },
   description: "在香港，輕鬆喝對每一支。比價、推薦、一步到位。",
+  openGraph: {
+    type: "website",
+    siteName: "Your Wine Book",
+    title: "Your Wine Book — Drink smarter. Discover more.",
+    description: "在香港，輕鬆喝對每一支。比價、推薦、一步到位。",
+  },
+  twitter: {
+    card: "summary",
+  },
 };
 
 export default async function LocaleLayout({
