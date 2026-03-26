@@ -680,4 +680,31 @@
 
 ## Phase 2F — 增长与留存
 
-（待开发）
+> 注：P2F-01（推送通知基础设施）和 P2F-02（互动推送触发）需要 Expo + Supabase 真实环境，暂跳过。
+> P2F-03（关注 Feed）需要 Supabase RPC，暂跳过。
+> 优先完成 Web 端可独立实现的 P2F-04、P2F-05。
+
+- [x] P2F-04 收藏分享 + OG Meta Tags
+  - 完成时间：2026-03-26
+  - 决策：
+    - **酒款详情页重构为 Server Component**：
+      - `page.tsx` 导出 `generateMetadata`（server-side），渲染 `WineDetailLoader`（client）
+      - OG tags：og:title（酒名+年份）、og:description（产区+价格范围）、og:type=article
+      - Twitter card: summary
+    - **社区帖子详情页同理**：
+      - `page.tsx` → `generateMetadata` + `PostDetailClient`
+      - OG tags：帖子标题 + 内容前 160 字
+    - **Share 按钮**：
+      - 酒款详情页：Share2 图标按钮，置于标题右侧（与收藏按钮并排）
+      - 帖子详情页：Share2 图标按钮，置于作者头像行右侧
+      - 优先使用 Web Share API（`navigator.share`），fallback 复制链接到剪贴板
+  - 输出物：
+    - `wines/[slug]/page.tsx`（重写为 Server Component + generateMetadata）
+    - `wines/[slug]/WineDetailLoader.tsx`（新建，client-side data fetch）
+    - `wines/[slug]/WineDetailClient.tsx`（新增 Share 按钮）
+    - `community/[id]/page.tsx`（重写为 Server Component + generateMetadata）
+    - `community/[id]/PostDetailClient.tsx`（新建，原 page 逻辑 + Share 按钮）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 风险：无

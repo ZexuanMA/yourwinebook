@@ -1,36 +1,44 @@
-"use client";
+import type { Metadata } from "next";
+import { getWineBySlug } from "@/lib/queries";
+import WineDetailLoader from "./WineDetailLoader";
 
-import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
-import type { Wine, MerchantPrice } from "@/lib/mock-data";
-import WineDetailClient from "./WineDetailClient";
+interface PageProps {
+  params: Promise<{ slug: string; locale: string }>;
+}
 
-export default function WineDetailPage() {
-  const params = useParams();
-  const slug = params.slug as string;
-  const [wine, setWine] = useState<Wine | null>(null);
-  const [prices, setPrices] = useState<MerchantPrice[]>([]);
-  const [similarWines, setSimilarWines] = useState<Wine[]>([]);
-
-  useEffect(() => {
-    fetch(`/api/wines/${slug}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((w) => {
-        if (!w) return;
-        setWine(w);
-        // Fetch similar wines by same type
-        fetch(`/api/wines?type=${w.type}&limit=4`)
-          .then((r) => (r.ok ? r.json() : { wines: [] }))
-          .then((d) => setSimilarWines(d.wines.filter((sw: Wine) => sw.slug !== slug).slice(0, 3)));
-      });
-    fetch(`/api/wines/${slug}/prices`)
-      .then((r) => (r.ok ? r.json() : []))
-      .then(setPrices);
-  }, [slug]);
-
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, locale } = await params;
+  const wine = await getWineBySlug(slug);
   if (!wine) {
-    return <div className="max-w-[1120px] mx-auto px-6 pt-28 pb-20 animate-pulse"><div className="h-96 bg-bg-card rounded-2xl" /></div>;
+    return { title: locale === "zh-HK" ? "找不到酒款" : "Wine Not Found" };
   }
 
-  return <WineDetailClient wine={wine} prices={prices} similarWines={similarWines} />;
+  const isZh = locale === "zh-HK";
+  const description = isZh
+    ? `${wine.name} — ${wine.region_zh}${wine.vintage ? ` · ${wine.vintage}` : ""}${wine.minPrice ? ` · 最低 HK$${wine.minPrice}` : ""}`
+    : `${wine.name} — ${wine.region_en}${wine.vintage ? ` · ${wine.vintage}` : ""}${wine.minPrice ? ` · From HK$${wine.minPrice}` : ""}`;
+
+  const title = `${wine.name}${wine.vintage ? ` ${wine.vintage}` : ""} — Your Wine Book`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      siteName: "Your Wine Book",
+      url: `https://yourwinebook.com/${locale}/wines/${slug}`,
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+  };
+}
+
+export default async function WineDetailPage({ params }: PageProps) {
+  const { slug } = await params;
+  return <WineDetailLoader slug={slug} />;
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { WineCard } from "@/components/wine/WineCard";
-import { ChevronDown, Bookmark, BookmarkCheck } from "lucide-react";
+import { ChevronDown, Bookmark, BookmarkCheck, Share2 } from "lucide-react";
 import type { Wine, MerchantPrice } from "@/lib/mock-data";
 import { toWineCard, getFullRegion, getTastingNotes, getRegionStory } from "@/lib/locale-helpers";
 
@@ -74,18 +74,40 @@ export default function WineDetailClient({ wine, prices, similarWines }: Props) 
             <div>
               <div className="flex items-start justify-between gap-3 mb-1">
                 <h1 className="font-en text-[28px] font-bold">{wine.name}</h1>
-                <button
-                  onClick={toggleBookmark}
-                  disabled={bookmarkLoading}
-                  title={bookmarked ? "取消收藏" : "收藏酒款"}
-                  className={`shrink-0 mt-1 p-2.5 rounded-xl border transition-all cursor-pointer disabled:opacity-50 ${
-                    bookmarked
-                      ? "bg-wine text-white border-wine"
-                      : "bg-white text-text-sub border-wine-border hover:border-wine hover:text-wine"
-                  }`}
-                >
-                  {bookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
-                </button>
+                <div className="flex items-center gap-2 shrink-0 mt-1">
+                  <button
+                    onClick={() => {
+                      const url = window.location.href;
+                      const title = `${wine.name}${wine.vintage ? ` ${wine.vintage}` : ""} — Your Wine Book`;
+                      const text = isZh
+                        ? `${wine.name} — ${fullRegion}${wine.minPrice ? ` · 最低 HK$${wine.minPrice}` : ""}`
+                        : `${wine.name} — ${fullRegion}${wine.minPrice ? ` · From HK$${wine.minPrice}` : ""}`;
+                      if (navigator.share) {
+                        navigator.share({ title, text, url }).catch(() => {});
+                      } else {
+                        navigator.clipboard.writeText(url).then(() => {
+                          // Brief visual feedback — button briefly changes color
+                        }).catch(() => {});
+                      }
+                    }}
+                    title={isZh ? "分享" : "Share"}
+                    className="p-2.5 rounded-xl border border-wine-border bg-white text-text-sub hover:border-wine hover:text-wine transition-all cursor-pointer"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={toggleBookmark}
+                    disabled={bookmarkLoading}
+                    title={bookmarked ? "取消收藏" : "收藏酒款"}
+                    className={`p-2.5 rounded-xl border transition-all cursor-pointer disabled:opacity-50 ${
+                      bookmarked
+                        ? "bg-wine text-white border-wine"
+                        : "bg-white text-text-sub border-wine-border hover:border-wine hover:text-wine"
+                    }`}
+                  >
+                    {bookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
               <p className="text-[15px] text-text-sub mb-5">{fullRegion}</p>
 
