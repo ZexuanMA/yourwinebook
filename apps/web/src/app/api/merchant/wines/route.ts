@@ -3,15 +3,16 @@ import { cookies } from "next/headers";
 import { getMockAccount } from "@/lib/mock-auth";
 import { getAllMergedPrices, getUpdatedMinPrice } from "@/lib/price-store";
 import { getAllWines, createWine, type CreateWineInput } from "@/lib/wine-store";
+import { apiError } from "@/lib/api-errors";
 
 export async function GET() {
   const cookieStore = await cookies();
   const sessionSlug = cookieStore.get("wb_session")?.value;
-  if (!sessionSlug) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionSlug) return apiError("UNAUTHORIZED");
 
   const account = await getMockAccount(sessionSlug);
   if (!account || account.role !== "merchant") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("UNAUTHORIZED");
   }
 
   // Return wines with updated minPrices + all merged price data
@@ -33,43 +34,37 @@ const VALID_TYPES = ["red", "white", "sparkling", "rosé", "dessert"];
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const sessionSlug = cookieStore.get("wb_session")?.value;
-  if (!sessionSlug) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!sessionSlug) return apiError("UNAUTHORIZED");
 
   const account = await getMockAccount(sessionSlug);
-  if (!account || account.role !== "merchant" || account.status !== "active") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!account || account.role !== "merchant") return apiError("UNAUTHORIZED");
+  if (account.status !== "active") return apiError("MERCHANT_INACTIVE");
 
   let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return apiError("INVALID_JSON");
   }
 
-  // Validate required fields
   const { name, type, region_zh, region_en, price } = body as {
-    name?: string;
-    type?: string;
-    region_zh?: string;
-    region_en?: string;
-    price?: number;
+    name?: string; type?: string; region_zh?: string; region_en?: string; price?: number;
   };
 
   if (!name || typeof name !== "string" || name.trim().length === 0) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    return apiError("VALIDATION", "Name is required");
   }
   if (!type || !VALID_TYPES.includes(type as string)) {
-    return NextResponse.json({ error: "Invalid wine type" }, { status: 400 });
+    return apiError("VALIDATION", "Invalid wine type");
   }
   if (!region_zh || typeof region_zh !== "string") {
-    return NextResponse.json({ error: "region_zh is required" }, { status: 400 });
+    return apiError("VALIDATION", "region_zh is required");
   }
   if (!region_en || typeof region_en !== "string") {
-    return NextResponse.json({ error: "region_en is required" }, { status: 400 });
+    return apiError("VALIDATION", "region_en is required");
   }
   if (typeof price !== "number" || price <= 0) {
-    return NextResponse.json({ error: "Price must be a positive number" }, { status: 400 });
+    return apiError("VALIDATION", "Price must be a positive number");
   }
 
   const input: CreateWineInput = {
@@ -90,9 +85,7 @@ export async function POST(request: NextRequest) {
   };
 
   const wine = await createWine(input, account.slug, account.name);
-  if (!wine) {
-    return NextResponse.json({ error: "Failed to create wine" }, { status: 500 });
-  }
+  if (!wine) return apiError("INTERNAL", "Failed to create wine");
 
   return NextResponse.json({ ok: true, wine }, { status: 201 });
 }

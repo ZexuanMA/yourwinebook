@@ -568,6 +568,23 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
   - 风险：无
 
+- [x] P2E-03 API 错误消息标准化
+  - 完成时间：2026-03-26
+  - 决策：
+    - 新建 `api-errors.ts` 统一错误工具函数：`apiError(code, detail?, headers?)`
+    - 所有错误响应格式统一为 `{ error: string, code: string }`
+    - 定义 12 个错误码：UNAUTHORIZED / INVALID_CREDENTIALS / FORBIDDEN / ADMIN_ONLY / MERCHANT_INACTIVE / RATE_LIMIT / VALIDATION / INVALID_JSON / MISSING_FIELD / NOT_FOUND / CONFLICT / INTERNAL / SERVICE_UNAVAILABLE
+    - 首批迁移 4 个最关键的路由文件（merchant/wines CRUD + price）
+    - 所有 `NextResponse.json({ error: "..." })` 替换为 `apiError("CODE", "detail")`
+    - 前端可根据 code 字段做 locale 映射（向后兼容：error 字段仍可直接显示）
+  - 输出物：
+    - `apps/web/src/lib/api-errors.ts`（新建）
+    - 更新后的 4 个 API 路由文件
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 风险：无
+
 ---
 
 ## Phase 2F — 增长与留存
