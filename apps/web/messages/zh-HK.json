@@ -231,5 +231,11 @@
     "disclaimerDesc": "本平台按「現狀」提供，不作任何明示或暗示的保證。我們不對因使用本平台而產生的任何直接、間接或附帶損失承擔責任。請理性飲酒，切勿酒後駕駛。",
     "contactTitle": "聯繫我們",
     "contactDesc": "如果你對使用條款有任何疑問，請發送電郵至 legal@yourwinebook.com。"
+  },
+  "notFound": {
+    "title": "找不到頁面",
+    "description": "你要找的頁面可能已被移除、改了名字，或者暫時無法存取。",
+    "backHome": "回到首頁",
+    "backSearch": "搜索酒款"
   }
 }

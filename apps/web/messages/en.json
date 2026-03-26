@@ -231,5 +231,11 @@
     "disclaimerDesc": "This Platform is provided \"as is\" without any express or implied warranties. We are not liable for any direct, indirect, or incidental damages arising from the use of this Platform. Please drink responsibly and never drink and drive.",
     "contactTitle": "Contact Us",
     "contactDesc": "If you have any questions about these Terms of Use, please email legal@yourwinebook.com."
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you're looking for may have been removed, renamed, or is temporarily unavailable.",
+    "backHome": "Back to Home",
+    "backSearch": "Search Wines"
   }
 }

@@ -143,6 +143,11 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "import.importMore": { "zh-HK": "再次導入", en: "Import More" },
   "import.requiredCols": { "zh-HK": "必填欄位：name, type, region_zh, region_en, price", en: "Required columns: name, type, region_zh, region_en, price" },
 
+  // ── 404 ──
+  "notFound.title": { "zh-HK": "找不到頁面", en: "Page Not Found" },
+  "notFound.desc": { "zh-HK": "你要找的頁面可能已被移除或不存在。", en: "The page you're looking for may have been removed or doesn't exist." },
+  "notFound.back": { "zh-HK": "返回後台首頁", en: "Back to Dashboard" },
+
   // ── Account Settings ──
   "account.title": { "zh-HK": "帳號設置", en: "Account Settings" },
   "account.subtitle": { "zh-HK": "管理你的個人資料和安全設置", en: "Manage your profile and security settings" },

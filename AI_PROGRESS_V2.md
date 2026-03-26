@@ -539,7 +539,21 @@
 
 ## Phase 2E — UX 与错误处理
 
-（待开发）
+- [x] P2E-01 404 Not Found 页面
+  - 完成时间：2026-03-26
+  - 决策：
+    - 前台 `[locale]/not-found.tsx`：使用 next-intl，品牌设计（🍷 emoji + 友好文案 + 返回首页/搜索按钮）
+    - 后台 `dashboard/not-found.tsx`：静态文案（后台无 next-intl），返回后台首页按钮
+    - i18n 新增 notFound 命名空间：title / description / backHome / backSearch
+    - dashboard-i18n 新增 3 条 404 文案
+  - 输出物：
+    - `apps/web/src/app/[locale]/not-found.tsx`
+    - `apps/web/src/app/dashboard/not-found.tsx`
+    - 更新后的 `messages/zh-HK.json` + `messages/en.json`
+    - 更新后的 `dashboard-i18n.ts`
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+  - 风险：无
 
 ---
 
