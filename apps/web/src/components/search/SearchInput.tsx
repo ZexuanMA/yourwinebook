@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Search, X } from "lucide-react";
+import { Search, X, Clock, TrendingUp } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 
@@ -17,6 +17,37 @@ const typeEmoji: Record<string, string> = {
   sparkling: "🥂",
   rosé: "🌸",
   dessert: "🍯",
+};
+
+/* ── Recent searches (localStorage) ── */
+const RECENT_KEY = "wb_recent_searches";
+const MAX_RECENT = 5;
+
+function getRecentSearches(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(RECENT_KEY);
+    return raw ? (JSON.parse(raw) as string[]).slice(0, MAX_RECENT) : [];
+  } catch { return []; }
+}
+
+function saveRecentSearch(q: string) {
+  if (typeof window === "undefined" || !q.trim()) return;
+  try {
+    const existing = getRecentSearches().filter((s) => s !== q.trim());
+    localStorage.setItem(RECENT_KEY, JSON.stringify([q.trim(), ...existing].slice(0, MAX_RECENT)));
+  } catch { /* quota exceeded — ignore */ }
+}
+
+function clearRecentSearches() {
+  if (typeof window === "undefined") return;
+  try { localStorage.removeItem(RECENT_KEY); } catch { /* ignore */ }
+}
+
+/* ── Hot search terms (static, bilingual) ── */
+const HOT_TERMS: Record<string, string[]> = {
+  "zh-HK": ["Sauvignon Blanc", "Pinot Noir", "Champagne", "波爾多", "紐西蘭"],
+  en: ["Sauvignon Blanc", "Pinot Noir", "Champagne", "Bordeaux", "Burgundy"],
 };
 
 export function SearchInput({
@@ -36,11 +67,15 @@ export function SearchInput({
   const locale = useLocale();
   const router = useRouter();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Load recent searches on mount
+  useEffect(() => { setRecentSearches(getRecentSearches()); }, []);
 
   const fetchSuggestions = useCallback(async (q: string) => {
     if (q.length < 2) {
@@ -63,6 +98,13 @@ export function SearchInput({
     debounceRef.current = setTimeout(() => fetchSuggestions(v), 200);
   };
 
+  const doSubmit = (q: string) => {
+    if (q.trim()) saveRecentSearch(q.trim());
+    setRecentSearches(getRecentSearches());
+    onSubmit(q);
+    setShowDropdown(false);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -73,27 +115,37 @@ export function SearchInput({
     } else if (e.key === "Enter") {
       e.preventDefault();
       if (selectedIndex >= 0 && suggestions[selectedIndex]) {
+        saveRecentSearch(suggestions[selectedIndex].name);
         router.push(`/wines/${suggestions[selectedIndex].slug}`);
-        setShowSuggestions(false);
+        setShowDropdown(false);
       } else {
-        onSubmit(value);
-        setShowSuggestions(false);
+        doSubmit(value);
       }
     } else if (e.key === "Escape") {
-      setShowSuggestions(false);
+      setShowDropdown(false);
     }
+  };
+
+  const handleClearRecent = () => {
+    clearRecentSearches();
+    setRecentSearches([]);
   };
 
   // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
+        setShowDropdown(false);
       }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const hasSuggestions = value.length >= 2 && suggestions.length > 0;
+  const showRecent = !hasSuggestions && recentSearches.length > 0;
+  const showHot = !hasSuggestions && !showRecent;
+  const hotTerms = HOT_TERMS[locale] ?? HOT_TERMS.en;
 
   return (
     <div ref={wrapperRef} className={`relative ${className}`}>
@@ -104,7 +156,7 @@ export function SearchInput({
           type="text"
           value={value}
           onChange={(e) => handleChange(e.target.value)}
-          onFocus={() => value.length >= 2 && setShowSuggestions(true)}
+          onFocus={() => setShowDropdown(true)}
           onKeyDown={handleKeyDown}
           placeholder={t("placeholder")}
           autoFocus={autoFocus}
@@ -124,26 +176,71 @@ export function SearchInput({
         )}
       </div>
 
-      {/* Autocomplete dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
+      {/* Dropdown: suggestions / recent / hot */}
+      {showDropdown && (
         <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-wine-border rounded-xl shadow-lg overflow-hidden z-50">
-          {suggestions.map((s, i) => (
+          {/* Wine autocomplete suggestions */}
+          {hasSuggestions && suggestions.map((s, i) => (
             <button
               key={s.slug}
               onClick={() => {
+                saveRecentSearch(s.name);
                 router.push(`/wines/${s.slug}`);
-                setShowSuggestions(false);
+                setShowDropdown(false);
               }}
               className={`w-full flex items-center gap-3 px-5 py-3 text-left text-sm transition-colors cursor-pointer border-none ${
-                i === selectedIndex
-                  ? "bg-red-light"
-                  : "hover:bg-bg"
+                i === selectedIndex ? "bg-red-light" : "hover:bg-bg"
               }`}
             >
               <span className="text-lg">{typeEmoji[s.type] ?? "🍷"}</span>
               <span className="font-en font-medium text-text">{s.name}</span>
             </button>
           ))}
+
+          {/* Recent searches */}
+          {showRecent && (
+            <>
+              <div className="flex items-center justify-between px-5 pt-3 pb-1.5">
+                <span className="text-xs font-medium text-text-sub flex items-center gap-1.5">
+                  <Clock className="w-3 h-3" />
+                  {locale === "zh-HK" ? "最近搜索" : "Recent"}
+                </span>
+                <button onClick={handleClearRecent}
+                  className="text-[11px] text-text-sub/50 hover:text-wine transition-colors cursor-pointer bg-transparent border-none">
+                  {locale === "zh-HK" ? "清除" : "Clear"}
+                </button>
+              </div>
+              {recentSearches.map((q) => (
+                <button key={q}
+                  onClick={() => { onChange(q); doSubmit(q); }}
+                  className="w-full flex items-center gap-3 px-5 py-2.5 text-left text-sm hover:bg-bg transition-colors cursor-pointer border-none">
+                  <Clock className="w-3.5 h-3.5 text-text-sub/30 shrink-0" />
+                  <span className="text-text">{q}</span>
+                </button>
+              ))}
+            </>
+          )}
+
+          {/* Hot search terms */}
+          {showHot && (
+            <>
+              <div className="px-5 pt-3 pb-1.5">
+                <span className="text-xs font-medium text-text-sub flex items-center gap-1.5">
+                  <TrendingUp className="w-3 h-3" />
+                  {locale === "zh-HK" ? "熱門搜索" : "Trending"}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2 px-5 pb-3">
+                {hotTerms.map((term) => (
+                  <button key={term}
+                    onClick={() => { onChange(term); doSubmit(term); }}
+                    className="px-3 py-1.5 bg-bg rounded-lg text-xs text-text hover:bg-red-light hover:text-wine transition-colors cursor-pointer border-none">
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -323,15 +323,45 @@ export default function SearchPage() {
               ))}
             </div>
           ) : wines.length === 0 ? (
-            /* Empty state */
+            /* Empty state with suggestions */
             <div className="text-center py-20">
               <p className="text-5xl mb-4">🔍</p>
               <p className="text-lg font-medium text-text mb-2">
-                {isZh ? "沒有找到符合條件的酒款" : "No wines found"}
+                {t("search.noResults")}
               </p>
-              <p className="text-sm text-text-sub">
-                {isZh ? "試試調整篩選條件或搜索關鍵字" : "Try adjusting your filters or search terms"}
+              <p className="text-sm text-text-sub mb-6">
+                {t("search.noResultsHint")}
               </p>
+              <div className="flex flex-col items-center gap-4">
+                {/* Clear filters suggestion */}
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={() => {
+                      const params = new URLSearchParams();
+                      if (urlSearch) params.set("q", urlSearch);
+                      router.replace(`${pathname}?${params.toString()}`);
+                    }}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-wine text-white rounded-xl text-sm font-medium hover:bg-wine-dark transition-colors cursor-pointer border-none"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                    {isZh ? "清除所有篩選條件" : "Clear all filters"}
+                  </button>
+                )}
+                {/* Hot search suggestions */}
+                <div className="flex flex-wrap justify-center gap-2">
+                  <span className="text-xs text-text-sub/60">{isZh ? "試試搜索：" : "Try searching:"}</span>
+                  {(isZh
+                    ? ["Sauvignon Blanc", "Pinot Noir", "Champagne", "波爾多"]
+                    : ["Sauvignon Blanc", "Pinot Noir", "Champagne", "Bordeaux"]
+                  ).map((term) => (
+                    <button key={term}
+                      onClick={() => { setSearchQuery(term); handleSearch(term); }}
+                      className="px-3 py-1.5 bg-white border border-wine-border rounded-lg text-xs text-text hover:border-gold hover:text-wine transition-colors cursor-pointer">
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             /* Wine grid */

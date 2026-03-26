@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
-import { Search, X, User, LogOut, Bookmark, Settings } from "lucide-react";
+import { Search, X, User, LogOut, Bookmark, Settings, Clock, TrendingUp } from "lucide-react";
 import { getDisplayInitial, normalizeDisplayName } from "@/lib/display-name";
 
 interface UserProfile {
@@ -60,13 +60,30 @@ export function Navbar() {
     router.replace(pathname, { locale: next });
   };
 
-  const handleNavSearch = () => {
-    if (navSearch.trim()) {
-      router.push(`/search?q=${encodeURIComponent(navSearch.trim())}`);
-      setSearchOpen(false); setNavSearch("");
+  const getRecent = (): string[] => {
+    try {
+      const raw = localStorage.getItem("wb_recent_searches");
+      return raw ? (JSON.parse(raw) as string[]).slice(0, 5) : [];
+    } catch { return []; }
+  };
+
+  const saveRecent = (q: string) => {
+    if (!q.trim()) return;
+    try {
+      const existing = getRecent().filter((s) => s !== q.trim());
+      localStorage.setItem("wb_recent_searches", JSON.stringify([q.trim(), ...existing].slice(0, 5)));
+    } catch { /* ignore */ }
+  };
+
+  const handleNavSearch = (q?: string) => {
+    const query = (q ?? navSearch).trim();
+    if (query) {
+      saveRecent(query);
+      router.push(`/search?q=${encodeURIComponent(query)}`);
     } else {
-      router.push("/search"); setSearchOpen(false);
+      router.push("/search");
     }
+    setSearchOpen(false); setNavSearch("");
   };
 
   const handleLogout = async () => {
@@ -79,18 +96,49 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-bg/92 backdrop-blur-md border-b border-wine-border">
       {searchOpen && (
         <div className="absolute inset-0 bg-bg/95 backdrop-blur-md flex items-center px-6 z-10">
-          <div className="max-w-[1120px] mx-auto w-full flex items-center gap-3">
-            <Search className="w-4 h-4 text-text-sub shrink-0" />
-            <input type="text" autoFocus value={navSearch}
-              onChange={(e) => setNavSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleNavSearch()}
-              placeholder={locale === "zh-HK" ? "搜索酒名、產區..." : "Search wines..."}
-              className="flex-1 bg-transparent border-none outline-none text-base text-text"
-            />
-            <button onClick={() => { setSearchOpen(false); setNavSearch(""); }}
-              className="p-1 cursor-pointer bg-transparent border-none">
-              <X className="w-4 h-4 text-text-sub" />
-            </button>
+          <div className="max-w-[1120px] mx-auto w-full">
+            <div className="flex items-center gap-3">
+              <Search className="w-4 h-4 text-text-sub shrink-0" />
+              <input type="text" autoFocus value={navSearch}
+                onChange={(e) => setNavSearch(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleNavSearch()}
+                placeholder={locale === "zh-HK" ? "搜索酒名、產區..." : "Search wines..."}
+                className="flex-1 bg-transparent border-none outline-none text-base text-text"
+              />
+              <button onClick={() => { setSearchOpen(false); setNavSearch(""); }}
+                className="p-1 cursor-pointer bg-transparent border-none">
+                <X className="w-4 h-4 text-text-sub" />
+              </button>
+            </div>
+            {/* Recent + Hot terms below search */}
+            {!navSearch && (
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {getRecent().length > 0 ? (
+                  <>
+                    <Clock className="w-3 h-3 text-text-sub/40" />
+                    {getRecent().map((q) => (
+                      <button key={q} onClick={() => handleNavSearch(q)}
+                        className="px-2.5 py-1 bg-white/60 border border-wine-border rounded-lg text-xs text-text hover:border-gold transition-colors cursor-pointer">
+                        {q}
+                      </button>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <TrendingUp className="w-3 h-3 text-text-sub/40" />
+                    {(locale === "zh-HK"
+                      ? ["Sauvignon Blanc", "Pinot Noir", "Champagne", "波爾多", "紐西蘭"]
+                      : ["Sauvignon Blanc", "Pinot Noir", "Champagne", "Bordeaux", "Burgundy"]
+                    ).map((q) => (
+                      <button key={q} onClick={() => handleNavSearch(q)}
+                        className="px-2.5 py-1 bg-white/60 border border-wine-border rounded-lg text-xs text-text hover:border-gold transition-colors cursor-pointer">
+                        {q}
+                      </button>
+                    ))}
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

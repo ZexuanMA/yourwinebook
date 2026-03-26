@@ -630,6 +630,39 @@
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
   - 风险：无
 
+- [x] P2E-05 搜索体验优化
+  - 完成时间：2026-03-26
+  - 决策：
+    - **最近搜索记录**（localStorage `wb_recent_searches`，最多 5 条）：
+      - `SearchInput` 聚焦时、无输入 → 显示最近搜索（带 Clock 图标 + 清除按钮）
+      - 每次提交搜索或点击建议 → 自动保存到 localStorage
+      - Navbar 搜索 overlay 也显示最近搜索标签
+    - **热门搜索词**（静态双语）：
+      - 无最近搜索时显示热门标签（zh-HK/en 各 5 个）
+      - 点击标签即触发搜索
+    - **空结果增强**：
+      - 有筛选条件时显示"清除所有篩選條件"按钮
+      - 始终显示推荐搜索词标签（"試試搜索：Sauvignon Blanc / Pinot Noir…"）
+    - **URL 分享验证**：已确认所有 6 个筛选维度（q/type/region/price/sort/page）均同步到 query string，可直接复制分享
+  - 输出物：
+    - 更新后的 `SearchInput.tsx`（recent + hot 逻辑）
+    - 更新后的 `Navbar.tsx`（overlay recent + hot 标签）
+    - 更新后的 `search/page.tsx`（空结果增强）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 风险：无
+
+### Phase 2E 完成总结
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| P2E-01 | 404 Not Found 页面（前台 + 后台） | ✅ |
+| P2E-02 | 全局错误页面升级（品牌化） | ✅ |
+| P2E-03 | API 错误消息标准化（apiError 工具函数） | ✅ |
+| P2E-04 | Dashboard 移动端适配（Sidebar 抽屉 + 11 页响应式） | ✅ |
+| P2E-05 | 搜索体验优化（最近搜索 + 热门词 + 空结果建议） | ✅ |
+
 ---
 
 ## Phase 2F — 增长与留存
