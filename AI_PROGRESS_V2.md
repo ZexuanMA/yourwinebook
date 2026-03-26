@@ -730,3 +730,25 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
   - 风险：无
+
+### 部署检查点 5（P2F-04 ~ P2F-05）
+
+- 时间：2026-03-26
+- 本地部署：`npm run deploy` → build 成功（35.2s）→ PM2 restart wine-prod ✅
+- 验证结果：
+  - `/robots.txt` → 正确显示 User-Agent / Allow / Disallow / Sitemap ✅
+  - `/sitemap.xml` → 106 条 URL（双语 × 静态 + 动态酒款/酒商/场景）✅
+  - 酒款 OG meta → og:title / og:description / og:url / og:site_name / og:type ✅
+  - 酒商 OG meta → og:title（酒商名）/ og:description（中文描述）✅
+  - OG title 去重修复（名称已含年份时不重复追加）✅
+
+### Phase 2F（Web 部分）完成总结
+
+| 任务 | 内容 | 状态 |
+|------|------|------|
+| P2F-01 | 推送通知基础设施（需 Expo + Supabase） | ⏳ 待 Expo 环境 |
+| P2F-02 | 互动推送触发（依赖 P2F-01） | ⏳ 待 Expo 环境 |
+| P2F-03 | 关注 Feed（需 Supabase RPC） | ⏳ 待 Supabase |
+| P2F-04 | 收藏分享 + OG Meta Tags | ✅ |
+| P2F-05 | SEO 基础优化（sitemap + robots + meta） | ✅ |
+| P2F-06 | 增长功能 QA 回归（待全部完成后执行） | ⏳ |
