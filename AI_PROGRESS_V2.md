@@ -457,6 +457,25 @@
     - `pnpm --filter web build` ✅
   - 风险：无
 
+- [x] P2D-04 酒款编辑页面
+  - 完成时间：2026-03-26
+  - 决策：
+    - 新建 `/dashboard/wines/[slug]/edit` 页面，完整编辑表单
+    - 表单预填现有数据，只发送有变更的字段（diff 检测）
+    - 酒类型和 slug 显示为只读（不可更改的不变量）
+    - 保存成功后显示绿色提示 2 秒后自动消失
+    - 下架按钮 + 确认弹窗（modal），确认后调用 DELETE API 并跳转回列表
+    - 酒款列表页每行新增「编辑」按钮，跳转到编辑页
+    - i18n 新增 12 条编辑页文案
+  - 输出物：
+    - `apps/web/src/app/dashboard/wines/[slug]/edit/page.tsx`（新建）
+    - 更新后的 `apps/web/src/app/dashboard/wines/page.tsx`（列表增加编辑按钮）
+    - 更新后的 `apps/web/src/lib/dashboard-i18n.ts`
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` ✅（含新路由 /dashboard/wines/[slug]/edit）
+  - 风险：无
+
 ---
 
 ## Phase 2E — UX 与错误处理

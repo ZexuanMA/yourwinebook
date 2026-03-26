@@ -106,6 +106,21 @@ const dict: Record<string, Record<DashboardLang, string>> = {
   "newWine.addAnother": { "zh-HK": "再新增一款", en: "Add Another" },
   "newWine.backToList": { "zh-HK": "返回酒款列表", en: "Back to Wines" },
 
+  // ── Edit Wine Page ──
+  "editWine.back": { "zh-HK": "返回酒款管理", en: "Back to Wine Management" },
+  "editWine.title": { "zh-HK": "編輯酒款", en: "Edit Wine" },
+  "editWine.subtitle": { "zh-HK": "修改酒款資料（類型和 slug 不可更改）", en: "Update wine details (type and slug cannot be changed)" },
+  "editWine.saving": { "zh-HK": "保存中…", en: "Saving…" },
+  "editWine.save": { "zh-HK": "保存更改", en: "Save Changes" },
+  "editWine.saved": { "zh-HK": "已保存", en: "Saved" },
+  "editWine.error": { "zh-HK": "保存失敗，請重試", en: "Failed to save, please try again" },
+  "editWine.delist": { "zh-HK": "下架酒款", en: "Delist Wine" },
+  "editWine.delistConfirm": { "zh-HK": "確認下架？下架後該酒款將不再出現在前台頁面。", en: "Are you sure? This wine will no longer be visible on the public site." },
+  "editWine.delistBtn": { "zh-HK": "確認下架", en: "Confirm Delist" },
+  "editWine.delistCancel": { "zh-HK": "取消", en: "Cancel" },
+  "editWine.notFound": { "zh-HK": "找不到該酒款", en: "Wine not found" },
+  "editWine.edit": { "zh-HK": "編輯", en: "Edit" },
+
   // ── Account Settings ──
   "account.title": { "zh-HK": "帳號設置", en: "Account Settings" },
   "account.subtitle": { "zh-HK": "管理你的個人資料和安全設置", en: "Manage your profile and security settings" },

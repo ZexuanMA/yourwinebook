@@ -269,13 +269,21 @@ export default function DashboardWines() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Link
-                          href={`/zh-HK/wines/${wine.slug}`}
-                          target="_blank"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-light text-wine rounded-lg text-xs font-medium hover:bg-wine hover:text-white transition-all"
-                        >
-                          {t("wines.view")} <ExternalLink className="w-3 h-3" />
-                        </Link>
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/dashboard/wines/${wine.slug}/edit`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-wine-border text-text-sub rounded-lg text-xs font-medium hover:border-wine hover:text-wine transition-all"
+                          >
+                            <Pencil className="w-3 h-3" /> {t("editWine.edit")}
+                          </Link>
+                          <Link
+                            href={`/zh-HK/wines/${wine.slug}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-light text-wine rounded-lg text-xs font-medium hover:bg-wine hover:text-white transition-all"
+                          >
+                            {t("wines.view")} <ExternalLink className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );
