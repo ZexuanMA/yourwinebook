@@ -18,7 +18,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? `${wine.name} — ${wine.region_zh}${wine.vintage ? ` · ${wine.vintage}` : ""}${wine.minPrice ? ` · 最低 HK$${wine.minPrice}` : ""}`
     : `${wine.name} — ${wine.region_en}${wine.vintage ? ` · ${wine.vintage}` : ""}${wine.minPrice ? ` · From HK$${wine.minPrice}` : ""}`;
 
-  const title = `${wine.name}${wine.vintage ? ` ${wine.vintage}` : ""} — Your Wine Book`;
+  const vintageInName = wine.vintage && wine.name.includes(String(wine.vintage));
+  const title = `${wine.name}${wine.vintage && !vintageInName ? ` ${wine.vintage}` : ""} — Your Wine Book`;
 
   return {
     title,
