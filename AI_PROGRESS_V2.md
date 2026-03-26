@@ -476,6 +476,28 @@
     - `pnpm --filter web build` ✅（含新路由 /dashboard/wines/[slug]/edit）
   - 风险：无
 
+- [x] P2D-05 CSV 批量导入
+  - 完成时间：2026-03-26
+  - 决策：
+    - 新建 `/dashboard/wines/import` 页面，完整 CSV 导入功能
+    - CSV 解析：客户端 JavaScript 解析（支持引号内逗号），无需后端解析
+    - 必填栏位验证：name、type、region_zh、region_en、price
+    - 类型验证：type 必须是 red/white/sparkling/rosé/dessert
+    - 上限 500 行，逐条调用 POST API（进度显示）
+    - 结果报告：成功数 + 失败数 + 每条失败的行号/酒名/错误原因
+    - CSV 模板下载：含 2 行示例数据，10 个栏位
+    - 预览表格：前 10 行展示
+    - 侧边栏新增「批量导入」导航项（Upload 图标）
+    - i18n 新增 19 条文案
+  - 输出物：
+    - `apps/web/src/app/dashboard/wines/import/page.tsx`（新建，~280 行）
+    - 更新后的 `apps/web/src/components/dashboard/DashboardSidebar.tsx`
+    - 更新后的 `apps/web/src/lib/dashboard-i18n.ts`
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` ✅（含新路由 /dashboard/wines/import）
+  - 风险：无
+
 ---
 
 ## Phase 2E — UX 与错误处理
