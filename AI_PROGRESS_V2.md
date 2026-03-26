@@ -420,6 +420,26 @@
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
   - 风险：无
 
+- [x] P2D-03 升级 /dashboard/wines/new 页面
+  - 完成时间：2026-03-26
+  - 决策：
+    - 移除 Demo 模式（原来的 setTimeout 假提交），改为真正调用 POST `/api/merchant/wines`
+    - 产区字段拆分为中英文双栏（region_zh + region_en）
+    - 描述字段拆分为中英文双栏
+    - 年份字段改为非必填（部分无年份酒款）
+    - 错误提示：红色 alert 框 + API 返回的错误消息
+    - i18n 更新：移除"审核"相关文案，改为"直接上架"；新增双语字段标签
+    - 提交按钮文案从"提交审核"改为"新增酒款"
+    - 成功后可选择"再新增一款"或"返回列表"
+  - 输出物：
+    - 更新后的 `apps/web/src/app/dashboard/wines/new/page.tsx`
+    - 更新后的 `apps/web/src/lib/dashboard-i18n.ts`（新增/修改 8 条 i18n）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+    - `pnpm --filter web build` ✅
+  - 风险：无
+
 ---
 
 ## Phase 2E — UX 与错误处理

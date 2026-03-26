@@ -1,31 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { ChevronLeft, CheckCircle, Wine, MapPin, Grape, DollarSign, Link2 } from "lucide-react";
 import Link from "next/link";
+import { ChevronLeft, CheckCircle, Wine, MapPin, Grape, DollarSign, Link2, AlertCircle } from "lucide-react";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
 
 interface FormData {
   name: string;
   type: string;
-  region: string;
+  region_zh: string;
+  region_en: string;
   vintage: string;
   grape_variety: string;
   price_hkd: string;
   buy_url: string;
   description_zh: string;
+  description_en: string;
 }
 
 const EMPTY: FormData = {
   name: "",
   type: "red",
-  region: "",
+  region_zh: "",
+  region_en: "",
   vintage: "",
   grape_variety: "",
   price_hkd: "",
   buy_url: "",
   description_zh: "",
+  description_en: "",
 };
 
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
@@ -47,11 +50,11 @@ function Input({ className = "", ...props }: React.InputHTMLAttributes<HTMLInput
 }
 
 export default function NewWinePage() {
-  const router = useRouter();
   const { t } = useDashboardLang();
   const [form, setForm] = useState<FormData>(EMPTY);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const WINE_TYPES = [
     { value: "red", label: t("wines.typeRed"), emoji: "🍷" },
@@ -67,9 +70,38 @@ export default function NewWinePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    setLoading(false);
-    setSubmitted(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/merchant/wines", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name.trim(),
+          type: form.type,
+          region_zh: form.region_zh.trim(),
+          region_en: form.region_en.trim(),
+          grape_variety: form.grape_variety.trim() || undefined,
+          vintage: form.vintage ? parseInt(form.vintage) : undefined,
+          description_zh: form.description_zh.trim() || undefined,
+          description_en: form.description_en.trim() || undefined,
+          price: parseFloat(form.price_hkd),
+          buy_url: form.buy_url.trim() || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || t("newWine.error"));
+        return;
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError(t("newWine.error"));
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -117,6 +149,13 @@ export default function NewWinePage() {
       <h1 className="text-2xl font-semibold text-text mb-1">{t("newWine.title")}</h1>
       <p className="text-sm text-text-sub mb-8">{t("newWine.subtitle")}</p>
 
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* Wine type selector */}
@@ -162,10 +201,9 @@ export default function NewWinePage() {
               />
             </div>
             <div>
-              <FieldLabel required>{t("newWine.vintage")}</FieldLabel>
+              <FieldLabel>{t("newWine.vintage")}</FieldLabel>
               <Input
                 type="number"
-                required
                 value={form.vintage}
                 onChange={(e) => set("vintage", e.target.value)}
                 placeholder="2023"
@@ -189,33 +227,62 @@ export default function NewWinePage() {
           </div>
         </div>
 
-        {/* Region */}
+        {/* Region — bilingual */}
         <div className="bg-white border border-wine-border rounded-2xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <MapPin className="w-4 h-4 text-wine" />
             <h2 className="font-semibold text-text text-sm">{t("newWine.regionInfo")}</h2>
           </div>
-          <FieldLabel required>{t("newWine.region")}</FieldLabel>
-          <Input
-            type="text"
-            required
-            value={form.region}
-            onChange={(e) => set("region", e.target.value)}
-            placeholder="e.g. New Zealand · Marlborough · Sauvignon Blanc"
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <FieldLabel required>{t("newWine.regionZh")}</FieldLabel>
+              <Input
+                type="text"
+                required
+                value={form.region_zh}
+                onChange={(e) => set("region_zh", e.target.value)}
+                placeholder="紐西蘭 · 馬爾堡羅 · 白酒"
+              />
+            </div>
+            <div>
+              <FieldLabel required>{t("newWine.regionEn")}</FieldLabel>
+              <Input
+                type="text"
+                required
+                value={form.region_en}
+                onChange={(e) => set("region_en", e.target.value)}
+                placeholder="New Zealand · Marlborough · White"
+              />
+            </div>
+          </div>
           <p className="text-xs text-text-sub mt-2">{t("newWine.regionHint")}</p>
         </div>
 
-        {/* Description */}
+        {/* Description — bilingual */}
         <div className="bg-white border border-wine-border rounded-2xl p-6">
           <h2 className="font-semibold text-text text-sm mb-4">{t("newWine.description")}</h2>
-          <textarea
-            value={form.description_zh}
-            onChange={(e) => set("description_zh", e.target.value)}
-            placeholder={t("newWine.descPlaceholder")}
-            rows={4}
-            className="w-full px-4 py-3 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(184,149,106,0.10)] transition-all resize-none placeholder:text-text-sub/40"
-          />
+          <div className="space-y-4">
+            <div>
+              <FieldLabel>{t("newWine.descZh")}</FieldLabel>
+              <textarea
+                value={form.description_zh}
+                onChange={(e) => set("description_zh", e.target.value)}
+                placeholder={t("newWine.descPlaceholderZh")}
+                rows={3}
+                className="w-full px-4 py-3 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(184,149,106,0.10)] transition-all resize-none placeholder:text-text-sub/40"
+              />
+            </div>
+            <div>
+              <FieldLabel>{t("newWine.descEn")}</FieldLabel>
+              <textarea
+                value={form.description_en}
+                onChange={(e) => set("description_en", e.target.value)}
+                placeholder={t("newWine.descPlaceholderEn")}
+                rows={3}
+                className="w-full px-4 py-3 bg-bg border border-wine-border rounded-xl text-sm outline-none focus:border-gold focus:bg-white focus:shadow-[0_0_0_3px_rgba(184,149,106,0.10)] transition-all resize-none placeholder:text-text-sub/40"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Pricing */}
