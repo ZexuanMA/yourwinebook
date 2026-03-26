@@ -383,7 +383,26 @@
 
 ## Phase 2D — 后台酒款管理闭环
 
-（待开发）
+- [x] P2D-01 酒款新增 API
+  - 完成时间：2026-03-26
+  - 决策：
+    - 新建 `wine-store.ts`，遵循 merchant-store / price-store 同样的双模式设计（Legacy 文件 + Supabase）
+    - Legacy 模式：酒商创建的酒款写入 `data/wines.json`，与 mock-data.ts 种子数据合并展示
+    - Supabase 模式：写入 wines 表 + merchant_prices 表
+    - slug 从酒名自动生成，去重检查（重复则追加数字后缀）
+    - emoji 按酒类型自动映射（红🍷 白🍾 气泡🥂 桃红🌸 甜酒🍯）
+    - POST `/api/merchant/wines` 需要活跃酒商身份验证
+    - 必填字段：name、type、region_zh、region_en、price（>0）
+    - 可选字段：grape_variety、vintage、description、tags、tasting_notes、buy_url
+    - GET 端点已从静态 `wines` 数组升级为动态 `getAllWines()`，可返回种子+自建酒款
+    - wine-store 同时包含 updateWine / delistWine / getWineBySlug / slugExists 等完整 CRUD 函数（供 P2D-02 使用）
+  - 输出物：
+    - `apps/web/src/lib/wine-store.ts`（新建，~270 行）
+    - 更新后的 `apps/web/src/app/api/merchant/wines/route.ts`（新增 POST handler）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 风险：无
 
 ---
 
