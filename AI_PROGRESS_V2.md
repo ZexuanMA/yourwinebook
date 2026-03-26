@@ -555,6 +555,19 @@
     - `pnpm --filter web exec tsc --noEmit` ✅
   - 风险：无
 
+- [x] P2E-02 全局错误页面升级
+  - 完成时间：2026-03-26
+  - 决策：
+    - 品牌配色：暖白背景 #FAF8F5、酒红按钮 #5B2E35、中灰文字 #6B6560
+    - 使用 inline styles（global-error 无法依赖 CSS 文件加载）
+    - 🍷 emoji + 友好文案 + "Try Again" + "Back to Home" 按钮
+    - 保留 Sentry 错误上报
+  - 输出物：
+    - 更新后的 `apps/web/src/app/global-error.tsx`
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+  - 风险：无
+
 ---
 
 ## Phase 2F — 增长与留存
