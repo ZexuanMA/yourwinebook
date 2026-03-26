@@ -154,9 +154,9 @@ export default function AdminAccountsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-text">酒商帳號管理</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-text">酒商帳號管理</h1>
           <p className="text-sm text-text-sub mt-1">查看並管理所有已入駐的酒商帳號</p>
         </div>
         <button
@@ -164,7 +164,7 @@ export default function AdminAccountsPage() {
             setCreateForm({ name: "", email: "", password: "", phone: "", website: "", description: "" });
             setShowCreate(true);
           }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors cursor-pointer shadow-sm"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-colors cursor-pointer shadow-sm shrink-0"
         >
           <Plus className="w-4 h-4" /> 新增酒商
         </button>

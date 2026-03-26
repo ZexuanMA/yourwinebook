@@ -116,9 +116,9 @@ export default function DashboardWines() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-text">{t("wines.title")}</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-text">{t("wines.title")}</h1>
           <p className="text-sm text-text-sub mt-1">
             {t("common.total")} <span className="font-semibold text-text">{allMyWines.length}</span> {t("wines.listed")} ·{" "}
             <span className="text-green-700 font-semibold">{bestCount}</span> {t("wines.bestPrice")} ·{" "}
@@ -127,7 +127,7 @@ export default function DashboardWines() {
         </div>
         <Link
           href="/dashboard/wines/new"
-          className="flex items-center gap-2 px-5 py-2.5 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-all hover:-translate-y-0.5 shadow-sm"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-all hover:-translate-y-0.5 shadow-sm shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
           {t("wines.addWine")}
@@ -169,16 +169,16 @@ export default function DashboardWines() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[800px]">
               <thead>
                 <tr className="bg-bg border-b border-wine-border">
-                  <th className="text-left px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.wine")}</th>
+                  <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.wine")}</th>
                   <th className="text-left px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.type")}</th>
                   <th className="text-left px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("wines.region")}</th>
                   <th className="text-right px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.yourPrice")}</th>
                   <th className="text-right px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.marketLow")}</th>
                   <th className="text-center px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("wines.ranking")}</th>
-                  <th className="text-right px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("wines.action")}</th>
+                  <th className="text-right px-4 sm:px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("wines.action")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F5F0EA]">
@@ -187,7 +187,7 @@ export default function DashboardWines() {
                   const isEditing = editingSlug === wine.slug;
                   return (
                     <tr key={wine.slug} className="hover:bg-bg transition-colors">
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-red-light rounded-xl flex items-center justify-center text-xl shrink-0">
                             {wine.emoji}
@@ -268,7 +268,7 @@ export default function DashboardWines() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-4 sm:px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link
                             href={`/dashboard/wines/${wine.slug}/edit`}

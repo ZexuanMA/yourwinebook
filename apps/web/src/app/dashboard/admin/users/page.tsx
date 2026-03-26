@@ -78,20 +78,20 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-text">用戶管理</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-text">用戶管理</h1>
           <p className="text-sm text-text-sub mt-1">查看並管理所有已注冊的用戶帳號</p>
         </div>
         <button onClick={fetchUsers} disabled={loading}
-          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold hover:text-text transition-all cursor-pointer disabled:opacity-50">
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-wine-border rounded-xl text-xs text-text-sub hover:border-gold hover:text-text transition-all cursor-pointer disabled:opacity-50 shrink-0 self-start">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           刷新
         </button>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {(["all", "active", "suspended"] as const).map((key) => {
           const labels = { all: "全部用戶", active: "正常帳號", suspended: "已停用" };
           const colors = { all: "text-text", active: "text-green-600", suspended: "text-red-500" };
@@ -121,10 +121,11 @@ export default function AdminUsersPage() {
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 text-text-sub text-sm">沒有符合條件的用戶</div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="bg-bg border-b border-wine-border">
-                <th className="text-left px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">用戶</th>
+                <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">用戶</th>
                 <th className="text-left px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">慣用語言</th>
                 <th className="text-center px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">收藏數</th>
                 <th className="text-center px-4 py-4 text-xs font-semibold text-text-sub uppercase tracking-wider">加入日期</th>
@@ -216,6 +217,7 @@ export default function AdminUsersPage() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

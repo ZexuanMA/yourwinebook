@@ -187,7 +187,7 @@ export default function DashboardCommunityPage() {
   return (
     <div className="p-6 md:p-8 max-w-[960px]">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
         <h1 className="text-lg font-bold text-text">{t("community.title")}</h1>
         {account && account.role === "merchant" && (
           <button
@@ -202,7 +202,7 @@ export default function DashboardCommunityPage() {
       <p className="text-sm text-text-sub mb-6">{t("community.subtitle")}</p>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white border border-wine-border rounded-2xl p-4 text-center">
           <p className="text-2xl font-bold text-wine">{myPosts.length}</p>
           <p className="text-xs text-text-sub mt-1">{t("community.totalPosts")}</p>

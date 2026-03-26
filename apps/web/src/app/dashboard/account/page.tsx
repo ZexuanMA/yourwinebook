@@ -134,7 +134,7 @@ export default function AccountPage() {
       </div>
 
       {/* Account overview */}
-      <div className="bg-white border border-wine-border rounded-2xl p-6 flex items-center gap-5">
+      <div className="bg-white border border-wine-border rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
         <div className="w-16 h-16 bg-wine rounded-2xl flex items-center justify-center text-white text-2xl font-bold shrink-0">
           {getDisplayInitial(account.name)}
         </div>
@@ -162,7 +162,7 @@ export default function AccountPage() {
       {/* Profile form */}
       <Section title={label("account.basicProfile", "基本資料")}>
         <form onSubmit={handleProfileSave} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label={label("account.displayName", "顯示名稱")}>
               <input
                 type="text"

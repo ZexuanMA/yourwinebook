@@ -52,8 +52,8 @@ export default function DashboardHome() {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-8 bg-bg-card rounded-xl w-64" />
-        <div className="grid grid-cols-3 gap-5">
-          {[1, 2, 3].map((i) => <div key={i} className="h-32 bg-bg-card rounded-2xl" />)}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+          {[1, 2, 3, 4].map((i) => <div key={i} className="h-32 bg-bg-card rounded-2xl" />)}
         </div>
         <div className="h-72 bg-bg-card rounded-2xl" />
       </div>
@@ -122,16 +122,16 @@ export default function DashboardHome() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-text">
+          <h1 className="text-xl sm:text-2xl font-semibold text-text">
             {merchant.name} <span className="text-text-sub font-normal">👋</span>
           </h1>
           <p className="text-sm text-text-sub mt-1">{t("home.accountOverview")}</p>
         </div>
         <Link
           href="/dashboard/wines/new"
-          className="flex items-center gap-2 px-5 py-2.5 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-all hover:-translate-y-0.5 shadow-sm"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-wine text-white rounded-xl text-sm font-semibold hover:bg-wine-dark transition-all hover:-translate-y-0.5 shadow-sm shrink-0"
         >
           <PlusCircle className="w-4 h-4" />
           {t("home.addWine")}
@@ -188,20 +188,20 @@ export default function DashboardHome() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="bg-bg border-b border-wine-border">
-                  <th className="text-left px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.wine")}</th>
+                  <th className="text-left px-4 sm:px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.wine")}</th>
                   <th className="text-left px-4 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.type")}</th>
                   <th className="text-right px-4 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.yourPrice")}</th>
                   <th className="text-right px-4 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.marketLow")}</th>
-                  <th className="text-center px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.status")}</th>
+                  <th className="text-center px-4 sm:px-6 py-3.5 text-xs font-semibold text-text-sub uppercase tracking-wider">{t("table.status")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F5F0EA]">
                 {myWines.map(({ wine, price, isBest, lowestPrice }) => (
                   <tr key={wine.slug} className="hover:bg-bg transition-colors group">
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{wine.emoji}</span>
                         <div>
@@ -225,7 +225,7 @@ export default function DashboardHome() {
                         HK${lowestPrice}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 sm:px-6 py-4 text-center">
                       {isBest ? (
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 border border-green-100 rounded-full text-xs font-semibold">
                           <Trophy className="w-3 h-3" /> {t("home.bestPriceTag")}

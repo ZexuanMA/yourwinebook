@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { DashboardSidebar, DashboardTopbar } from "@/components/dashboard/DashboardSidebar";
+import { DashboardSidebar, DashboardTopbar, DrawerProvider } from "@/components/dashboard/DashboardSidebar";
 import { DashboardLangProvider } from "@/lib/dashboard-lang-context";
 import type { DashboardLang } from "@/lib/dashboard-i18n";
 
@@ -14,13 +14,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <DashboardLangProvider initial={lang}>
-      <div className="min-h-screen flex" data-lang={lang === "en" ? "en" : "zh-HK"}>
-        <DashboardSidebar />
-        <main className="flex-1 min-w-0 flex flex-col overflow-auto">
-          <DashboardTopbar />
-          <div className="flex-1 p-8">{children}</div>
-        </main>
-      </div>
+      <DrawerProvider>
+        <div className="min-h-screen flex" data-lang={lang === "en" ? "en" : "zh-HK"}>
+          <DashboardSidebar />
+          <main className="flex-1 min-w-0 flex flex-col overflow-auto">
+            <DashboardTopbar />
+            <div className="flex-1 p-4 sm:p-6 lg:p-8">{children}</div>
+          </main>
+        </div>
+      </DrawerProvider>
     </DashboardLangProvider>
   );
 }

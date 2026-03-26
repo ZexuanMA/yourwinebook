@@ -598,6 +598,38 @@
   - 商户 API 无 session → 401 + `{"error":"Unauthorized","code":"UNAUTHORIZED"}` ✅
   - apiError 标准化格式已在生产环境生效
 
+- [x] P2E-04 Dashboard 移动端适配
+  - 完成时间：2026-03-26
+  - 决策：
+    - Sidebar 移动端改为抽屉式（hamburger 触发）：
+      - 新增 `DrawerProvider` + `useDrawer` context 管理开关状态
+      - 桌面端 `hidden lg:block`，移动端 `fixed inset-0 z-50` 覆盖层
+      - 半透明黑色背景 + 左滑动画 `animate-slide-in`（0.2s ease-out）
+      - 路由切换自动关闭抽屉
+      - 关闭按钮定位在抽屉右侧外部
+    - TopBar 移动端新增 hamburger 按钮（`lg:hidden`），桌面端自动隐藏
+    - Layout 主内容区 padding 响应式：`p-4 sm:p-6 lg:p-8`
+    - 所有 Dashboard 页面 header 区改为 `flex-col sm:flex-row` 移动端堆叠
+    - 统计卡片网格全部添加 `grid-cols-1 sm:grid-cols-N` 移动端单列
+    - 所有数据表格添加 `overflow-x-auto` + `min-w-[Npx]` 防止挤压
+    - 表格 td/th 间距改为 `px-4 sm:px-6` 响应式
+  - 涉及文件：
+    - `DashboardSidebar.tsx`（DrawerProvider + 抽屉逻辑 + TopBar hamburger）
+    - `dashboard/layout.tsx`（DrawerProvider 包裹 + 响应式 padding）
+    - `globals.css`（slide-in keyframes）
+    - `dashboard/page.tsx`（header + skeleton + table）
+    - `dashboard/wines/page.tsx`（header + table）
+    - `dashboard/analytics/page.tsx`（两个视图 header + stat cards + 两个表格）
+    - `dashboard/account/page.tsx`（overview flex + form grid）
+    - `dashboard/stores/page.tsx`（header + form grids）
+    - `dashboard/community/page.tsx`（header + stat grid）
+    - `dashboard/admin/accounts/page.tsx`（header）
+    - `dashboard/admin/users/page.tsx`（header + stat grid + table）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 风险：无
+
 ---
 
 ## Phase 2F — 增长与留存

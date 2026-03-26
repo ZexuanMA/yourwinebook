@@ -307,14 +307,14 @@ export default function StoresPage() {
   return (
     <div className="p-6 md:p-8 max-w-4xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text">{t("stores.title")}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-text">{t("stores.title")}</h1>
           <p className="text-text-sub text-sm mt-1">{t("stores.subtitle")}</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-wine text-white rounded-lg hover:bg-wine-dark transition-colors text-sm"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-wine text-white rounded-lg hover:bg-wine-dark transition-colors text-sm shrink-0"
         >
           <Plus className="h-4 w-4" />
           {t("stores.addStore")}
@@ -335,7 +335,7 @@ export default function StoresPage() {
             <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.namePlaceholder")} value={addForm.name} onChange={(e) => setAddForm({ ...addForm, name: e.target.value })} />
             <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.addressZh")} value={addForm.address_zh} onChange={(e) => setAddForm({ ...addForm, address_zh: e.target.value })} />
             <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.addressEn")} value={addForm.address_en} onChange={(e) => setAddForm({ ...addForm, address_en: e.target.value })} />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.districtZh")} value={addForm.district_zh} onChange={(e) => setAddForm({ ...addForm, district_zh: e.target.value })} />
               <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.districtEn")} value={addForm.district_en} onChange={(e) => setAddForm({ ...addForm, district_en: e.target.value })} />
             </div>
@@ -371,7 +371,7 @@ export default function StoresPage() {
                   <input className="border rounded-lg px-3 py-2 text-sm font-medium" value={editForm.name ?? ""} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
                   <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.addressZh")} value={editForm.address_zh ?? ""} onChange={(e) => setEditForm({ ...editForm, address_zh: e.target.value })} />
                   <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.addressEn")} value={editForm.address_en ?? ""} onChange={(e) => setEditForm({ ...editForm, address_en: e.target.value })} />
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.districtZh")} value={editForm.district_zh ?? ""} onChange={(e) => setEditForm({ ...editForm, district_zh: e.target.value })} />
                     <input className="border rounded-lg px-3 py-2 text-sm" placeholder={t("stores.districtEn")} value={editForm.district_en ?? ""} onChange={(e) => setEditForm({ ...editForm, district_en: e.target.value })} />
                   </div>

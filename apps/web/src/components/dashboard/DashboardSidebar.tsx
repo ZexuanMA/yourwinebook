@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -22,8 +22,23 @@ import {
   MapPin,
   Ticket,
   Upload,
+  Menu,
+  X,
 } from "lucide-react";
 import { useDashboardLang } from "@/lib/dashboard-lang-context";
+
+/* ── Mobile drawer context ── */
+const DrawerCtx = createContext<{ open: boolean; toggle: () => void }>({ open: false, toggle: () => {} });
+export function useDrawer() { return useContext(DrawerCtx); }
+
+export function DrawerProvider({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const toggle = useCallback(() => setOpen((v) => !v), []);
+  const pathname = usePathname();
+  // Close drawer on navigation
+  useEffect(() => { setOpen(false); }, [pathname]);
+  return <DrawerCtx.Provider value={{ open, toggle }}>{children}</DrawerCtx.Provider>;
+}
 
 interface Account {
   slug: string;
@@ -60,6 +75,7 @@ export function DashboardSidebar() {
   const router = useRouter();
   const [account, setAccount] = useState<Account | null>(null);
   const { t, lang, setLang } = useDashboardLang();
+  const { open, toggle } = useDrawer();
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -78,8 +94,8 @@ export function DashboardSidebar() {
   const isActive = (href: string, exact: boolean) =>
     exact ? pathname === href : pathname.startsWith(href) && pathname !== "/dashboard";
 
-  return (
-    <aside className="w-64 bg-wine flex flex-col shrink-0 relative">
+  const sidebarContent = (
+    <aside className="w-64 bg-wine flex flex-col shrink-0 relative h-full">
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
         style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }}
@@ -175,12 +191,39 @@ export function DashboardSidebar() {
       </div>
     </aside>
   );
+
+  return (
+    <>
+      {/* Desktop sidebar — hidden on mobile */}
+      <div className="hidden lg:block">{sidebarContent}</div>
+
+      {/* Mobile drawer overlay */}
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40" onClick={toggle} />
+          {/* Drawer panel */}
+          <div className="absolute inset-y-0 left-0 w-64 shadow-xl animate-slide-in">
+            {/* Close button */}
+            <button
+              onClick={toggle}
+              className="absolute top-4 right-[-44px] p-2 bg-wine/80 rounded-r-lg text-white/70 hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 export function DashboardTopbar() {
   const pathname = usePathname();
   const [account, setAccount] = useState<Account | null>(null);
   const { t } = useDashboardLang();
+  const { toggle } = useDrawer();
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -218,8 +261,14 @@ export function DashboardTopbar() {
     .find(([href]) => pathname === href || pathname.startsWith(href + "/"))?.[1] ?? "";
 
   return (
-    <div className="bg-white border-b border-wine-border px-8 py-4 flex items-center justify-between">
-      <span className="text-sm font-semibold text-text">{currentLabel}</span>
+    <div className="bg-white border-b border-wine-border px-4 sm:px-8 py-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        {/* Hamburger — mobile only */}
+        <button onClick={toggle} className="lg:hidden p-1.5 -ml-1 text-text-sub hover:text-wine transition-colors cursor-pointer">
+          <Menu className="w-5 h-5" />
+        </button>
+        <span className="text-sm font-semibold text-text">{currentLabel}</span>
+      </div>
       <div className="flex items-center gap-2.5">
         {isAdmin && (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-wine text-white rounded-full text-[11px] font-semibold">
