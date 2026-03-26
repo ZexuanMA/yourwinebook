@@ -663,6 +663,19 @@
 | P2E-04 | Dashboard 移动端适配（Sidebar 抽屉 + 11 页响应式） | ✅ |
 | P2E-05 | 搜索体验优化（最近搜索 + 热门词 + 空结果建议） | ✅ |
 
+### 部署检查点 4（P2E-04 ~ P2E-05 + Phase 2E 完结）
+
+- 时间：2026-03-26
+- git push：超时（同前）
+- 本地部署：`npm run deploy` → build 成功（38.6s）→ PM2 restart wine-prod ✅
+- 验证结果：
+  - 首页 `/zh-HK` → 200 ✅
+  - 搜索页 `/zh-HK/search` → 200 ✅
+  - 带筛选搜索 `?q=Pinot&type=red&price=200to500&sort=price_asc` → 200 ✅
+  - 搜索 API 带多维筛选 → 正确返回 total=2, wines=2 ✅
+  - Dashboard → 307（未登录跳转登录页，正常）✅
+- Phase 2E 全部 5 个任务部署完成
+
 ---
 
 ## Phase 2F — 增长与留存
