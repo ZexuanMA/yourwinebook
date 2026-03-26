@@ -585,6 +585,19 @@
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
   - 风险：无
 
+### 部署检查点 3（P2E-01 ~ P2E-03）
+
+- 时间：2026-03-26
+- git push：超时（GitHub token/网络问题，同上次）
+- 本地部署：`npm run deploy` → build 成功（39.4s）→ PM2 restart wine-prod ✅
+- 验证结果：
+  - 首页 `/zh-HK` → 200 ✅
+  - 公开 API `/api/wines` → 200 ✅
+  - 404 页面 `/zh-HK/nonexistent-page` → 404 ✅
+  - 商户 API 带 session → 200 ✅
+  - 商户 API 无 session → 401 + `{"error":"Unauthorized","code":"UNAUTHORIZED"}` ✅
+  - apiError 标准化格式已在生产环境生效
+
 ---
 
 ## Phase 2F — 增长与留存
