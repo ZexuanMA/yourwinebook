@@ -404,6 +404,22 @@
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
   - 风险：无
 
+- [x] P2D-02 酒款编辑 API
+  - 完成时间：2026-03-26
+  - 决策：
+    - PATCH `/api/merchant/wines/[slug]` — 编辑酒款信息（name、region、description、tags、vintage、grape_variety、tasting_notes）
+    - 不可更改：slug、type（不变量）
+    - DELETE `/api/merchant/wines/[slug]` — 软删除（delist），酒款标记为下架但不物理删除
+    - Legacy 模式下只有创建者（createdBy === merchantSlug）可编辑/下架自建酒款
+    - Supabase 模式下通过 RLS 控制权限
+    - 编辑时先检查酒款是否存在（404），无更新字段返回 400
+  - 输出物：
+    - `apps/web/src/app/api/merchant/wines/[slug]/route.ts`（新建，PATCH + DELETE）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web test` → 21 files, 180 tests passed ✅
+  - 风险：无
+
 ---
 
 ## Phase 2E — UX 与错误处理
