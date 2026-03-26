@@ -420,6 +420,23 @@
     - `pnpm --filter web test` → 21 files, 180 tests passed ✅
   - 风险：无
 
+- 部署检查点（P2D-01 ~ P2D-03）
+  - 时间：2026-03-26
+  - `npm run deploy` ✅ — wine-prod PM2 重启成功
+  - `git push` ❌ — GitHub token 已过期，需用户更新
+  - 生产验证：
+    - `curl http://localhost:3000/zh-HK` → 200 ✅
+    - `curl http://localhost:3000/api/wines` → 200 ✅
+    - `curl http://localhost:3000/api/merchants` → 200 ✅
+    - `curl http://localhost:3000/login` → 200 ✅
+    - POST `/api/merchant/wines`（无 auth）→ 401 ✅
+    - POST `/api/merchant/wines`（Watson's Wine 登入后）→ 201，酒款创建成功 ✅
+    - GET 列表确认新酒款出现（32→33）✅
+    - PATCH 编辑酒款名称成功 ✅
+    - DELETE 下架酒款成功（33→32）✅
+    - `/dashboard/wines` + `/dashboard/wines/new` 页面加载 200 ✅
+  - 结论：全部生产验证通过，继续下一批任务
+
 - [x] P2D-03 升级 /dashboard/wines/new 页面
   - 完成时间：2026-03-26
   - 决策：
