@@ -498,6 +498,43 @@
     - `pnpm --filter web build` ✅（含新路由 /dashboard/wines/import）
   - 风险：无
 
+- [x] P2D-06 酒款管理 QA 回归
+  - 完成时间：2026-03-26
+  - 决策：
+    - 发现关键 bug：公开 API（`/api/wines`）在 Legacy 模式下仍从 `mock-data.ts` 静态数组读取，不包含新建酒款
+    - 修复：`queries.ts` 中所有 `mockWines` 引用替换为 `await getAllWines()`（来自 wine-store）
+    - 影响范围：getWinesPaginated / getRegions / getSearchSuggestions / getWineBySlug / getFeaturedWines / getSimilarWines / getMerchantWines
+  - QA 测试结果：
+    - ✅ 创建酒款 → 前台 API 可见（32→33）
+    - ✅ 编辑酒款 → 前台 API 反映更新后的名称
+    - ✅ 下架酒款 → 前台 API 不再可见（33→32）
+    - ✅ 权限隔离：A 酒商无法编辑/下架 B 酒商创建的酒款
+    - ✅ 无 auth 请求 → 401
+    - ✅ 所有页面 200：首页、搜索、酒商列表、API、后台列表、新增、导入
+    - ✅ Vitest 21 files, 180 tests passed
+  - 部署检查点（P2D-04 ~ P2D-06）：
+    - `npm run deploy` ✅ — wine-prod PM2 重启成功
+    - `git push` ❌ — GitHub token 已过期
+    - 完整 CRUD 闭环生产验证通过
+  - 输出物：
+    - 更新后的 `apps/web/src/lib/queries.ts`（7 处 mockWines → getAllWines）
+  - 风险：无
+
+### Phase 2D 总结
+
+| 指标 | 结果 |
+|------|------|
+| 新增文件 | 4 个（wine-store.ts / [slug]/route.ts / [slug]/edit/page.tsx / import/page.tsx） |
+| 修改文件 | 5 个（merchant/wines/route.ts / wines/page.tsx / wines/new/page.tsx / DashboardSidebar.tsx / dashboard-i18n.ts / queries.ts） |
+| 新增代码 | ~1,400 行 |
+| 新增页面路由 | 2 个（/dashboard/wines/[slug]/edit / /dashboard/wines/import） |
+| 新增 API 端点 | 3 个（POST+PATCH+DELETE /api/merchant/wines） |
+| i18n 新增 | ~30 条（编辑页 + 导入页） |
+| TypeScript | 通过 |
+| 生产构建 | 通过 |
+| 生产 QA | CRUD 闭环 + 权限隔离 + 所有页面 200 ✅ |
+| Vitest | 21 files, 180 tests ✅ |
+
 ---
 
 ## Phase 2E — UX 与错误处理

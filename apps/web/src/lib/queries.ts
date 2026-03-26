@@ -1,11 +1,11 @@
 import { getSupabase } from "./supabase";
 import {
-  wines as mockWines,
   merchants as mockMerchants,
   scenes as mockScenes,
   partners as mockPartners,
 } from "./mock-data";
 import { getMergedPrices, getUpdatedMinPrice } from "./price-store";
+import { getAllWines } from "./wine-store";
 import type { Wine, Merchant, MerchantPrice, Scene } from "./mock-data";
 import type { WineFilters, PaginatedWines, MerchantApplicationInput } from "./types";
 
@@ -77,7 +77,8 @@ export async function getWinesPaginated(filters?: WineFilters): Promise<Paginate
   }
 
   // Mock data path — apply price overrides
-  let result = await applyPriceUpdates([...mockWines]);
+  const allWines = await getAllWines();
+  let result = await applyPriceUpdates([...allWines]);
   if (filters?.type) result = result.filter((w) => w.type === filters.type);
   if (filters?.search) {
     const s = filters.search.toLowerCase();
@@ -145,8 +146,9 @@ export async function getRegions(): Promise<string[]> {
     }
   }
   // Mock
+  const allWinesForRegions = await getAllWines();
   const regions = new Set(
-    mockWines.map((w) => {
+    allWinesForRegions.map((w) => {
       const parts = w.region_en.split(" · ");
       return parts[0];
     })
@@ -169,7 +171,8 @@ export async function getSearchSuggestions(query: string): Promise<{ name: strin
     if (data) return data;
   }
 
-  return mockWines
+  const allWinesForSearch = await getAllWines();
+  return allWinesForSearch
     .filter(
       (w) =>
         w.name.toLowerCase().includes(q) ||
@@ -186,7 +189,8 @@ export async function getWineBySlug(slug: string): Promise<Wine | null> {
     if (data) return rowToWine(data);
     return null;
   }
-  const wine = mockWines.find((w) => w.slug === slug) ?? null;
+  const allWinesForSlug = await getAllWines();
+  const wine = allWinesForSlug.find((w) => w.slug === slug) ?? null;
   if (!wine) return null;
   const updated = await getUpdatedMinPrice(wine.slug);
   return updated !== null ? { ...wine, minPrice: updated } : wine;
@@ -203,7 +207,8 @@ export async function getFeaturedWines(): Promise<Wine[]> {
       .limit(3);
     if (data) return data.map(rowToWine);
   }
-  return await applyPriceUpdates(mockWines.filter((w) => w.is_featured).slice(0, 3));
+  const allWinesForFeatured = await getAllWines();
+  return await applyPriceUpdates(allWinesForFeatured.filter((w) => w.is_featured).slice(0, 3));
 }
 
 export async function getSimilarWines(slug: string, limit = 3): Promise<Wine[]> {
@@ -220,10 +225,11 @@ export async function getSimilarWines(slug: string, limit = 3): Promise<Wine[]> 
       if (data) return data.map(rowToWine);
     }
   }
-  const current = mockWines.find((w) => w.slug === slug);
-  if (!current) return await applyPriceUpdates(mockWines.slice(0, limit));
+  const allWinesForSimilar = await getAllWines();
+  const current = allWinesForSimilar.find((w) => w.slug === slug);
+  if (!current) return await applyPriceUpdates(allWinesForSimilar.slice(0, limit));
   return await applyPriceUpdates(
-    mockWines
+    allWinesForSimilar
       .filter((w) => w.slug !== slug && w.type === current.type)
       .slice(0, limit)
   );
@@ -303,7 +309,8 @@ export async function getMerchantWines(merchantSlug: string): Promise<Wine[]> {
     }
   }
   // For mock: return all wines (merchants share the same catalog)
-  return await applyPriceUpdates([...mockWines]);
+  const allWinesForMerchant = await getAllWines();
+  return await applyPriceUpdates([...allWinesForMerchant]);
 }
 
 export async function getPartners(): Promise<string[]> {
