@@ -32,8 +32,12 @@ function readStore(): MerchantApplication[] {
 }
 
 function writeStore(apps: MerchantApplication[]): void {
-  fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
-  fs.writeFileSync(DATA_FILE, JSON.stringify(apps, null, 2), "utf-8");
+  try {
+    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
+    fs.writeFileSync(DATA_FILE, JSON.stringify(apps, null, 2), "utf-8");
+  } catch (err) {
+    console.error("[application-store] write error:", err);
+  }
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

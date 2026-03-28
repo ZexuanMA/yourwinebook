@@ -1,5 +1,7 @@
 -- 006: Update get_feed RPC to include title, tags, rating fields
 
+DROP FUNCTION IF EXISTS get_feed(UUID, TIMESTAMPTZ, UUID, INT);
+
 CREATE OR REPLACE FUNCTION get_feed(
   p_user_id    UUID DEFAULT NULL,
   p_cursor_ts  TIMESTAMPTZ DEFAULT NULL,

@@ -26,7 +26,7 @@ function readAdmin(): AdminData {
   try {
     return JSON.parse(fs.readFileSync(DATA_FILE, "utf-8")) as AdminData;
   } catch {
-    return { slug: "admin", name: "平台管理員", email: "Zexuan@admin.com", password: "ad7581jnP123!", joinDate: new Date().toISOString().slice(0, 10) };
+    return { slug: "admin", name: "平台管理員", email: "admin@yourwinebook.com", password: "admin123", joinDate: new Date().toISOString().slice(0, 10) };
   }
 }
 

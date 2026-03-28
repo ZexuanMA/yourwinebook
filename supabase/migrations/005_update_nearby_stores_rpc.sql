@@ -2,6 +2,8 @@
 -- 1. Return lat/lng for map marker placement on C-end
 -- 2. Filter out stores belonging to non-active merchants
 
+DROP FUNCTION IF EXISTS get_nearby_stores(DOUBLE PRECISION, DOUBLE PRECISION, INT, INT, UUID);
+
 CREATE OR REPLACE FUNCTION get_nearby_stores(
   p_lat       DOUBLE PRECISION,
   p_lng       DOUBLE PRECISION,

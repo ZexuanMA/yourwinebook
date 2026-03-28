@@ -748,7 +748,68 @@
 |------|------|------|
 | P2F-01 | 推送通知基础设施（需 Expo + Supabase） | ⏳ 待 Expo 环境 |
 | P2F-02 | 互动推送触发（依赖 P2F-01） | ⏳ 待 Expo 环境 |
-| P2F-03 | 关注 Feed（需 Supabase RPC） | ⏳ 待 Supabase |
+| P2F-03 | 关注 Feed（需 Supabase RPC） | ✅ Supabase 已配置，可开始 |
 | P2F-04 | 收藏分享 + OG Meta Tags | ✅ |
 | P2F-05 | SEO 基础优化（sitemap + robots + meta） | ✅ |
 | P2F-06 | 增长功能 QA 回归（待全部完成后执行） | ⏳ |
+
+---
+
+## 基础设施 — Supabase 云端数据库配置
+
+- [x] Supabase 云端配置
+  - 完成时间：2026-03-28
+  - 决策：
+    - 创建 Supabase 项目（US East 区域，与服务器同区）
+    - 通过 Supabase CLI 推送 8 个迁移文件（修复 005/006 的 `DROP FUNCTION IF EXISTS` 兼容问题）
+    - 通过 psql 导入 seed.sql 种子数据
+    - 配置 `apps/web/.env.local`（NEXT_PUBLIC_SUPABASE_URL + ANON_KEY + USE_SUPABASE_AUTH=true）
+    - Admin 邮箱从 seed 默认的 `admin@yourwinebook.com` 改为 `Zexuan@admin.com`
+  - 输出物：
+    - `apps/web/.env.local`
+    - Supabase 远程数据库（25 张表 + 75 条 RLS + 种子数据）
+  - 自检：
+    - `curl /api/wines?limit=1` → 从 Supabase 返回数据 ✅
+    - `curl /api/auth/login` → Supabase Auth 登入成功 ✅
+    - Admin / Merchant / User 三种角色登入均正常 ✅
+
+- [x] 清理本地冗余数据文件
+  - 完成时间：2026-03-28
+  - 决策：
+    - 删除 7 个本地 JSON 数据文件（users/merchants/wines/prices/admin/applications/community）
+    - 保留 analytics.db（SQLite 分析系统独立于 Supabase，仍在使用）
+    - 保留 mock-data.ts（20+ 处页面组件直接引用其类型和数据）
+  - 自检：
+    - 删除后 API 正常返回 ✅
+    - Store 层 readStore() 均有 try/catch 兜底 ✅
+
+- [x] 修复分析数据面板
+  - 完成时间：2026-03-28
+  - 问题：
+    - better-sqlite3 native 模块版本不匹配（NODE_MODULE_VERSION 115 vs 127）→ analytics API 500
+  - 修复：
+    - `pnpm install --force` 重新编译 native 模块
+    - 重新 build + restart
+  - 自检：
+    - Admin analytics API → 200，有 30 天数据 ✅
+    - Merchant analytics API → 200，有酒款统计 ✅
+    - Admin merchant stats API → 200，6 个酒商 ✅
+
+- [x] Store 层 fallback 逻辑加固
+  - 完成时间：2026-03-28
+  - 修复内容：
+    - `admin-store.ts`：readAdmin() fallback 默认值更新为 seed 标准帐号
+    - `application-store.ts`：writeStore() 添加 try/catch（之前是唯一没有错误处理的 store）
+    - 所有 7 个 store 的 readStore() 验证：均有 try/catch 兜底，文件不存在时返回空数组/默认值
+  - 自检：
+    - `pnpm --filter web build` ✅
+
+- [x] 分析路由 Supabase 模式适配
+  - 完成时间：2026-03-28
+  - 修复内容：
+    - `api/merchant/analytics/route.ts`：Supabase 模式下从 merchant_prices 表查询酒商的酒款关联
+    - `api/admin/analytics/merchants/route.ts`：Supabase 模式下从 merchant_prices 表构建全局酒商-酒款映射
+    - 两个文件均保留 mock-data fallback 作为 else 分支
+  - 自检：
+    - Merchant analytics（Supabase 模式）→ 正确返回酒款统计 ✅
+    - Admin merchant stats（Supabase 模式）→ 正确返回 6 个酒商 ✅
