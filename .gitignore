@@ -41,3 +41,9 @@ next-env.d.ts
 # expo
 apps/mobile/dist/
 .expo/
+
+# test results
+test-results/
+
+# claude code local settings (contains credential approvals)
+.claude/settings.local.json
