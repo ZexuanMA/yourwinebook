@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getMockAccount } from "@/lib/mock-auth";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { createStoreSchema } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
 async function getMerchantAccount() {
   const cookieStore = await cookies();
@@ -12,7 +14,7 @@ async function getMerchantAccount() {
   return account;
 }
 
-export async function GET() {
+export const GET = withErrorHandler(async (_request: NextRequest) => {
   const account = await getMerchantAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -59,9 +61,9 @@ export async function GET() {
   });
 
   return NextResponse.json({ stores: storesWithCoords });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   const account = await getMerchantAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -81,11 +83,11 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { name, address_zh, address_en, district_zh, district_en, phone, hours, lat, lng } = body;
-
-  if (!name || !address_zh) {
-    return NextResponse.json({ error: "name and address_zh are required" }, { status: 400 });
+  const parsed = createStoreSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("invalid_input", 400, request);
   }
+  const { name, address_zh, address_en, district_zh, district_en, phone, hours, lat, lng } = parsed.data;
 
   const row: Record<string, unknown> = {
     merchant_id: merchant.id,
@@ -113,4 +115,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ store: data }, { status: 201 });
-}
+});

@@ -813,3 +813,89 @@
   - 自检：
     - Merchant analytics（Supabase 模式）→ 正确返回酒款统计 ✅
     - Admin merchant stats（Supabase 模式）→ 正确返回 6 个酒商 ✅
+
+---
+
+## Code Review 改进（基于 V1V2_review.md 建议）
+
+> 完成日期：2026-03-30
+> 对应文档：`V1V2_review.md` 第 5~6 节
+
+### 高优先级
+
+- [x] CR-01 安装 zod + 添加 API 输入验证
+  - 完成时间：2026-03-30
+  - 决策：
+    - 安装 `zod` 到 web workspace
+    - 新建 `src/lib/api-validation.ts`，集中定义所有 API 请求的 zod schema
+    - 涵盖 10 个 schema：wineFilters / pagination / communityPostsQuery / createPost / login / register / changePassword / moderate / createStore / searchParamsToObject helper
+    - 所有数值参数使用 `z.coerce.number()` 自动转型 + 范围校验，杜绝 `NaN` 问题
+    - 替换了 `api/wines`、`api/community/posts`、`api/merchant/stores` 中的手动 `Number()` 转换
+    - 替换了 `api/user/auth/register`、`api/auth/login`、`api/user/auth/login` 中的手动参数检查
+    - 替换了 `api/admin/moderate` 中的无验证 body 解构
+  - 输出物：
+    - `apps/web/src/lib/api-validation.ts`（新建）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` ✅
+
+- [x] CR-02 统一错误处理 + API 错误信息国际化
+  - 完成时间：2026-03-30
+  - 决策：
+    - 新建 `src/lib/api-response.ts`，包含：
+      - `ERROR_MESSAGES` 双语错误信息映射表（20+ 条目，含 auth/password/register/generic 类别）
+      - `detectLocale(request)` — 从 cookie / Referer / Accept-Language 检测语言
+      - `apiError(key, status, request?)` — 根据语言返回对应错误信息的 JSON 响应
+      - `withErrorHandler(handler)` — 顶层 try-catch 包装器，捕获未处理异常返回 500
+    - 改造了 5 个含硬编码中文错误信息的 API 路由：
+      - `api/auth/login` → 3 处中文 → `apiError("invalid_credentials"/"no_dashboard_access"/"account_suspended")`
+      - `api/user/auth/login` → 4 处中文 → `apiError("invalid_credentials"/"account_banned")`
+      - `api/user/auth/register` → 7 处中文 → `apiError("missing_required_fields"/"password_too_short"/"invite_code_*"/"email_already_registered")`
+      - `api/auth/verify-password` → 4 处中文 → `apiError("password_min_length"/"wrong_current_password"/"password_update_failed")`
+      - `api/user/auth/change-password` → 5 处中文 → `apiError("current_password_required"/"password_min_length"/"wrong_current_password"/"password_update_failed")`
+    - 为 4 个缺少 try-catch 的路由添加了 `withErrorHandler` 包装：
+      - `api/admin/content` (GET)
+      - `api/admin/moderate` (POST)
+      - `api/merchant/stores` (GET + POST)
+      - `api/merchant/stores/[id]` (PATCH)
+    - 同时也为已改造的认证路由添加了 `withErrorHandler` 包装
+  - 输出物：
+    - `apps/web/src/lib/api-response.ts`（新建）
+    - 11 个 API route 文件修改
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` ✅
+
+- [x] CR-03 重构 middleware.ts
+  - 完成时间：2026-03-30
+  - 决策：
+    - 将原 middleware 的 `if/else` 嵌套逻辑拆分为两个独立函数：
+      - `handleDashboard(request)` — 处理 /dashboard/* 路由保护
+      - `handleLogin(request)` — 处理 /login 已登入重定向
+    - 主 `middleware()` 函数简化为 3 行路由分发
+    - 保留 `getSupabaseMiddleware()` 不变
+    - 逻辑行为完全一致，仅提升可读性
+  - 输出物：
+    - `apps/web/src/middleware.ts`（重写）
+  - 自检：
+    - `pnpm --filter web exec tsc --noEmit` ✅
+    - `pnpm --filter web build` ✅
+
+### 改动文件清单
+
+| 操作 | 文件 |
+|------|------|
+| 新建 | `apps/web/src/lib/api-response.ts` |
+| 新建 | `apps/web/src/lib/api-validation.ts` |
+| 修改 | `apps/web/src/middleware.ts` |
+| 修改 | `apps/web/src/app/api/wines/route.ts` |
+| 修改 | `apps/web/src/app/api/auth/login/route.ts` |
+| 修改 | `apps/web/src/app/api/auth/verify-password/route.ts` |
+| 修改 | `apps/web/src/app/api/user/auth/login/route.ts` |
+| 修改 | `apps/web/src/app/api/user/auth/register/route.ts` |
+| 修改 | `apps/web/src/app/api/user/auth/change-password/route.ts` |
+| 修改 | `apps/web/src/app/api/community/posts/route.ts` |
+| 修改 | `apps/web/src/app/api/admin/content/route.ts` |
+| 修改 | `apps/web/src/app/api/admin/moderate/route.ts` |
+| 修改 | `apps/web/src/app/api/merchant/stores/route.ts` |
+| 修改 | `apps/web/src/app/api/merchant/stores/[id]/route.ts` |

@@ -3,39 +3,35 @@ import { registerUser } from "@/lib/user-store";
 import { USE_SUPABASE_AUTH, supabaseSignUp } from "@/lib/supabase-auth";
 import { checkRateLimit, getClientIp, REGISTER_RATE_LIMIT } from "@/lib/rate-limit";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { registerSchema } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
 const REQUIRE_INVITE_CODE = process.env.REQUIRE_INVITE_CODE === "true";
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   const ip = getClientIp(request);
   const rl = checkRateLimit(`register:${ip}`, REGISTER_RATE_LIMIT);
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
-  const { name, email, password, inviteCode } = await request.json();
-
-  if (!name || !email || !password) {
-    return NextResponse.json(
-      { error: "請填寫所有必填項" },
-      { status: 400 }
-    );
+  const body = await request.json();
+  const parsed = registerSchema.safeParse(body);
+  if (!parsed.success) {
+    // Provide specific error for common validation failures
+    const firstIssue = parsed.error.issues[0];
+    if (firstIssue?.path.includes("password") && firstIssue?.code === "too_small") {
+      return apiError("password_too_short", 400, request);
+    }
+    return apiError("missing_required_fields", 400, request);
   }
-  if (password.length < 6) {
-    return NextResponse.json(
-      { error: "密碼至少需要 6 個字符" },
-      { status: 400 }
-    );
-  }
+  const { name, email, password, inviteCode } = parsed.data;
 
   // ── Invite code validation ──
   let inviteCodeId: string | null = null;
   if (REQUIRE_INVITE_CODE) {
     if (!inviteCode) {
-      return NextResponse.json(
-        { error: "需要邀請碼才能注冊" },
-        { status: 400 }
-      );
+      return apiError("invite_code_required", 400, request);
     }
     const supabase = await createSupabaseServer();
     if (supabase) {
@@ -47,16 +43,10 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (!codeData) {
-        return NextResponse.json(
-          { error: "邀請碼無效或已被使用" },
-          { status: 400 }
-        );
+        return apiError("invite_code_invalid", 400, request);
       }
       if (codeData.expires_at && new Date(codeData.expires_at) < new Date()) {
-        return NextResponse.json(
-          { error: "邀請碼已過期" },
-          { status: 400 }
-        );
+        return apiError("invite_code_expired", 400, request);
       }
       inviteCodeId = codeData.id;
     }
@@ -66,10 +56,7 @@ export async function POST(request: NextRequest) {
   if (USE_SUPABASE_AUTH) {
     const authUser = await supabaseSignUp(email, password, name);
     if (!authUser) {
-      return NextResponse.json(
-        { error: "該 Email 已被注冊" },
-        { status: 409 }
-      );
+      return apiError("email_already_registered", 409, request);
     }
 
     const user = {
@@ -100,10 +87,7 @@ export async function POST(request: NextRequest) {
   // ── Legacy path ──
   const user = await registerUser(name, email, password);
   if (!user) {
-    return NextResponse.json(
-      { error: "該 Email 已被注冊" },
-      { status: 409 }
-    );
+    return apiError("email_already_registered", 409, request);
   }
 
   // Mark invite code as used (legacy path)
@@ -122,4 +106,4 @@ export async function POST(request: NextRequest) {
     sameSite: "lax",
   });
   return res;
-}
+});

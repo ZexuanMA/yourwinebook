@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getMockAccount } from "@/lib/mock-auth";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { withErrorHandler } from "@/lib/api-response";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -16,7 +17,7 @@ async function requireAdmin() {
  * GET /api/admin/content?type=post|comment&id=...
  * Returns the original content for a reported target.
  */
-export async function GET(request: NextRequest) {
+export const GET = withErrorHandler(async (request: NextRequest) => {
   const admin = await requireAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -135,4 +136,4 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({ error: "Invalid type" }, { status: 400 });
-}
+});

@@ -2,31 +2,32 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyCredentials, updateLastSeen } from "@/lib/user-store";
 import { USE_SUPABASE_AUTH, supabaseSignIn } from "@/lib/supabase-auth";
 import { checkRateLimit, getClientIp, AUTH_RATE_LIMIT } from "@/lib/rate-limit";
+import { loginSchema } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   const ip = getClientIp(request);
   const rl = checkRateLimit(`user-login:${ip}`, AUTH_RATE_LIMIT);
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
-  const { email, password } = await request.json();
+  const body = await request.json();
+  const parsed = loginSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("invalid_input", 400, request);
+  }
+  const { email, password } = parsed.data;
 
   // ── Supabase Auth path ──
   if (USE_SUPABASE_AUTH) {
     const authUser = await supabaseSignIn(email, password);
     if (!authUser) {
-      return NextResponse.json(
-        { error: "Email 或密碼錯誤" },
-        { status: 401 }
-      );
+      return apiError("invalid_credentials", 401, request);
     }
 
     if (authUser.status === "banned") {
-      return NextResponse.json(
-        { error: "帳號已被停用，請聯繫客服" },
-        { status: 403 }
-      );
+      return apiError("account_banned", 403, request);
     }
 
     // Map to the user shape expected by frontend
@@ -51,16 +52,10 @@ export async function POST(request: NextRequest) {
   // ── Legacy path ──
   const user = await verifyCredentials(email, password);
   if (!user) {
-    return NextResponse.json(
-      { error: "Email 或密碼錯誤" },
-      { status: 401 }
-    );
+    return apiError("invalid_credentials", 401, request);
   }
   if (user.status === "suspended") {
-    return NextResponse.json(
-      { error: "帳號已被停用，請聯繫客服" },
-      { status: 403 }
-    );
+    return apiError("account_banned", 403, request);
   }
 
   updateLastSeen(user.id);
@@ -73,4 +68,4 @@ export async function POST(request: NextRequest) {
     sameSite: "lax",
   });
   return res;
-}
+});

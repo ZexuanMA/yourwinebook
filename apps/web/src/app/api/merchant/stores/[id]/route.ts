@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getMockAccount } from "@/lib/mock-auth";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { withErrorHandler } from "@/lib/api-response";
 
 async function getMerchantAccount() {
   const cookieStore = await cookies();
@@ -12,10 +13,10 @@ async function getMerchantAccount() {
   return account;
 }
 
-export async function PATCH(
+export const PATCH = withErrorHandler(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const account = await getMerchantAccount();
   if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -79,4 +80,4 @@ export async function PATCH(
   }
 
   return NextResponse.json({ store: data });
-}
+});

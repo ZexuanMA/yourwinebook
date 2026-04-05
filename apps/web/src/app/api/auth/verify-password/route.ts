@@ -14,22 +14,22 @@ import {
   supabaseChangePassword,
 } from "@/lib/supabase-auth";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { changePasswordSchema } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
-export async function POST(request: NextRequest) {
-  const { currentPassword, newPassword } = await request.json();
-
-  if (!newPassword || newPassword.length < 6) {
-    return NextResponse.json(
-      { error: "新密碼至少需要 6 個字符" },
-      { status: 400 }
-    );
+export const POST = withErrorHandler(async (request: NextRequest) => {
+  const body = await request.json();
+  const parsed = changePasswordSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("password_min_length", 400, request);
   }
+  const { currentPassword, newPassword } = parsed.data;
 
   // ── Supabase Auth path ──
   if (USE_SUPABASE_AUTH) {
     const user = await supabaseGetUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return apiError("unauthorized", 401, request);
     }
 
     // Verify current password by attempting sign-in
@@ -46,18 +46,12 @@ export async function POST(request: NextRequest) {
         password: currentPassword,
       });
     if (verifyError) {
-      return NextResponse.json(
-        { error: "當前密碼不正確" },
-        { status: 400 }
-      );
+      return apiError("wrong_current_password", 400, request);
     }
 
     const ok = await supabaseChangePassword(newPassword);
     if (!ok) {
-      return NextResponse.json(
-        { error: "密碼更新失敗" },
-        { status: 500 }
-      );
+      return apiError("password_update_failed", 500, request);
     }
     return NextResponse.json({ ok: true });
   }
@@ -66,26 +60,20 @@ export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const slug = cookieStore.get("wb_session")?.value;
   if (!slug)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("unauthorized", 401, request);
 
   if (slug === "admin") {
     if (!(await verifyAdminPassword(currentPassword))) {
-      return NextResponse.json(
-        { error: "當前密碼不正確" },
-        { status: 400 }
-      );
+      return apiError("wrong_current_password", 400, request);
     }
     await updateAdminPassword(newPassword);
     return NextResponse.json({ ok: true });
   }
 
   if (!(await verifyMerchantPassword(slug, currentPassword))) {
-    return NextResponse.json(
-      { error: "當前密碼不正確" },
-      { status: 400 }
-    );
+    return apiError("wrong_current_password", 400, request);
   }
 
   await updateMerchantPassword(slug, newPassword);
   return NextResponse.json({ ok: true });
-}
+});

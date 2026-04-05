@@ -5,40 +5,38 @@ import {
   supabaseSignIn,
 } from "@/lib/supabase-auth";
 import { checkRateLimit, getClientIp, AUTH_RATE_LIMIT } from "@/lib/rate-limit";
+import { loginSchema } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   const ip = getClientIp(request);
   const rl = checkRateLimit(`admin-login:${ip}`, AUTH_RATE_LIMIT);
   if (!rl.allowed) {
     return NextResponse.json({ error: "Too many attempts. Please try again later." }, { status: 429 });
   }
 
-  const { email, password } = await request.json();
+  const body = await request.json();
+  const parsed = loginSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("invalid_input", 400, request);
+  }
+  const { email, password } = parsed.data;
 
   // ── Supabase Auth path ──
   if (USE_SUPABASE_AUTH) {
     const user = await supabaseSignIn(email, password);
     if (!user) {
-      return NextResponse.json(
-        { error: "Email 或密碼錯誤" },
-        { status: 401 }
-      );
+      return apiError("invalid_credentials", 401, request);
     }
 
     // Only admin and merchant_staff can access the dashboard
     if (user.role !== "admin" && user.role !== "merchant_staff") {
-      return NextResponse.json(
-        { error: "此帳號無後台權限" },
-        { status: 403 }
-      );
+      return apiError("no_dashboard_access", 403, request);
     }
 
     // Block suspended/banned/inactive accounts (codex-review 3.2)
     if (user.status !== "active") {
-      return NextResponse.json(
-        { error: "此帳號已被停用" },
-        { status: 403 }
-      );
+      return apiError("account_suspended", 403, request);
     }
 
     const account = {
@@ -74,7 +72,7 @@ export async function POST(request: NextRequest) {
   const account = await verifyCredentials(email, password);
 
   if (!account) {
-    return NextResponse.json({ error: "Email 或密碼錯誤" }, { status: 401 });
+    return apiError("invalid_credentials", 401, request);
   }
 
   const response = NextResponse.json({ ok: true, account });
@@ -92,4 +90,4 @@ export async function POST(request: NextRequest) {
     });
   }
   return response;
-}
+});

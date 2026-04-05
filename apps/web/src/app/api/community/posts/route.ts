@@ -3,21 +3,22 @@ import { getAllPosts, createPost } from "@/lib/community-store";
 import { getUserById } from "@/lib/user-store";
 import { getMerchantBySlug } from "@/lib/merchant-store";
 import { checkRateLimit, getClientIp, POST_CREATE_RATE_LIMIT } from "@/lib/rate-limit";
+import { communityPostsQuerySchema, createPostSchema, searchParamsToObject } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
-export async function GET(request: NextRequest) {
-  const url = request.nextUrl;
-  const page = Number(url.searchParams.get("page")) || 1;
-  const limit = Number(url.searchParams.get("limit")) || 20;
-  const authorId = url.searchParams.get("authorId") ?? undefined;
-  const authorType = url.searchParams.get("authorType") as "user" | "merchant" | undefined;
-  const wineSlug = url.searchParams.get("wineSlug") ?? undefined;
-  const tag = url.searchParams.get("tag") ?? undefined;
+export const GET = withErrorHandler(async (request: NextRequest) => {
+  const raw = searchParamsToObject(request.nextUrl.searchParams);
+  const parsed = communityPostsQuerySchema.safeParse(raw);
+  if (!parsed.success) {
+    return apiError("invalid_input", 400, request);
+  }
+  const { page, limit, authorId, authorType, wineSlug, tag } = parsed.data;
 
   const { posts, total } = await getAllPosts({ page, limit, authorId, authorType, wineSlug, tag });
   return NextResponse.json({ posts, total, page, limit, totalPages: Math.ceil(total / limit) });
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   const ip = getClientIp(request);
   const rl = checkRateLimit(`post-create:${ip}`, POST_CREATE_RATE_LIMIT);
   if (!rl.allowed) {
@@ -59,11 +60,11 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { title, content, wineSlug, wineName, rating, tags } = body;
-
-  if (!title?.trim() || !content?.trim()) {
-    return NextResponse.json({ error: "Title and content are required" }, { status: 400 });
+  const parsed = createPostSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("invalid_input", 400, request);
   }
+  const { title, content, wineSlug, wineName, rating, tags } = parsed.data;
 
   const post = await createPost({
     authorId,
@@ -73,9 +74,9 @@ export async function POST(request: NextRequest) {
     content: content.trim(),
     wineSlug,
     wineName,
-    rating: rating ? Math.min(5, Math.max(1, Number(rating))) : undefined,
-    tags: tags ?? [],
+    rating,
+    tags,
   });
 
   return NextResponse.json(post, { status: 201 });
-}
+});

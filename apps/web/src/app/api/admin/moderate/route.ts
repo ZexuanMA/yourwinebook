@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getMockAccount } from "@/lib/mock-auth";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { moderateSchema } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
 async function requireAdmin() {
   const cookieStore = await cookies();
@@ -16,7 +18,7 @@ async function requireAdmin() {
  * POST /api/admin/moderate
  * Actions: hide_post, unhide_post, hide_comment, unhide_comment
  */
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
   const admin = await requireAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,7 +33,11 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { action, target_id, reason } = body;
+  const parsed = moderateSchema.safeParse(body);
+  if (!parsed.success) {
+    return apiError("invalid_input", 400, request);
+  }
+  const { action, target_id, reason } = parsed.data;
 
   switch (action) {
     case "hide_post": {
@@ -168,4 +174,4 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
   }
-}
+});

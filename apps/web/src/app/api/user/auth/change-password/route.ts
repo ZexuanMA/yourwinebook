@@ -6,28 +6,26 @@ import {
   supabaseChangePassword,
 } from "@/lib/supabase-auth";
 import { createSupabaseServer } from "@/lib/supabase-server";
+import { changePasswordSchema } from "@/lib/api-validation";
+import { apiError, withErrorHandler } from "@/lib/api-response";
 
-export async function POST(request: NextRequest) {
-  const { currentPassword, newPassword } = await request.json();
-
-  if (!currentPassword) {
-    return NextResponse.json(
-      { error: "請輸入當前密碼" },
-      { status: 400 }
-    );
+export const POST = withErrorHandler(async (request: NextRequest) => {
+  const body = await request.json();
+  const parsed = changePasswordSchema.safeParse(body);
+  if (!parsed.success) {
+    const firstIssue = parsed.error.issues[0];
+    if (firstIssue?.path.includes("currentPassword")) {
+      return apiError("current_password_required", 400, request);
+    }
+    return apiError("password_min_length", 400, request);
   }
-  if (!newPassword || newPassword.length < 6) {
-    return NextResponse.json(
-      { error: "新密碼至少需要 6 個字符" },
-      { status: 400 }
-    );
-  }
+  const { currentPassword, newPassword } = parsed.data;
 
   // ── Supabase Auth path ──
   if (USE_SUPABASE_AUTH) {
     const user = await supabaseGetUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return apiError("unauthorized", 401, request);
     }
 
     // Verify current password
@@ -44,18 +42,12 @@ export async function POST(request: NextRequest) {
         password: currentPassword,
       });
     if (verifyError) {
-      return NextResponse.json(
-        { error: "當前密碼不正確" },
-        { status: 400 }
-      );
+      return apiError("wrong_current_password", 400, request);
     }
 
     const ok = await supabaseChangePassword(newPassword);
     if (!ok) {
-      return NextResponse.json(
-        { error: "密碼更新失敗" },
-        { status: 500 }
-      );
+      return apiError("password_update_failed", 500, request);
     }
     return NextResponse.json({ ok: true });
   }
@@ -63,16 +55,13 @@ export async function POST(request: NextRequest) {
   // ── Legacy path ──
   const id = request.cookies.get("wb_user_session")?.value;
   if (!id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("unauthorized", 401, request);
   }
 
   if (!(await verifyUserPassword(id, currentPassword))) {
-    return NextResponse.json(
-      { error: "當前密碼不正確" },
-      { status: 400 }
-    );
+    return apiError("wrong_current_password", 400, request);
   }
 
   await updateUserPassword(id, newPassword);
   return NextResponse.json({ ok: true });
-}
+});
